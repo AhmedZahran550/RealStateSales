@@ -45,6 +45,34 @@ export default function CustomerModal({
   const [notes, setNotes] = useState('');
   const [interestedUnitIds, setInterestedUnitIds] = useState<string[]>([]);
 
+  const toDatetimeLocal = (iso?: string) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const setPresetFollowup = (preset: 'today' | 'tomorrow' | '3days' | 'nextweek' | 'clear') => {
+    if (preset === 'clear') {
+      setNextFollowupAt('');
+      return;
+    }
+    const d = new Date();
+    if (preset === 'today') {
+      d.setHours(d.getHours() + 2);
+    } else if (preset === 'tomorrow') {
+      d.setDate(d.getDate() + 1);
+      d.setHours(12, 0, 0, 0);
+    } else if (preset === '3days') {
+      d.setDate(d.getDate() + 3);
+      d.setHours(12, 0, 0, 0);
+    } else if (preset === 'nextweek') {
+      d.setDate(d.getDate() + 7);
+      d.setHours(12, 0, 0, 0);
+    }
+    setNextFollowupAt(toDatetimeLocal(d.toISOString()));
+  };
+
   useEffect(() => {
     if (initialCustomer) {
       setName(initialCustomer.name);
@@ -53,11 +81,7 @@ export default function CustomerModal({
       setBudget(initialCustomer.budget);
       setSource(initialCustomer.source || 'إعلان فيسبوك وتيك توك');
       setStage(initialCustomer.stage);
-      setNextFollowupAt(
-        initialCustomer.nextFollowupAt
-          ? new Date(initialCustomer.nextFollowupAt).toISOString().split('T')[0]
-          : ''
-      );
+      setNextFollowupAt(toDatetimeLocal(initialCustomer.nextFollowupAt));
       setNotes(initialCustomer.notes || '');
       setInterestedUnitIds(initialCustomer.interestedUnitIds || []);
     } else {
@@ -67,10 +91,11 @@ export default function CustomerModal({
       setBudget(undefined);
       setSource('إعلان فيسبوك وتيك توك');
       setStage('lead');
-      // Default follow up: tomorrow
+      // Default follow up: tomorrow at 12:00
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      setNextFollowupAt(tomorrow.toISOString().split('T')[0]);
+      tomorrow.setHours(12, 0, 0, 0);
+      setNextFollowupAt(toDatetimeLocal(tomorrow.toISOString()));
       setNotes('');
       setInterestedUnitIds([]);
     }
@@ -228,17 +253,60 @@ export default function CustomerModal({
             </div>
           </div>
 
-          {/* Follow-up Date */}
-          <div>
-            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
-              تاريخ المتابعة القادمة
-            </label>
+          {/* Follow-up Date & Time */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="block font-bold text-stone-700 dark:text-stone-300">
+                موعد المتابعة القادمة (التاريخ والساعة)
+              </label>
+              {nextFollowupAt && (
+                <button
+                  type="button"
+                  onClick={() => setPresetFollowup('clear')}
+                  className="text-[11px] text-rose-600 hover:underline font-bold"
+                >
+                  إلغاء الموعد
+                </button>
+              )}
+            </div>
             <input
-              type="date"
+              type="datetime-local"
               value={nextFollowupAt}
               onChange={(e) => setNextFollowupAt(e.target.value)}
-              className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 font-semibold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 font-semibold focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs"
             />
+            {/* Quick Presets */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <span className="text-[10px] text-stone-400 font-bold">اختيار سريع:</span>
+              <button
+                type="button"
+                onClick={() => setPresetFollowup('today')}
+                className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 hover:bg-amber-100 hover:text-amber-700 text-[11px] font-bold text-stone-600 dark:text-stone-300 transition"
+              >
+                اليوم (+2س)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPresetFollowup('tomorrow')}
+                className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 hover:bg-amber-100 hover:text-amber-700 text-[11px] font-bold text-stone-600 dark:text-stone-300 transition"
+              >
+                غداً (12ظ)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPresetFollowup('3days')}
+                className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 hover:bg-amber-100 hover:text-amber-700 text-[11px] font-bold text-stone-600 dark:text-stone-300 transition"
+              >
+                بعد 3 أيام
+              </button>
+              <button
+                type="button"
+                onClick={() => setPresetFollowup('nextweek')}
+                className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 hover:bg-amber-100 hover:text-amber-700 text-[11px] font-bold text-stone-600 dark:text-stone-300 transition"
+              >
+                الأسبوع القادم
+              </button>
+            </div>
           </div>
 
           {/* Notes */}

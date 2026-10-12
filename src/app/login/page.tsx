@@ -45,11 +45,6 @@ export default function LoginPage() {
     }
   };
 
-  const fillCredentials = (u: string, p: string) => {
-    setUsername(u);
-    setPassword(p);
-    setError('');
-  };
 
   return (
     <div className="bg-surface font-body-md text-on-surface min-h-screen flex items-center justify-center p-3 sm:p-6 lg:p-12">
@@ -139,28 +134,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* حسابات تجريبية سريعة */}
-            <div className="p-3.5 rounded-xl bg-surface-container-low border border-surface-container-high space-y-2">
-              <span className="text-xs font-bold text-on-surface-variant block">دخول سريع بالحسابات المعتمدة:</span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => fillCredentials('AhmedZahran', 'Test@1234')}
-                  className="p-2.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-right border border-surface-container-high transition-all cursor-pointer"
-                >
-                  <p className="text-xs font-bold text-primary">أحمد زهران</p>
-                  <p className="text-[10px] text-on-surface-variant">مستشار عقاري • وحداته فقط</p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => fillCredentials('admin', 'Admin@1234')}
-                  className="p-2.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-right border border-surface-container-high transition-all cursor-pointer"
-                >
-                  <p className="text-xs font-bold text-secondary">المدير العام</p>
-                  <p className="text-[10px] text-on-surface-variant">صلاحيات كاملة • كافة الوحدات</p>
-                </button>
-              </div>
-            </div>
+
 
             {/* نموذج تسجيل الدخول */}
             <form onSubmit={handleLogin} className="space-y-4">

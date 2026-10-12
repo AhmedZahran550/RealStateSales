@@ -127,24 +127,36 @@ export default function CrmKanban({
                       </div>
 
                       {/* Followup notice */}
-                      {cust.nextFollowupAt && (
+                      {cust.nextFollowupAt ? (
                         <div
-                          className={`mt-2.5 flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-lg ${
+                          className={`mt-2.5 flex items-center justify-between text-[10px] font-bold px-2 py-1 rounded-lg ${
                             isOverdue
                               ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'
                               : isToday
                               ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
-                              : 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300'
+                              : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                           }`}
                         >
-                          <Calendar className="w-3 h-3" />
-                          <span>
-                            متابعة:{' '}
-                            {new Date(cust.nextFollowupAt).toLocaleDateString('ar-EG', {
-                              month: 'numeric',
-                              day: 'numeric',
-                            })}
-                          </span>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            <span>
+                              {new Date(cust.nextFollowupAt).toLocaleDateString('ar-EG', {
+                                month: 'numeric',
+                                day: 'numeric',
+                              })}
+                              {' • '}
+                              {new Date(cust.nextFollowupAt).toLocaleTimeString('ar-EG', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </div>
+                          <span>{isOverdue ? '⚠️ متأخرة' : isToday ? '🔔 اليوم' : 'مجدولة'}</span>
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-[10px] text-slate-400 font-medium px-1 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span>بدون موعد متابعة</span>
                         </div>
                       )}
 

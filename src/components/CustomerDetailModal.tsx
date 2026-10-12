@@ -28,6 +28,7 @@ interface CustomerDetailModalProps {
   onDeleteCustomer: (id: string) => void;
   units: Unit[];
   onSelectUnit?: (unit: Unit) => void;
+  onEdit?: (customer: Customer) => void;
 }
 
 export default function CustomerDetailModal({
@@ -39,10 +40,18 @@ export default function CustomerDetailModal({
   onDeleteCustomer,
   units,
   onSelectUnit,
+  onEdit,
 }: CustomerDetailModalProps) {
   const [newNote, setNewNote] = useState('');
   const [activityType, setActivityType] = useState<ActivityType>('call');
   const [newFollowupDate, setNewFollowupDate] = useState('');
+  const [todayTimestamp, setTodayTimestamp] = useState<number | null>(null);
+  const [todayDateString, setTodayDateString] = useState<string>('');
+
+  React.useEffect(() => {
+    setTodayTimestamp(new Date().setHours(0, 0, 0, 0));
+    setTodayDateString(new Date().toDateString());
+  }, []);
 
   if (!customer) return null;
 
@@ -73,13 +82,46 @@ export default function CustomerDetailModal({
     onUpdateStage(customer.id, newStage, note);
   };
 
-  const [todayTimestamp, setTodayTimestamp] = useState<number | null>(null);
-  const [todayDateString, setTodayDateString] = useState<string>('');
+  const handleReschedule = (newDateIso?: string) => {
+    if (!newDateIso) {
+      onUpdateCustomer(customer.id, { nextFollowupAt: undefined });
+      onAddActivity(customer.id, 'note', 'تم إلغاء موعد المتابعة الحالي');
+      return;
+    }
+    onUpdateCustomer(customer.id, { nextFollowupAt: newDateIso });
+    const formatted = new Date(newDateIso).toLocaleString('ar-EG', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    onAddActivity(customer.id, 'call', `تم تعديل موعد المتابعة القادمة إلى: ${formatted}`);
+  };
 
-  React.useEffect(() => {
-    setTodayTimestamp(new Date().setHours(0, 0, 0, 0));
-    setTodayDateString(new Date().toDateString());
-  }, []);
+  const getQuickDateIso = (preset: 'today' | 'tomorrow' | '3days' | 'nextweek') => {
+    const d = new Date();
+    if (preset === 'today') {
+      d.setHours(d.getHours() + 2);
+    } else if (preset === 'tomorrow') {
+      d.setDate(d.getDate() + 1);
+      d.setHours(12, 0, 0, 0);
+    } else if (preset === '3days') {
+      d.setDate(d.getDate() + 3);
+      d.setHours(12, 0, 0, 0);
+    } else if (preset === 'nextweek') {
+      d.setDate(d.getDate() + 7);
+      d.setHours(12, 0, 0, 0);
+    }
+    return d.toISOString();
+  };
+
+  const toDatetimeLocal = (iso?: string) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
 
   // Followup status
   const isOverdue =
@@ -118,17 +160,31 @@ export default function CustomerDetailModal({
           </div>
 
           <div className="flex items-center gap-2">
+            {onEdit && (
+              <button
+                onClick={() => {
+                  onEdit(customer);
+                  onClose();
+                }}
+                className="p-2 sm:px-3 rounded-xl text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 transition flex items-center gap-1.5 text-xs font-bold border border-amber-200 dark:border-amber-900/50"
+                title="تعديل بيانات العميل"
+              >
+                <Edit className="w-4 h-4 text-amber-600" />
+                <span>تعديل</span>
+              </button>
+            )}
             <button
               onClick={() => {
-                if (confirm('هل ترغب في أرشفة/حذف هذا العميل؟')) {
+                if (confirm(`هل أنت متأكد من حذف العميل "${customer.name}" نهائياً من قاعدة البيانات؟`)) {
                   onDeleteCustomer(customer.id);
                   onClose();
                 }
               }}
-              className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition"
+              className="p-2 sm:px-3 rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 transition flex items-center gap-1.5 text-xs font-bold border border-rose-200 dark:border-rose-900/50"
               title="حذف العميل"
             >
               <Trash2 className="w-4 h-4" />
+              <span>حذف</span>
             </button>
             <button
               onClick={onClose}
@@ -198,51 +254,118 @@ export default function CustomerDetailModal({
             </div>
           </div>
 
-          {/* Follow-up Alert Card */}
+          {/* Follow-up Scheduling & Alert Card */}
           <div
-            className={`p-4 rounded-2xl border flex items-center justify-between gap-4 ${
+            className={`p-4 sm:p-5 rounded-2xl border space-y-3.5 transition-all ${
               isOverdue
-                ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900 text-rose-900 dark:text-rose-200'
+                ? 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900 text-rose-950 dark:text-rose-200'
                 : isToday
-                ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-200'
+                ? 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900 text-amber-950 dark:text-amber-200'
+                : customer.nextFollowupAt
+                ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900 text-emerald-950 dark:text-emerald-200'
                 : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
             }`}
           >
-            <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 flex-shrink-0" />
-              <div>
-                <p className="text-xs font-bold">
-                  {isOverdue
-                    ? '⚠️ موعد المتابعة متأخر!'
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  isOverdue
+                    ? 'bg-rose-500 text-white shadow-sm'
                     : isToday
-                    ? '🔔 موعد المتابعة اليوم!'
-                    : 'تاريخ المتابعة القادمة:'}
-                </p>
-                <p className="text-xs mt-0.5">
-                  {customer.nextFollowupAt
-                    ? new Date(customer.nextFollowupAt).toLocaleDateString('ar-EG', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
-                    : 'لم يتم تحديد موعد متابعة'}
-                </p>
+                    ? 'bg-amber-500 text-white shadow-sm'
+                    : customer.nextFollowupAt
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'bg-slate-300 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                }`}>
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-black flex items-center gap-1.5">
+                    {isOverdue
+                      ? '⚠️ موعد المتابعة متأخر!'
+                      : isToday
+                      ? '🔔 موعد المتابعة اليوم!'
+                      : customer.nextFollowupAt
+                      ? '📅 موعد المتابعة القادمة مجدول:'
+                      : '⏳ لم يتم تحديد موعد متابعة بعد'}
+                  </p>
+                  <p className="text-xs mt-0.5 font-bold">
+                    {customer.nextFollowupAt
+                      ? new Date(customer.nextFollowupAt).toLocaleString('ar-EG', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                      : 'حدد موعداً لضمان عدم نسيان العميل'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Exact Datetime Input */}
+              <div className="flex items-center gap-2">
+                <label className="text-[11px] font-bold shrink-0 opacity-80">تحديد دقيق:</label>
+                <input
+                  type="datetime-local"
+                  value={toDatetimeLocal(customer.nextFollowupAt)}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      handleReschedule(new Date(e.target.value).toISOString());
+                    } else {
+                      handleReschedule(undefined);
+                    }
+                  }}
+                  className="text-xs px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                onChange={(e) => {
-                  if (e.target.value) {
-                    onUpdateCustomer(customer.id, {
-                      nextFollowupAt: new Date(e.target.value).toISOString(),
-                    });
-                  }
-                }}
-                className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold"
-              />
+            {/* Quick 1-Click Presets */}
+            <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80">
+              <span className="block text-[11px] font-bold opacity-75 mb-2">
+                إعادة جدولة سريعة بنقرة واحدة:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleReschedule(getQuickDateIso('today'))}
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-amber-500 hover:text-amber-600 transition shadow-xs"
+                >
+                  ⚡ اليوم (بعد ساعتين)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleReschedule(getQuickDateIso('tomorrow'))}
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-amber-500 hover:text-amber-600 transition shadow-xs"
+                >
+                  🌅 غداً (12 ظهراً)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleReschedule(getQuickDateIso('3days'))}
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-amber-500 hover:text-amber-600 transition shadow-xs"
+                >
+                  📆 بعد 3 أيام
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleReschedule(getQuickDateIso('nextweek'))}
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-amber-500 hover:text-amber-600 transition shadow-xs"
+                >
+                  🗓️ الأسبوع القادم
+                </button>
+                {customer.nextFollowupAt && (
+                  <button
+                    type="button"
+                    onClick={() => handleReschedule(undefined)}
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 hover:bg-rose-200 transition"
+                  >
+                    ❌ إلغاء الموعد
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
