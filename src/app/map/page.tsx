@@ -8,7 +8,6 @@ import ZoneDrawer from '@/components/ZoneDrawer';
 import UnitDetailModal from '@/components/UnitDetailModal';
 import UnitFormModal from '@/components/UnitFormModal';
 import LiveUnitsMap from '@/components/LiveUnitsMap';
-import { MapPin, Plus, Compass, Sparkles, Building2, Navigation, Layers } from 'lucide-react';
 
 export default function MapPage() {
   const {
@@ -17,10 +16,10 @@ export default function MapPage() {
     buildings,
     myUnits,
     services,
+    addBuilding,
     addUnit,
     updateUnit,
     deleteUnit,
-    addBuilding,
   } = useApp();
 
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
@@ -28,8 +27,6 @@ export default function MapPage() {
   const [isUnitFormOpen, setIsUnitFormOpen] = useState(false);
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [unitFormPresetZone, setUnitFormPresetZone] = useState<number | undefined>(undefined);
-  
-  // نمط عرض الخريطة
   const [mapMode, setMapMode] = useState<'blueprint' | 'live_gps'>('blueprint');
 
   const handleAddUnitInZone = (zoneId: number) => {
@@ -41,45 +38,45 @@ export default function MapPage() {
   if (!currentUser) return null;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-white dark:bg-[#131a26] border border-stone-200 dark:border-stone-800 shadow-sm">
+    <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
+      {/* Header & Mode Switcher */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 sm:p-5 lg:p-space-lg rounded-2xl bg-surface-container-lowest border border-surface-container-high/40 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-600/30">
-            <MapPin className="w-6 h-6" />
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-primary-container text-on-primary flex items-center justify-center shadow-md shrink-0">
+            <span className="material-symbols-outlined text-[24px] sm:text-[26px]">map</span>
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-[#1c1917] dark:text-[#f5f5f4]">
+            <h1 className="text-lg sm:text-2xl font-black text-on-surface">
               خريطة الحي المتميز التفاعلية (مدينة بدر)
             </h1>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-              استكشف مناطق الحي الـ 16 بالمخطط الهندسي، أو استعرض الخريطة الحية للوحدات المحددة عبر الـ GPS
+            <p className="text-xs text-on-surface-variant mt-0.5">
+              استكشف مناطق الحي الـ 16 بمخطط الجهاز الرسمي، أو استعرض الخريطة الحية للوحدات المحددة عبر الـ GPS
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
           {/* Map Mode Switcher */}
-          <div className="bg-stone-100 dark:bg-stone-800/80 p-1 rounded-2xl flex items-center text-xs font-bold">
+          <div className="bg-surface-container-low p-1 rounded-xl flex items-center text-xs font-bold border border-surface-container-high/40 w-full sm:w-auto">
             <button
               onClick={() => setMapMode('blueprint')}
-              className={`px-3 py-1.5 rounded-xl transition ${
+              className={`flex-1 sm:flex-initial px-3 py-2 rounded-lg transition cursor-pointer min-h-[38px] ${
                 mapMode === 'blueprint'
-                  ? 'bg-white dark:bg-[#131a26] text-amber-900 dark:text-amber-300 shadow-sm border border-stone-200 dark:border-stone-700'
-                  : 'text-stone-500 hover:text-stone-900 dark:hover:text-white'
+                  ? 'bg-surface-container-lowest text-primary shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              مخطط الجهاز
+              مخطط الجهاز الهندسي
             </button>
             <button
               onClick={() => setMapMode('live_gps')}
-              className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
+              className={`flex-1 sm:flex-initial px-3 py-2 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer min-h-[38px] ${
                 mapMode === 'live_gps'
-                  ? 'bg-amber-600 text-white shadow-sm'
-                  : 'text-stone-500 hover:text-stone-900 dark:hover:text-white'
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              <Navigation className="w-3.5 h-3.5" />
+              <span className="material-symbols-outlined text-[16px]">navigation</span>
               <span>الخريطة الحية (GPS)</span>
             </button>
           </div>
@@ -90,10 +87,10 @@ export default function MapPage() {
               setUnitFormPresetZone(undefined);
               setIsUnitFormOpen(true);
             }}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-700 via-amber-600 to-amber-500 hover:from-amber-800 hover:to-amber-600 text-white font-extrabold text-xs shadow-md shadow-amber-600/30 transition self-start sm:self-auto"
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs shadow-md transition cursor-pointer w-full sm:w-auto min-h-[40px]"
           >
-            <Plus className="w-4 h-4" />
-            <span>إضافة وحدة جديدة</span>
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            <span>إضافة وحدة</span>
           </button>
         </div>
       </div>
@@ -120,12 +117,12 @@ export default function MapPage() {
       )}
 
       {/* Quick Zones Horizontal Strip */}
-      <div className="p-5 rounded-3xl bg-white dark:bg-[#131a26] border border-stone-200 dark:border-stone-800 shadow-sm">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-3 flex items-center gap-2">
-          <Compass className="w-4 h-4 text-amber-600" />
-          الانتقال السريع لمناطق الحي (1 - 16)
+      <div className="p-space-md rounded-2xl bg-surface-container-lowest border border-surface-container-high/40 shadow-sm">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-3 flex items-center gap-2">
+          <span className="material-symbols-outlined text-primary text-[18px]">explore</span>
+          الانتقال السريع لمناطق الحي الـ 16
         </h3>
-        <div className="flex gap-2.5 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-2">
           {zones.map((z) => {
             const count = myUnits.filter((u) => u.zoneId === z.id).length;
             const isSelected = selectedZone?.id === z.id;
@@ -136,21 +133,19 @@ export default function MapPage() {
                   setSelectedZone(z);
                   if (mapMode === 'live_gps') setMapMode('blueprint');
                 }}
-                className={`flex-shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border ${
+                className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border cursor-pointer ${
                   isSelected
-                    ? 'bg-amber-600 text-white border-amber-500 shadow-md'
-                    : count > 0
-                    ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-800'
-                    : 'bg-stone-50 dark:bg-stone-800/60 text-stone-600 dark:text-stone-400 border-stone-200 dark:border-stone-800 hover:border-stone-400'
+                    ? 'bg-primary text-on-primary border-primary shadow-sm'
+                    : 'bg-surface-container-low text-on-surface border-surface-container-high hover:border-primary/50'
                 }`}
               >
-                <span>{z.name}</span>
+                <span>منطقة {z.id}</span>
                 {count > 0 && (
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
                       isSelected
-                        ? 'bg-white text-amber-800'
-                        : 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200'
+                        ? 'bg-on-primary text-primary'
+                        : 'bg-primary-fixed text-primary'
                     }`}
                   >
                     {count}
@@ -162,35 +157,43 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Zone Drawer */}
+      {/* Modals & Drawers */}
       <ZoneDrawer
         zone={selectedZone}
-        onClose={() => setSelectedZone(null)}
-        units={myUnits}
+        units={myUnits.filter((u) => selectedZone && u.zoneId === selectedZone.id)}
         buildings={buildings}
         services={services}
+        onClose={() => setSelectedZone(null)}
         onSelectUnit={(u) => setSelectedUnit(u)}
         onAddUnitInZone={handleAddUnitInZone}
       />
 
-      {/* Unit Detail Modal */}
       <UnitDetailModal
         unit={selectedUnit}
         onClose={() => setSelectedUnit(null)}
         onEdit={(unit) => {
-          setSelectedUnit(null);
           setEditingUnit(unit);
+          setSelectedUnit(null);
           setIsUnitFormOpen(true);
         }}
-        onDelete={(id) => deleteUnit(id)}
+        onDelete={(id) => {
+          deleteUnit(id);
+          setSelectedUnit(null);
+        }}
       />
 
-      {/* Unit Form Modal */}
       <UnitFormModal
         isOpen={isUnitFormOpen}
+        initialUnit={editingUnit || undefined}
+        defaultZoneId={unitFormPresetZone}
+        zones={zones}
+        buildings={buildings}
+        services={services}
+        onAddBuilding={addBuilding}
         onClose={() => {
           setIsUnitFormOpen(false);
           setEditingUnit(null);
+          setUnitFormPresetZone(undefined);
         }}
         onSubmit={(unitData) => {
           if (editingUnit) {
@@ -198,13 +201,10 @@ export default function MapPage() {
           } else {
             addUnit(unitData);
           }
+          setIsUnitFormOpen(false);
+          setEditingUnit(null);
+          setUnitFormPresetZone(undefined);
         }}
-        initialUnit={editingUnit}
-        defaultZoneId={unitFormPresetZone}
-        zones={zones}
-        buildings={buildings}
-        services={services}
-        onAddBuilding={addBuilding}
       />
     </div>
   );

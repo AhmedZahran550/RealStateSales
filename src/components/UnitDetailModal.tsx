@@ -55,17 +55,17 @@ export default function UnitDetailModal({
   const waShareUrl = `https://wa.me/?text=${shareText}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-white dark:bg-[#131a26] rounded-3xl shadow-2xl border border-amber-200/80 dark:border-amber-900/50 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-3xl bg-white dark:bg-[#131a26] rounded-3xl shadow-2xl border border-amber-200/80 dark:border-amber-900/50 overflow-hidden my-auto sm:my-8 max-h-[94vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-5 border-b border-amber-100 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#18202e]">
+        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-amber-100 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#18202e] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white flex items-center justify-center font-black shadow-md shadow-amber-600/30">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white flex items-center justify-center font-black shadow-md shadow-amber-600/30 shrink-0">
               {unit.zoneId}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-extrabold text-lg text-[#1c1917] dark:text-[#f5f5f4]">
+                <h3 className="font-extrabold text-base sm:text-lg text-[#1c1917] dark:text-[#f5f5f4]">
                   المنطقة {unit.zoneId} – قطعة {unit.plotNo}
                 </h3>
                 <span
@@ -114,7 +114,7 @@ export default function UnitDetailModal({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-6 max-h-[78vh] overflow-y-auto flex-1">
           {/* Media Gallery / Lightbox */}
           {mediaList.length > 0 ? (
             <div className="space-y-3">

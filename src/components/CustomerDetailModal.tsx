@@ -47,7 +47,7 @@ export default function CustomerDetailModal({
   if (!customer) return null;
 
   const stageConfig = STAGE_CONFIG[customer.stage];
-  const interestedUnits = units.filter((u) => customer.interestedUnitIds?.includes(u.id));
+  const interestedUnits = (units || []).filter((u) => customer.interestedUnitIds?.includes(u.id));
 
   // WhatsApp click-to-chat URL
   const waNumber = customer.whatsapp || (customer.phone.startsWith('01') ? `2${customer.phone}` : customer.phone);
@@ -92,17 +92,17 @@ export default function CustomerDetailModal({
     new Date(customer.nextFollowupAt).toDateString() === todayDateString;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-3xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto sm:my-8 max-h-[94vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-amber-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-amber-600/30">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-600 text-white flex items-center justify-center font-bold text-base sm:text-lg shadow-md shadow-amber-600/30 shrink-0">
               {customer.name.slice(0, 2)}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
                   {customer.name}
                 </h3>
                 <span
@@ -140,7 +140,7 @@ export default function CustomerDetailModal({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-6 max-h-[78vh] overflow-y-auto flex-1">
           {/* Quick Contact & Action Bar */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Phone */}

@@ -1,45 +1,83 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+@theme {
+  --color-primary: #006042;
+  --color-primary-container: #1b7a58;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #adffd7;
+  --color-primary-fixed: #9cf4ca;
+  --color-primary-fixed-dim: #81d8af;
+  --color-on-primary-fixed: #002114;
+  --color-on-primary-fixed-variant: #005138;
+
+  --color-secondary: #a7391e;
+  --color-secondary-container: #fd7958;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #6e1500;
+  --color-secondary-fixed: #ffdad2;
+  --color-secondary-fixed-dim: #ffb4a2;
+  --color-on-secondary-fixed: #3c0700;
+  --color-on-secondary-fixed-variant: #862208;
+
+  --color-tertiary: #744a00;
+  --color-tertiary-container: #956000;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-container: #ffead4;
+  --color-tertiary-fixed: #ffddb5;
+  --color-tertiary-fixed-dim: #ffb957;
+  --color-on-tertiary-fixed: #2a1800;
+  --color-on-tertiary-fixed-variant: #643f00;
+
+  --color-surface: #f3faff;
+  --color-surface-dim: #cddce4;
+  --color-surface-bright: #f3faff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #e7f6fe;
+  --color-surface-container: #e1f0f8;
+  --color-surface-container-high: #dbebf2;
+  --color-surface-container-highest: #d6e5ed;
+  --color-surface-variant: #d6e5ed;
+
+  --color-on-surface: #0f1d23;
+  --color-on-surface-variant: #3f4943;
+  --color-outline: #6f7a72;
+  --color-outline-variant: #bec9c1;
+
+  --color-inverse-surface: #243238;
+  --color-inverse-on-surface: #e4f3fb;
+  --color-inverse-primary: #81d8af;
+
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #93000a;
+
+  --spacing-space-xs: 0.25rem;
+  --spacing-space-sm: 0.5rem;
+  --spacing-space-md: 1rem;
+  --spacing-space-lg: 1.5rem;
+  --spacing-space-xl: 2.25rem;
+  --spacing-gutter: 1.25rem;
+  --spacing-gutter-desktop: 1.5rem;
+}
+
 @layer base {
   :root {
-    --primary: #d97706;
-    --primary-foreground: #ffffff;
-    --accent: #b45309;
-    --accent-foreground: #ffffff;
-    --background: #fbf9f6;
-    --foreground: #1c1917;
-    --card: #ffffff;
-    --card-foreground: #1c1917;
-    --border: #e7e2d9;
-    --muted: #f4efe6;
-    --muted-foreground: #78716c;
-  }
-
-  .dark {
-    --primary: #f59e0b;
-    --primary-foreground: #451a03;
-    --accent: #d97706;
-    --accent-foreground: #ffffff;
-    --background: #0b0f17;
-    --foreground: #f5f5f4;
-    --card: #131a26;
-    --card-foreground: #f5f5f4;
-    --border: #222c3d;
-    --muted: #1a2232;
-    --muted-foreground: #94a3b8;
+    --background: #f3faff;
+    --foreground: #0f1d23;
   }
 }
 
 body {
-  font-family: var(--font-cairo), system-ui, -apple-system, sans-serif;
-  background-color: var(--background);
-  color: var(--foreground);
+  font-family: var(--font-cairo), 'Noto Kufi Arabic', system-ui, -apple-system, sans-serif;
+  background-color: #f3faff;
+  color: #0f1d23;
   overflow-x: hidden;
   direction: rtl;
 }
 
-/* Custom scrollbars - Amber warm */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -50,43 +88,37 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d6cebe;
+  background: #bec9c1;
   border-radius: 9999px;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #2d3748;
-}
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #b45309;
+  background: #1b7a58;
 }
 
-/* Subtle map blueprint pattern with warm amber grid */
-.bg-blueprint {
-  background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(217, 119, 6, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(217, 119, 6, 0.05) 1px, transparent 1px);
-}
-
-.dark .bg-blueprint {
-  background-image: 
-    linear-gradient(to right, rgba(245, 158, 11, 0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(245, 158, 11, 0.06) 1px, transparent 1px);
+/* Material Symbols font display helper */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Glassmorphism */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(231, 226, 217, 0.85);
-}
-
-.dark .glass-panel {
-  background: rgba(19, 26, 38, 0.88);
-  border: 1px solid rgba(34, 44, 61, 0.85);
+  border: 1px solid rgba(225, 240, 248, 0.9);
 }
 
 /* Pulse animation for map active nodes */
@@ -101,21 +133,6 @@ body {
   }
 }
 
-.animate-map-pulse {
-  animation: map-pulse 2.4s infinite cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-/* Leaflet map styles fixes */
-.leaflet-container {
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  font-family: inherit;
-  z-index: 10;
-}
-
-.custom-amber-pin {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.map-node-pulse {
+  animation: map-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

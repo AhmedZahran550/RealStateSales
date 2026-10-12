@@ -79,19 +79,19 @@ export default function MapViewer({
   };
 
   return (
-    <div className="relative w-full h-[760px] rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-800 bg-[#070a0e] shadow-2xl flex flex-col">
+    <div className="relative w-full h-[520px] sm:h-[640px] lg:h-[760px] rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-800 bg-[#070a0e] shadow-2xl flex flex-col">
       {/* Top Map Toolbar */}
-      <div className="absolute top-4 inset-x-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
+      <div className="absolute top-3 sm:top-4 inset-x-2 sm:inset-x-4 z-20 flex flex-wrap items-center justify-between gap-2 sm:gap-3 pointer-events-none">
         {/* Search & Filter pills */}
-        <div className="pointer-events-auto flex flex-wrap items-center gap-2 bg-slate-950/85 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800 shadow-2xl">
+        <div className="pointer-events-auto flex flex-wrap items-center gap-1.5 sm:gap-2 bg-slate-950/85 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800 shadow-2xl max-w-full">
           <div className="relative flex items-center">
             <Search className="w-4 h-4 text-slate-400 absolute right-3 pointer-events-none" />
             <input
               type="text"
-              placeholder="ابحث برقم المنطقة أو رقم القطعة..."
+              placeholder="بحث برقم المنطقة أو القطعة..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="text-xs bg-slate-900 text-white placeholder-slate-400 pl-3 pr-9 py-2 rounded-xl border border-slate-700 focus:outline-none focus:border-amber-500 w-52 sm:w-60"
+              className="text-xs bg-slate-900 text-white placeholder-slate-400 pl-3 pr-9 py-2 rounded-xl border border-slate-700 focus:outline-none focus:border-amber-500 w-40 sm:w-60"
             />
           </div>
 

@@ -125,15 +125,15 @@ export default function LiveUnitsMap({
       <div ref={mapContainerRef} className="w-full h-full" />
 
       {/* لوحة معلومات عائمة علوية */}
-      <div className="absolute top-4 right-4 z-[400] bg-white/95 dark:bg-[#131a26]/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-amber-200/80 dark:border-amber-900/60 shadow-lg text-xs flex items-center gap-3">
-        <div className="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black">
-          <Navigation className="w-4 h-4" />
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-[400] bg-white/95 dark:bg-[#131a26]/95 backdrop-blur-md px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl border border-amber-200/80 dark:border-amber-900/60 shadow-lg text-xs flex items-center gap-2.5 sm:gap-3 max-w-[calc(100%-24px)]">
+        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black shrink-0">
+          <Navigation className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </div>
-        <div>
-          <span className="font-extrabold text-[#1c1917] dark:text-[#f5f5f4] block">
+        <div className="min-w-0">
+          <span className="font-extrabold text-[#1c1917] dark:text-[#f5f5f4] block truncate">
             الخريطة الجغرافية الحية (Live GPS)
           </span>
-          <span className="text-[11px] text-amber-700 dark:text-amber-400 font-bold">
+          <span className="text-[11px] text-amber-700 dark:text-amber-400 font-bold block truncate">
             {unitsWithCoords.length} وحدة محددة الإحداثيات من أصل {units.length}
           </span>
         </div>

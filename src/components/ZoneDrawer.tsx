@@ -38,17 +38,23 @@ export default function ZoneDrawer({
   if (!zone) return null;
 
   // Filter units and buildings for this zone
-  const zoneUnits = units.filter((u) => u.zoneId === zone.id);
-  const zoneBuildings = buildings.filter((b) => b.zoneId === zone.id);
+  const zoneUnits = (units || []).filter((u) => u.zoneId === zone.id);
+  const zoneBuildings = (buildings || []).filter((b) => b.zoneId === zone.id);
 
   const filteredBuildings = zoneBuildings.filter((b) =>
     plotSearch ? b.plotNo.toString().includes(plotSearch) : true
   );
 
   return (
-    <div className="fixed inset-y-0 left-0 z-50 w-full sm:w-[480px] lg:w-[520px] bg-white dark:bg-[#131a26] shadow-2xl border-r border-stone-200 dark:border-stone-800 flex flex-col transform transition-transform duration-300 ease-in-out">
-      {/* Drawer Header */}
-      <div className="p-5 border-b border-amber-100 dark:border-stone-800 bg-gradient-to-l from-amber-50/60 to-transparent dark:from-amber-950/20">
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
+        onClick={onClose}
+      />
+      <div className="fixed inset-y-0 left-0 z-50 w-full sm:w-[480px] lg:w-[520px] bg-white dark:bg-[#131a26] shadow-2xl border-r border-stone-200 dark:border-stone-800 flex flex-col transform transition-transform duration-300 ease-in-out">
+        {/* Drawer Header */}
+        <div className="p-3.5 sm:p-5 border-b border-amber-100 dark:border-stone-800 bg-gradient-to-l from-amber-50/60 to-transparent dark:from-amber-950/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white flex items-center justify-center font-black text-xl shadow-md shadow-amber-600/30">
@@ -265,5 +271,6 @@ export default function ZoneDrawer({
         </div>
       </div>
     </div>
+    </>
   );
 }

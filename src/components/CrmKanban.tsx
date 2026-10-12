@@ -43,7 +43,7 @@ export default function CrmKanban({
     setTodayDateString(new Date().toDateString());
   }, []);
   return (
-    <div className="flex gap-4 overflow-x-auto pb-6 pt-2 select-none min-h-[600px]">
+    <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-6 pt-2 select-none min-h-[520px] snap-x snap-mandatory scroll-smooth">
       {STAGES_ORDER.map((stageKey, stageIdx) => {
         const stageConfig = STAGE_CONFIG[stageKey];
         const stageCustomers = customers.filter((c) => c.stage === stageKey);
@@ -54,7 +54,7 @@ export default function CrmKanban({
         return (
           <div
             key={stageKey}
-            className="w-72 sm:w-80 flex-shrink-0 flex flex-col bg-slate-100/70 dark:bg-slate-900/60 rounded-3xl p-3.5 border border-slate-200/80 dark:border-slate-800"
+            className="w-[85vw] max-w-xs sm:w-80 snap-center sm:snap-align-none flex-shrink-0 flex flex-col bg-slate-100/70 dark:bg-slate-900/60 rounded-3xl p-3.5 border border-slate-200/80 dark:border-slate-800"
           >
             {/* Column Header */}
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-slate-800 px-1">

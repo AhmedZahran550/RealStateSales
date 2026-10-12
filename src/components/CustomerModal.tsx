@@ -3,13 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import { Customer, CustomerStage, Unit, STAGE_CONFIG, UNIT_KIND_LABELS } from '@/lib/types';
 import { X, Users, UserPlus, Phone, Calendar, DollarSign, Tag, Check } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
+import { INITIAL_UNITS } from '@/lib/mock-data';
 
 interface CustomerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (customerData: any) => void;
   initialCustomer?: Customer | null;
-  units: Unit[];
+  units?: Unit[];
 }
 
 const LEAD_SOURCES = [
@@ -27,8 +29,12 @@ export default function CustomerModal({
   onClose,
   onSubmit,
   initialCustomer,
-  units,
+  units: propsUnits,
 }: CustomerModalProps) {
+  const contextApp = useApp();
+  const units = (propsUnits && propsUnits.length > 0)
+    ? propsUnits
+    : (contextApp?.myUnits && contextApp.myUnits.length > 0 ? contextApp.myUnits : (contextApp?.units || INITIAL_UNITS));
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
@@ -98,12 +104,12 @@ export default function CustomerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white dark:bg-[#131a26] rounded-3xl shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-[#131a26] rounded-3xl shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden my-auto sm:my-8 max-h-[94vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-amber-100 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#18202e]">
+        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-amber-100 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#18202e] shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-600/30">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-600/30 shrink-0">
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
@@ -124,7 +130,7 @@ export default function CustomerModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 max-h-[78vh] overflow-y-auto text-xs flex-1">
           {/* Name & Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -255,7 +261,7 @@ export default function CustomerModal({
               الوحدات المهتم بها من قاعدة بياناتك:
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto p-2 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/40">
-              {units.map((u) => {
+              {(units || []).map((u) => {
                 const isSelected = interestedUnitIds.includes(u.id);
                 return (
                   <button

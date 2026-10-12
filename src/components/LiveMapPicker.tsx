@@ -20,7 +20,7 @@ export default function LiveMapPicker({
   lat,
   lng,
   onChange,
-  height = '320px',
+  height = '260px',
 }: LiveMapPickerProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);

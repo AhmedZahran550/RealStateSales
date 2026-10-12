@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Unit, UnitKind, UnitStatus, Zone, Building, Service, UNIT_KIND_LABELS } from '@/lib/types';
 import { X, Building2, Image as ImageIcon, Plus, Check, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import LiveMapPicker from '@/components/LiveMapPicker';
+import { useApp } from '@/context/AppContext';
+import { INITIAL_ZONES, INITIAL_BUILDINGS, INITIAL_SERVICES } from '@/lib/mock-data';
 
 interface UnitFormModalProps {
   isOpen: boolean;
@@ -12,10 +14,10 @@ interface UnitFormModalProps {
   initialUnit?: Unit | null;
   defaultZoneId?: number;
   defaultPlotNo?: number;
-  zones: Zone[];
-  buildings: Building[];
-  services: Service[];
-  onAddBuilding: (b: Omit<Building, 'id'>) => Building;
+  zones?: Zone[];
+  buildings?: Building[];
+  services?: Service[];
+  onAddBuilding?: (b: Omit<Building, 'id'>) => Building;
 }
 
 export default function UnitFormModal({
@@ -25,11 +27,26 @@ export default function UnitFormModal({
   initialUnit,
   defaultZoneId,
   defaultPlotNo,
-  zones,
-  buildings,
-  services,
-  onAddBuilding,
+  zones: propsZones,
+  buildings: propsBuildings,
+  services: propsServices,
+  onAddBuilding: propsOnAddBuilding,
 }: UnitFormModalProps) {
+  const contextApp = useApp();
+
+  const zones = (propsZones && propsZones.length > 0)
+    ? propsZones
+    : (contextApp?.zones && contextApp.zones.length > 0 ? contextApp.zones : INITIAL_ZONES);
+
+  const buildings = (propsBuildings && propsBuildings.length > 0)
+    ? propsBuildings
+    : (contextApp?.buildings && contextApp.buildings.length > 0 ? contextApp.buildings : INITIAL_BUILDINGS);
+
+  const services = (propsServices && propsServices.length > 0)
+    ? propsServices
+    : (contextApp?.services && contextApp.services.length > 0 ? contextApp.services : INITIAL_SERVICES);
+
+  const onAddBuilding = propsOnAddBuilding || contextApp?.addBuilding || ((b: any) => ({ ...b, id: Date.now() }));
   const [zoneId, setZoneId] = useState<number>(defaultZoneId || initialUnit?.zoneId || 1);
   const [plotNo, setPlotNo] = useState<number>(defaultPlotNo || initialUnit?.plotNo || 42);
   const [unitKind, setUnitKind] = useState<UnitKind>(initialUnit?.unitKind || 'floor_1');
@@ -92,7 +109,7 @@ export default function UnitFormModal({
     e.preventDefault();
 
     // التأكد من وجود المبنى أو إنشاؤه عند الحاجة
-    let building = buildings.find((b) => b.zoneId === zoneId && b.plotNo === plotNo);
+    let building = (buildings || []).find((b) => b.zoneId === zoneId && b.plotNo === plotNo);
     if (!building) {
       building = onAddBuilding({
         zoneId,
@@ -145,12 +162,12 @@ export default function UnitFormModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white dark:bg-[#131a26] rounded-3xl shadow-2xl border border-amber-200/80 dark:border-amber-900/50 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-[#131a26] rounded-3xl shadow-2xl border border-amber-200/80 dark:border-amber-900/50 overflow-hidden my-auto sm:my-8 max-h-[94vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-amber-100 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#18202e]">
+        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-amber-100 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#18202e] shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-600/30">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-600/30 shrink-0">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
@@ -171,7 +188,7 @@ export default function UnitFormModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 max-h-[78vh] overflow-y-auto text-xs flex-1">
           {/* Zone & Plot */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -184,7 +201,7 @@ export default function UnitFormModal({
                 className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 required
               >
-                {zones.map((z) => (
+                {(zones || []).map((z) => (
                   <option key={z.id} value={z.id}>
                     {z.name} ({z.direction})
                   </option>
@@ -414,7 +431,7 @@ export default function UnitFormModal({
               الخدمات المجاورة للقطعة:
             </label>
             <div className="flex flex-wrap gap-2">
-              {services.map((s) => {
+              {(services || []).map((s) => {
                 const isSelected = selectedServices.includes(s.name);
                 return (
                   <button

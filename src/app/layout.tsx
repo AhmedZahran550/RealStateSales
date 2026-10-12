@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
-import { Cairo } from 'next/font/google';
+import { Cairo, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { AppProvider } from '@/context/AppContext';
-import Navbar from '@/components/Navbar';
+import AuthGuard from '@/components/AuthGuard';
+import AppShell from '@/components/AppShell';
 
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],
@@ -11,15 +12,20 @@ const cairo = Cairo({
   display: 'swap',
 });
 
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-jakarta',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
-  title: 'الواحة | إدارة عقارات وخريطة الحي المتميز - مدينة بدر',
-  description: 'منظومة عقارية متكاملة لإدارة عروض الوحدات، الخريطة التفاعلية، ومتابعة العملاء (CRM) للحي المتميز بمدينة بدر',
+  title: 'عقار سيلز | AqarSales Pro - المنظومة العقارية الذكية',
+  description: 'منظومة عقارية متكاملة لإدارة عروض الوحدات، الخريطة التفاعلية، ومتابعة العملاء والمبيعات (CRM)',
   icons: {
     icon: '/favicon.ico',
   },
 };
-
-import AuthGuard from '@/components/AuthGuard';
 
 export default function RootLayout({
   children,
@@ -27,16 +33,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ar" dir="rtl" className={cairo.variable}>
-      <body className="min-h-screen flex flex-col bg-[#fbf9f6] dark:bg-[#0b0f17] text-[#1c1917] dark:text-[#f5f5f4] antialiased selection:bg-amber-600 selection:text-white">
+    <html lang="ar" dir="rtl" className={`${cairo.variable} ${plusJakartaSans.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-screen bg-surface text-on-surface antialiased selection:bg-primary selection:text-white">
         <AppProvider>
           <AuthGuard>
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6">
-                {children}
-              </main>
-            </div>
+            <AppShell>{children}</AppShell>
           </AuthGuard>
         </AppProvider>
       </body>
