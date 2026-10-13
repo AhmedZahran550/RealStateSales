@@ -46,10 +46,10 @@ interface AppContextType {
   addBuilding: (building: Omit<Building, 'id'>) => Building;
   updateBuildingCoords: (id: number, mapX: number, mapY: number) => void;
   addService: (service: Omit<Service, 'id'>) => void;
-  addUser: (user: Omit<UserProfile, 'id' | 'createdAt'>) => void;
+  addUser: (user: Omit<UserProfile, 'id' | 'createdAt'>) => Promise<{ success: boolean; message?: string }>;
   deleteUser: (id: string) => void;
   updateUserPassword: (id: string, newPass: string) => Promise<void>;
-  updateUserProfile: (id: string, updates: Partial<UserProfile>) => Promise<boolean>;
+  updateUserProfile: (id: string, updates: Partial<UserProfile>) => Promise<{ success: boolean; message?: string }>;
   loginWithUsername: (username: string, password?: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
   resetAllData: () => void;
@@ -159,7 +159,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const mappedUnits: Unit[] = dbUnits.map((u: any) => ({
           id: u.id,
           ownerId: u.owner_id,
-          ownerName: u.profiles?.full_name || 'Ahmed Zahran',
+          ownerName: u.profiles?.full_name || 'الوسيط العقاري',
           buildingId: Number(u.building_id),
           zoneId: u.buildings?.zone_id || 1,
           plotNo: u.buildings?.plot_no || 1,
@@ -237,8 +237,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const mappedProfiles: UserProfile[] = dbProfiles.map((p: any) => ({
           id: p.id,
           fullName: p.full_name,
-          username: p.username,
-          password: p.password || 'Test@1234',
+          username: (p.username || '').trim().toLowerCase(),
+          password: p.password || '',
           phone: p.phone || '',
           role: p.role,
           createdAt: p.created_at,
@@ -256,6 +256,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
           return prev;
         });
+      }
+
+      // 6. جلب المناطق المركزية
+      const { data: dbZones, error: zoneError } = await supabase
+        .from('zones')
+        .select('*')
+        .order('id', { ascending: true });
+
+      if (!zoneError && dbZones && dbZones.length > 0) {
+        const mappedZones: Zone[] = dbZones.map((z: any) => ({
+          id: Number(z.id),
+          name: z.name,
+          direction: z.direction || '',
+          mapX: z.map_x ? Number(z.map_x) : 50,
+          mapY: z.map_y ? Number(z.map_y) : 50,
+          notes: z.notes || undefined,
+        }));
+        setZones(mappedZones);
+        localStorage.setItem(STORAGE_KEYS.ZONES, JSON.stringify(mappedZones));
       }
     } catch (err) {
       console.warn('تنبيه أثناء مزامنة البيانات مع سوبابيز:', err);
@@ -759,29 +778,65 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const addUser = async (userData: Omit<UserProfile, 'id' | 'createdAt'>) => {
+  const addUser = async (userData: Omit<UserProfile, 'id' | 'createdAt'>): Promise<{ success: boolean; message?: string }> => {
     const newUserId = generateUUID();
+    const cleanUsername = userData.username.trim().toLowerCase();
+    const cleanPhone = (userData.phone || '').trim();
+
+    // 1. التحقق من فرادة اسم المستخدم محلياً
+    const existingUser = users.find((u) => u.username.toLowerCase() === cleanUsername);
+    if (existingUser) {
+      return { success: false, message: 'اسم المستخدم هذا مسجل مسبقاً، يرجى اختيار اسم مستخدم آخر.' };
+    }
+
+    // 2. التحقق من فرادة رقم الهاتف محلياً
+    if (cleanPhone) {
+      const existingPhone = users.find((u) => u.phone && u.phone.trim() === cleanPhone);
+      if (existingPhone) {
+        return {
+          success: false,
+          message: `رقم الهاتف (${cleanPhone}) مسجل مسبقاً للمستخدم "${existingPhone.fullName}"، يجب أن يكون رقم الهاتف فريداً لكل حساب.`,
+        };
+      }
+    }
+
+    // 3. الحفظ في قاعدة بيانات سوبابيز أولاً للتحقق من القيود الصارمة
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.from('profiles').insert({
+          id: newUserId,
+          full_name: userData.fullName,
+          username: cleanUsername,
+          password: userData.password,
+          phone: cleanPhone || null,
+          role: userData.role,
+        });
+
+        if (error) {
+          console.error('فشل حفظ المستخدم في قاعدة البيانات:', error);
+          if (error.code === '23505') {
+            if (error.message?.includes('phone') || error.details?.includes('phone')) {
+              return { success: false, message: 'رقم الهاتف مسجل مسبقاً في قاعدة البيانات، يجب أن يكون فريداً.' };
+            }
+            return { success: false, message: 'اسم المستخدم مسجل مسبقاً في قاعدة البيانات.' };
+          }
+          return { success: false, message: error.message || 'فشل حفظ المستخدم في قاعدة البيانات' };
+        }
+      } catch (err: any) {
+        console.error('فشل حفظ المستخدم في قاعدة البيانات:', err);
+        return { success: false, message: err?.message || 'حدث خطأ أثناء الاتصال بقاعدة البيانات' };
+      }
+    }
+
     const newUser: UserProfile = {
       ...userData,
       id: newUserId,
+      username: cleanUsername,
+      phone: cleanPhone,
       createdAt: new Date().toISOString(),
     };
     setUsers((prev) => [...prev, newUser]);
-
-    if (isSupabaseConfigured && supabase) {
-      try {
-        await supabase.from('profiles').insert({
-          id: newUserId,
-          full_name: userData.fullName,
-          username: userData.username,
-          password: userData.password,
-          phone: userData.phone || null,
-          role: userData.role,
-        });
-      } catch (err) {
-        console.error('فشل حفظ المستخدم في قاعدة البيانات:', err);
-      }
-    }
+    return { success: true, message: 'تم إنشاء الحساب الجديد بنجاح' };
   };
 
   const deleteUser = async (id: string) => {
@@ -808,12 +863,73 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const updateUserProfile = async (id: string, updates: Partial<UserProfile>) => {
-    // 1. تحديث قائمة المستخدمين محلياً
+  const updateUserProfile = async (
+    id: string,
+    updates: Partial<UserProfile>
+  ): Promise<{ success: boolean; message?: string }> => {
+    const cleanUpdates = { ...updates };
+    if (cleanUpdates.username) {
+      cleanUpdates.username = cleanUpdates.username.trim().toLowerCase();
+    }
+    if (cleanUpdates.phone !== undefined) {
+      cleanUpdates.phone = cleanUpdates.phone.trim();
+    }
+
+    // 1. التحقق من فرادة اسم المستخدم محلياً
+    if (cleanUpdates.username) {
+      const dupUser = users.find(
+        (u) => u.id !== id && u.username.toLowerCase() === cleanUpdates.username
+      );
+      if (dupUser) {
+        return { success: false, message: 'اسم المستخدم مسجل مسبقاً لحساب آخر، يرجى اختيار اسم مستخدم آخر.' };
+      }
+    }
+
+    // 2. التحقق من فرادة رقم الهاتف محلياً
+    if (cleanUpdates.phone) {
+      const dupPhone = users.find(
+        (u) => u.id !== id && u.phone && u.phone.trim() === cleanUpdates.phone
+      );
+      if (dupPhone) {
+        return {
+          success: false,
+          message: `رقم الهاتف (${cleanUpdates.phone}) مسجل مسبقاً لحساب "${dupPhone.fullName}"، يجب أن يكون رقم الهاتف فريداً لكل مستخدم.`,
+        };
+      }
+    }
+
+    // 3. المزامنة مع سوبابيز أولاً للتحقق من قيود قاعدة البيانات
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const dbUpdates: any = {};
+        if (cleanUpdates.fullName !== undefined) dbUpdates.full_name = cleanUpdates.fullName;
+        if (cleanUpdates.username !== undefined) dbUpdates.username = cleanUpdates.username;
+        if (cleanUpdates.phone !== undefined) dbUpdates.phone = cleanUpdates.phone || null;
+        if (cleanUpdates.password !== undefined) dbUpdates.password = cleanUpdates.password;
+        if (cleanUpdates.role !== undefined) dbUpdates.role = cleanUpdates.role;
+
+        const { error } = await supabase.from('profiles').update(dbUpdates).eq('id', id);
+        if (error) {
+          console.error('فشل تحديث الملف الشخصي في قاعدة البيانات:', error);
+          if (error.code === '23505') {
+            if (error.message?.includes('phone') || error.details?.includes('phone')) {
+              return { success: false, message: 'رقم الهاتف مسجل مسبقاً في قاعدة البيانات، يجب أن يكون فريداً.' };
+            }
+            return { success: false, message: 'اسم المستخدم مسجل مسبقاً في قاعدة البيانات.' };
+          }
+          return { success: false, message: error.message || 'فشل التحديث في قاعدة البيانات' };
+        }
+      } catch (err: any) {
+        console.error('خطأ أثناء حفظ الملف الشخصي:', err);
+        return { success: false, message: err?.message || 'خطأ في الاتصال بقاعدة البيانات' };
+      }
+    }
+
+    // 4. تحديث قائمة المستخدمين محلياً
     setUsers((prev) => {
       const nextUsers = prev.map((u) => {
         if (u.id === id) {
-          return { ...u, ...updates };
+          return { ...u, ...cleanUpdates };
         }
         return u;
       });
@@ -823,10 +939,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return nextUsers;
     });
 
-    // 2. تحديث المستخدم الحالي إن كان هو نفسه وتحديث localStorage
+    // 5. تحديث المستخدم الحالي إن كان هو نفسه وتحديث localStorage
     setCurrentUser((prev) => {
       if (prev && prev.id === id) {
-        const updated = { ...prev, ...updates };
+        const updated = { ...prev, ...cleanUpdates };
         try {
           localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(updated));
         } catch {}
@@ -835,26 +951,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return prev;
     });
 
-    // 3. المزامنة مع سوبابيز
-    if (isSupabaseConfigured && supabase) {
-      try {
-        const dbUpdates: any = {};
-        if (updates.fullName !== undefined) dbUpdates.full_name = updates.fullName;
-        if (updates.phone !== undefined) dbUpdates.phone = updates.phone?.trim() || null;
-        if (updates.password !== undefined) dbUpdates.password = updates.password;
-        if (updates.role !== undefined) dbUpdates.role = updates.role;
-
-        const { error } = await supabase.from('profiles').update(dbUpdates).eq('id', id);
-        if (error) {
-          console.error('فشل تحديث الملف الشخصي في قاعدة البيانات:', error);
-          return false;
-        }
-      } catch (err) {
-        console.error('خطأ أثناء حفظ الملف الشخصي:', err);
-        return false;
-      }
-    }
-    return true;
+    return { success: true };
   };
 
   const loginWithUsername = async (identifier: string, password?: string) => {
@@ -864,10 +961,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const cleanInputDigits = trimmed.replace(/[^0-9]/g, '');
+    const lowerIdentifier = trimmed.toLowerCase();
 
     const matchUser = (u: UserProfile) => {
-      // 1. مطابقة اسم المستخدم
-      if (u.username && u.username.toLowerCase() === trimmed.toLowerCase()) return true;
+      // 1. مطابقة اسم المستخدم بالأحرف الصغيرة دائماً
+      if (u.username && u.username.trim().toLowerCase() === lowerIdentifier) return true;
 
       // 2. مطابقة رقم الهاتف (تطابق تام أو مجرد بالأرقام)
       if (u.phone) {
@@ -891,7 +989,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const { data: dbProfiles, error } = await supabase.from('profiles').select('*');
         if (!error && dbProfiles && dbProfiles.length > 0) {
           const matchedDb = dbProfiles.find((p: any) => {
-            if (p.username && p.username.toLowerCase() === trimmed.toLowerCase()) return true;
+            const pUsernameLower = (p.username || '').trim().toLowerCase();
+            if (pUsernameLower && pUsernameLower === lowerIdentifier) return true;
             if (p.phone) {
               const pPhoneDigits = p.phone.replace(/[^0-9]/g, '');
               if (p.phone === trimmed || (cleanInputDigits && pPhoneDigits === cleanInputDigits)) return true;
@@ -908,8 +1007,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             user = {
               id: matchedDb.id,
               fullName: matchedDb.full_name,
-              username: matchedDb.username,
-              password: matchedDb.password || 'Test@1234',
+              username: (matchedDb.username || '').trim().toLowerCase(),
+              password: matchedDb.password || '',
               phone: matchedDb.phone || '',
               role: matchedDb.role,
               createdAt: matchedDb.created_at,

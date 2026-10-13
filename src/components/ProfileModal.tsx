@@ -10,7 +10,7 @@ interface ProfileModalProps {
 }
 
 export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
-  const { currentUser, updateUserProfile } = useApp();
+  const { currentUser, users, updateUserProfile } = useApp();
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [saving, setSaving] = useState(false);
@@ -32,22 +32,36 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
+
+    const cleanPhone = phone.trim();
+
+    // التحقق من فرادة رقم الهاتف محلياً
+    if (cleanPhone) {
+      const existingPhone = users.find(
+        (u) => u.id !== currentUser.id && u.phone && u.phone.trim() === cleanPhone
+      );
+      if (existingPhone) {
+        setErrorMsg(`رقم الهاتف (${cleanPhone}) مسجل مسبقاً لحساب آخر، يجب أن يكون رقم الهاتف فريداً لكل مستخدم.`);
+        return;
+      }
+    }
+
     setSaving(true);
 
     try {
-      const ok = await updateUserProfile(currentUser.id, {
+      const res = await updateUserProfile(currentUser.id, {
         fullName: fullName.trim(),
-        phone: phone.trim(),
+        phone: cleanPhone,
       });
 
-      if (ok) {
+      if (res.success) {
         setSuccessMsg('تم حفظ رقم الهاتف وتحديث الملف الشخصي بنجاح!');
         setTimeout(() => {
           setSuccessMsg('');
           onClose();
         }, 1200);
       } else {
-        setErrorMsg('حدث خطأ أثناء حفظ البيانات، يرجى المحاولة مرة أخرى.');
+        setErrorMsg(res.message || 'حدث خطأ أثناء حفظ البيانات، يرجى المحاولة مرة أخرى.');
       }
     } catch (err: any) {
       setErrorMsg(err?.message || 'حدث خطأ غير متوقع');
@@ -154,7 +168,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             </div>
             <ul className="text-[11px] text-on-surface-variant space-y-1 pr-4 list-disc">
               <li>
-                <strong>تسجيل الدخول:</strong> يمكنك استخدام هذا الرقم مباشرة مع كلمة المرور لتسجيل الدخول بدلاً من اسم المستخدم.
+                <strong>تسجيل الدخول:</strong> رقم الهاتف فريد لكل حساب، ويمكنك استخدامه مباشرة مع كلمة المرور لتسجيل الدخول بدلاً من اسم المستخدم.
               </li>
               <li>
                 <strong>نسخ ومشاركة العروض:</strong> عند نسخ أي وحدة أو مشاركتها عبر واتساب للعميل، سيظهر رقمك تلقائياً كرقم الاتصال والمعاينة.

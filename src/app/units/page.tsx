@@ -71,12 +71,16 @@ export default function UnitsPage() {
         const matchZone = `منطقة ${unit.zoneId}`.toLowerCase().includes(q);
         const matchDesc = unit.description?.toLowerCase().includes(q);
         const matchCode = `bd-${unit.zoneId}-${unit.plotNo}`.toLowerCase().includes(q);
-        if (!matchPlot && !matchZone && !matchDesc && !matchCode) return false;
+        const ownerUser = users.find((u) => u.id === unit.ownerId);
+        const matchOwner = ownerUser
+          ? ownerUser.username.toLowerCase().includes(q) || ownerUser.fullName.toLowerCase().includes(q)
+          : false;
+        if (!matchPlot && !matchZone && !matchDesc && !matchCode && !matchOwner) return false;
       }
 
       return true;
     });
-  }, [myUnits, currentUser, brokerFilter, statusFilter, zoneFilter, typeFilter, searchTerm]);
+  }, [myUnits, currentUser, users, brokerFilter, statusFilter, zoneFilter, typeFilter, searchTerm]);
 
   const copyUnitDetails = (unit: Unit) => {
     const consultantName = currentUser?.fullName || 'المستشار العقاري';

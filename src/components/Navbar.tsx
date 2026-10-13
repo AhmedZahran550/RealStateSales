@@ -81,6 +81,7 @@ export default function Navbar() {
   ];
 
   const isAdmin = currentUser.role === 'admin';
+  const visibleNavLinks = isAdmin ? navLinks.filter((l) => l.href !== '/customers') : navLinks;
 
   const handleLogout = () => {
     logout();
@@ -112,7 +113,7 @@ export default function Navbar() {
 
             {/* روابط التصفح للشاشات الكبيرة */}
             <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => {
+              {visibleNavLinks.map((link) => {
                 const Icon = link.icon;
                 return (
                   <Link
@@ -245,7 +246,7 @@ export default function Navbar() {
       {/* درج الجوال */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-[#131a26] p-4 space-y-2">
-          {navLinks.map((link) => {
+          {visibleNavLinks.map((link) => {
             const Icon = link.icon;
             return (
               <Link

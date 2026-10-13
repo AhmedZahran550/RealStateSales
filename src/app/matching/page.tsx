@@ -49,6 +49,27 @@ function MatchingContent() {
     );
   }
 
+  if (myCustomers.length === 0) {
+    return (
+      <div className="p-8 max-w-2xl mx-auto my-12 bg-surface-container-lowest rounded-3xl border border-surface-container-high text-center shadow-sm">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
+          <span className="material-symbols-outlined text-[32px]">person_add</span>
+        </div>
+        <h2 className="text-xl font-bold text-on-surface mb-2">لا يوجد عملاء مسجلين حالياً للمطابقة</h2>
+        <p className="text-sm text-on-surface-variant mb-6 leading-relaxed">
+          قم بإضافة عميل جديد بميزانيته واهتماماته للبدء في مطابقة عروض الوحدات ومشاركتها عبر واتساب تلقائياً.
+        </p>
+        <Link
+          href="/customers"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs shadow-md transition"
+        >
+          <span className="material-symbols-outlined text-base">groups</span>
+          <span>الانتقال لإدارة العملاء</span>
+        </Link>
+      </div>
+    );
+  }
+
   // Set initial selected customer
   useEffect(() => {
     if (customerIdParam && myCustomers.some((c) => c.id === customerIdParam)) {

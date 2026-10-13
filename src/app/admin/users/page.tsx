@@ -19,6 +19,7 @@ import {
   X,
   Save,
   Building,
+  Search,
 } from 'lucide-react';
 
 export default function AdminUsersPage() {
@@ -33,6 +34,9 @@ export default function AdminUsersPage() {
     setCurrentUser,
   } = useApp();
 
+  // Search State (lowercased)
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Create User Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [fullName, setFullName] = useState('');
@@ -46,6 +50,7 @@ export default function AdminUsersPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [editFullName, setEditFullName] = useState('');
+  const [editUsername, setEditUsername] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editPassword, setEditPassword] = useState('');
   const [editRole, setEditRole] = useState<AppRole>('user');
@@ -60,43 +65,62 @@ export default function AdminUsersPage() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const handleCreateUser = (e: React.FormEvent) => {
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateError('');
 
-    if (!fullName.trim() || !username.trim()) {
+    const cleanUsername = username.trim().toLowerCase().replace(/\s+/g, '');
+    const cleanPhone = phone.trim();
+
+    if (!fullName.trim() || !cleanUsername) {
       setCreateError('يرجى كتابة الاسم بالكامل واسم المستخدم.');
       return;
     }
 
     // التحقق من عدم تكرار اسم المستخدم
     const existing = users.find(
-      (u) => u.username.toLowerCase() === username.trim().toLowerCase()
+      (u) => u.username.toLowerCase() === cleanUsername
     );
     if (existing) {
       setCreateError('اسم المستخدم هذا مسجل مسبقاً، يرجى اختيار اسم مستخدم آخر.');
       return;
     }
 
-    addUser({
+    // التحقق من عدم تكرار رقم الهاتف
+    if (cleanPhone) {
+      const existingPhone = users.find(
+        (u) => u.phone && u.phone.trim() === cleanPhone
+      );
+      if (existingPhone) {
+        setCreateError(`رقم الهاتف (${cleanPhone}) مسجل مسبقاً للمستخدم "${existingPhone.fullName}"، يجب أن يكون رقم الهاتف فريداً لكل حساب.`);
+        return;
+      }
+    }
+
+    const res = await addUser({
       fullName: fullName.trim(),
-      username: username.trim().toLowerCase(),
-      phone: phone.trim(),
+      username: cleanUsername,
+      phone: cleanPhone,
       password: password.trim() || '123456',
       role,
     });
 
-    setFullName('');
-    setUsername('');
-    setPhone('');
-    setPassword('');
-    setIsAddModalOpen(false);
-    showToast('تم إنشاء الحساب الجديد بنجاح.');
+    if (res.success) {
+      setFullName('');
+      setUsername('');
+      setPhone('');
+      setPassword('');
+      setIsAddModalOpen(false);
+      showToast('تم إنشاء الحساب الجديد بنجاح.');
+    } else {
+      setCreateError(res.message || 'فشل إنشاء الحساب الجديد.');
+    }
   };
 
   const openEditModal = (u: UserProfile) => {
     setEditingUser(u);
     setEditFullName(u.fullName);
+    setEditUsername(u.username);
     setEditPhone(u.phone || '');
     setEditPassword('');
     setEditRole(u.role);
@@ -109,15 +133,39 @@ export default function AdminUsersPage() {
     if (!editingUser) return;
     setEditError('');
 
-    if (!editFullName.trim()) {
-      setEditError('يرجى إدخال الاسم بالكامل.');
+    const cleanUsername = editUsername.trim().toLowerCase().replace(/\s+/g, '');
+    const cleanPhone = editPhone.trim();
+
+    if (!editFullName.trim() || !cleanUsername) {
+      setEditError('يرجى إدخال الاسم بالكامل واسم المستخدم.');
       return;
+    }
+
+    // التحقق من عدم تكرار اسم المستخدم مع حساب آخر
+    const existing = users.find(
+      (u) => u.id !== editingUser.id && u.username.toLowerCase() === cleanUsername
+    );
+    if (existing) {
+      setEditError('اسم المستخدم هذا مسجل مسبقاً لحساب آخر، يرجى اختيار اسم مستخدم آخر.');
+      return;
+    }
+
+    // التحقق من عدم تكرار رقم الهاتف مع حساب آخر
+    if (cleanPhone) {
+      const existingPhone = users.find(
+        (u) => u.id !== editingUser.id && u.phone && u.phone.trim() === cleanPhone
+      );
+      if (existingPhone) {
+        setEditError(`رقم الهاتف (${cleanPhone}) مسجل مسبقاً لحساب "${existingPhone.fullName}"، يجب أن يكون رقم الهاتف فريداً لكل مستخدم.`);
+        return;
+      }
     }
 
     setIsSaving(true);
     const updates: Partial<UserProfile> = {
       fullName: editFullName.trim(),
-      phone: editPhone.trim(),
+      username: cleanUsername,
+      phone: cleanPhone,
       role: editRole,
     };
 
@@ -125,17 +173,28 @@ export default function AdminUsersPage() {
       updates.password = editPassword.trim();
     }
 
-    const success = await updateUserProfile(editingUser.id, updates);
+    const res = await updateUserProfile(editingUser.id, updates);
     setIsSaving(false);
 
-    if (success) {
+    if (res.success) {
       setIsEditModalOpen(false);
       setEditingUser(null);
-      showToast(`تم تحديث بيانات المستخدم ${editFullName} بنجاح.`);
+      showToast(`تم تحديث بيانات المستخدم @${cleanUsername} بنجاح.`);
     } else {
-      setEditError('حدث خطأ أثناء حفظ التعديلات في قاعدة البيانات، يرجى المحاولة ثانية.');
+      setEditError(res.message || 'حدث خطأ أثناء حفظ التعديلات في قاعدة البيانات، يرجى المحاولة ثانية.');
     }
   };
+
+  // تصفية المستخدمين بحسب البحث مع تحويل البحث دائماً لحروف صغيرة
+  const filteredUsers = users.filter((u) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.trim().toLowerCase();
+    return (
+      u.username.toLowerCase().includes(q) ||
+      u.fullName.toLowerCase().includes(q) ||
+      (u.phone && u.phone.toLowerCase().includes(q))
+    );
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -185,13 +244,46 @@ export default function AdminUsersPage() {
 
       {/* جدول الحسابات */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-            قائمة المستخدمين المعتمدين ({users.length})
-          </h3>
-          <span className="text-xs text-slate-400">
-            الحساب النشط حالياً: <strong className="text-amber-600">{currentUser?.fullName || 'غير مسجل'}</strong>
-          </span>
+        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+              قائمة المستخدمين المعتمدين ({users.length})
+            </h3>
+            {searchQuery && (
+              <span className="text-[11px] bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full font-bold">
+                نتائج البحث: {filteredUsers.length}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="relative flex items-center w-full sm:w-64">
+              <Search className="w-4 h-4 absolute right-3 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
+                placeholder="بحث باسم المستخدم أو الاسم..."
+                className="w-full pr-9 pl-8 py-2 rounded-xl text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 shadow-xs"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute left-2.5 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <span className="text-xs text-slate-400 hidden md:inline">
+              الحساب الحالي: <strong className="text-amber-600">{currentUser?.fullName || 'غير مسجل'}</strong>
+            </span>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -208,9 +300,15 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {users.map((u) => {
-                const isCurrent = currentUser ? u.id === currentUser.id : false;
-                const userUnitsCount = units.filter((unit) => unit.ownerId === u.id).length;
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-10 text-center text-slate-400 font-medium">
+                    لا توجد حسابات تطابق بحثك: &quot;{searchQuery}&quot;
+                  </td>
+                </tr>
+              ) : filteredUsers.map((u) => {
+                  const isCurrent = currentUser ? u.id === currentUser.id : false;
+                  const userUnitsCount = units.filter((unit) => unit.ownerId === u.id).length;
 
                 return (
                   <tr
@@ -359,6 +457,29 @@ export default function AdminUsersPage() {
 
               <div>
                 <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                  اسم المستخدم للدخول (UserName) *
+                </label>
+                <div className="relative">
+                  <span className="absolute right-3 top-2.5 text-slate-400 font-bold">@</span>
+                  <input
+                    type="text"
+                    value={editUsername}
+                    onChange={(e) => setEditUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    placeholder="username"
+                    className="w-full pl-3 pr-8 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-bold font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+                    required
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  يتم حفظ اسم المستخدم دائماً بحروف صغيرة (lowercase) تلقائياً لتسجيل الدخول والبحث
+                </p>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
                   رقم الهاتف المحمول (للتواصل والواتساب)
                 </label>
                 <input
@@ -369,7 +490,7 @@ export default function AdminUsersPage() {
                   className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                 />
                 <p className="text-[10px] text-slate-400 mt-1">
-                  سيتم استخدام هذا الرقم عند تسجيل الدخول وعند نسخ أو مشاركة تفاصيل أي وحدة عقارية مع العملاء.
+                  يجب أن يكون رقم الهاتف فريداً لكل مستخدم (غير مكرر) حيث يُستخدم لتسجيل الدخول وعند نسخ أو مشاركة تفاصيل أي وحدة عقارية مع العملاء.
                 </p>
               </div>
 
@@ -469,12 +590,15 @@ export default function AdminUsersPage() {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
                     placeholder="amr_radwan"
                     className="w-full pl-3 pr-8 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-bold font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                     required
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">يستخدم هذا الاسم لتسجيل الدخول بدلاً من البريد الإلكتروني</p>
+                <p className="text-[10px] text-slate-400 mt-1">يتم حفظ اسم المستخدم دائماً بحروف صغيرة (lowercase) تلقائياً لتسجيل الدخول والبحث</p>
               </div>
 
               <div>
@@ -488,6 +612,7 @@ export default function AdminUsersPage() {
                   placeholder="010XXXXXXXX"
                   className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                 />
+                <p className="text-[10px] text-slate-400 mt-1">يجب أن يكون رقم الهاتف فريداً لكل مستخدم (غير مكرر) حيث يُستخدم لتسجيل الدخول.</p>
               </div>
 
               <div>

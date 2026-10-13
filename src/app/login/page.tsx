@@ -32,7 +32,9 @@ export default function LoginPage() {
     setSuccess('');
     setLoading(true);
 
-    if (!username.trim()) {
+    const cleanIdentifier = username.trim().toLowerCase();
+
+    if (!cleanIdentifier) {
       setError('يرجى إدخال اسم المستخدم أو رقم الهاتف المسجل');
       setLoading(false);
       return;
@@ -44,12 +46,12 @@ export default function LoginPage() {
       return;
     }
 
-    const res = await loginWithUsername(username.trim(), password.trim());
+    const res = await loginWithUsername(cleanIdentifier, password.trim());
     if (res.success) {
       // حفظ أو مسح المعرف على هذا الجهاز بحسب رغبة المستخدم
       try {
         if (rememberDevice) {
-          localStorage.setItem('broker_saved_login_id', username.trim());
+          localStorage.setItem('broker_saved_login_id', cleanIdentifier);
         } else {
           localStorage.removeItem('broker_saved_login_id');
         }
@@ -170,8 +172,11 @@ export default function LoginPage() {
                     type="text"
                     required
                     autoComplete="username"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase())}
                     placeholder="أدخل اسم المستخدم أو رقم هاتفك المسجل"
                     className="w-full py-3.5 pl-4 pr-1 bg-transparent font-body-md text-body-md text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:outline-none"
                   />
@@ -250,7 +255,7 @@ export default function LoginPage() {
                 <span>تواجه مشكلة في الوصول لحسابك؟</span>
               </div>
               <a
-                href="https://wa.me/201023456789"
+                href="https://wa.me/201122334455"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-lowest text-primary hover:bg-primary hover:text-on-primary font-label-md text-label-md font-bold shadow-sm transition-all text-xs"
