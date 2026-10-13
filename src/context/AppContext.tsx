@@ -376,7 +376,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const myCustomers = currentUser
     ? currentUser.role === 'admin'
-      ? customers
+      ? [] // المدير العام مخصص لإدارة المستخدمين واستعراض الوحدات فقط بدون عملاء أو مواعيد
       : customers.filter((c) => c.ownerId === currentUser.id)
     : [];
 
@@ -810,14 +810,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateUserProfile = async (id: string, updates: Partial<UserProfile>) => {
     // 1. تحديث قائمة المستخدمين محلياً
-    setUsers((prev) =>
-      prev.map((u) => {
+    setUsers((prev) => {
+      const nextUsers = prev.map((u) => {
         if (u.id === id) {
           return { ...u, ...updates };
         }
         return u;
-      })
-    );
+      });
+      try {
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(nextUsers));
+      } catch {}
+      return nextUsers;
+    });
 
     // 2. تحديث المستخدم الحالي إن كان هو نفسه وتحديث localStorage
     setCurrentUser((prev) => {

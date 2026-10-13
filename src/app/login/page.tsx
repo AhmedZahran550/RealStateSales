@@ -7,13 +7,24 @@ import { useApp } from '@/context/AppContext';
 export default function LoginPage() {
   const router = useRouter();
   const { loginWithUsername } = useApp();
-  const [username, setUsername] = useState('AhmedZahran');
-  const [password, setPassword] = useState('Test@1234');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [rememberDevice, setRememberDevice] = useState(true);
+  const [rememberDevice, setRememberDevice] = useState(false);
+
+  // استرجاع اسم المستخدم المحفوظ فقط إذا اختار المستخدم ذلك مسبقاً على جهازه الشخصي
+  React.useEffect(() => {
+    try {
+      const savedIdentifier = localStorage.getItem('broker_saved_login_id');
+      if (savedIdentifier) {
+        setUsername(savedIdentifier);
+        setRememberDevice(true);
+      }
+    } catch {}
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +46,15 @@ export default function LoginPage() {
 
     const res = await loginWithUsername(username.trim(), password.trim());
     if (res.success) {
+      // حفظ أو مسح المعرف على هذا الجهاز بحسب رغبة المستخدم
+      try {
+        if (rememberDevice) {
+          localStorage.setItem('broker_saved_login_id', username.trim());
+        } else {
+          localStorage.removeItem('broker_saved_login_id');
+        }
+      } catch {}
+
       setSuccess(res.message);
       setTimeout(() => {
         router.replace('/');
@@ -149,9 +169,10 @@ export default function LoginPage() {
                     id="sales-id"
                     type="text"
                     required
+                    autoComplete="username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="AhmedZahran أو 01122334455"
+                    placeholder="أدخل اسم المستخدم أو رقم هاتفك المسجل"
                     className="w-full py-3.5 pl-4 pr-1 bg-transparent font-body-md text-body-md text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:outline-none"
                   />
                 </div>
@@ -175,6 +196,7 @@ export default function LoginPage() {
                     id="password-input"
                     type={showPassword ? 'text' : 'password'}
                     required
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"

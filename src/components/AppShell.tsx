@@ -14,6 +14,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const {
     currentUser,
+    users,
     logout,
     resetAllData,
     searchTerm,
@@ -44,44 +45,72 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return <main className="min-h-screen w-full bg-surface">{children}</main>;
   }
 
-  const navLinks = [
-    {
-      href: '/',
-      label: 'لوحة التحكم',
-      icon: 'speed',
-      active: pathname === '/',
-    },
-    {
-      href: '/units',
-      label: 'الوحدات والمخزون',
-      icon: 'apartment',
-      active: pathname === '/units',
-    },
-    {
-      href: '/map',
-      label: 'الخريطة التفاعلية',
-      icon: 'map',
-      active: pathname === '/map',
-    },
-    {
-      href: '/customers',
-      label: 'سجل العملاء والمتابعات',
-      icon: 'group',
-      active: pathname === '/customers',
-    },
-    {
-      href: '/matching',
-      label: 'مطابقة العروض السريعة',
-      icon: 'handshake',
-      active: pathname === '/matching',
-    },
-    {
-      href: '/customers?view=pipeline',
-      label: 'مسار الصفقات',
-      icon: 'view_kanban',
-      active: pathname.startsWith('/customers') && pathname.includes('view=pipeline'),
-    },
-  ];
+  const navLinks =
+    currentUser.role === 'admin'
+      ? [
+          {
+            href: '/',
+            label: 'لوحة التحكم',
+            icon: 'speed',
+            active: pathname === '/',
+          },
+          {
+            href: '/admin/users',
+            label: 'إدارة المستخدمين',
+            icon: 'manage_accounts',
+            active: pathname.startsWith('/admin/users'),
+          },
+          {
+            href: '/units',
+            label: 'الوحدات والمخزون',
+            icon: 'apartment',
+            active: pathname.startsWith('/units'),
+          },
+          {
+            href: '/map',
+            label: 'الخريطة التفاعلية',
+            icon: 'map',
+            active: pathname === '/map',
+          },
+        ]
+      : [
+          {
+            href: '/',
+            label: 'لوحة التحكم',
+            icon: 'speed',
+            active: pathname === '/',
+          },
+          {
+            href: '/units',
+            label: 'الوحدات والمخزون',
+            icon: 'apartment',
+            active: pathname.startsWith('/units'),
+          },
+          {
+            href: '/map',
+            label: 'الخريطة التفاعلية',
+            icon: 'map',
+            active: pathname === '/map',
+          },
+          {
+            href: '/customers',
+            label: 'سجل العملاء والمتابعات',
+            icon: 'group',
+            active: pathname.startsWith('/customers') && !pathname.includes('view=pipeline'),
+          },
+          {
+            href: '/matching',
+            label: 'مطابقة العروض السريعة',
+            icon: 'handshake',
+            active: pathname === '/matching',
+          },
+          {
+            href: '/customers?view=pipeline',
+            label: 'مسار الصفقات',
+            icon: 'view_kanban',
+            active: pathname.startsWith('/customers') && pathname.includes('view=pipeline'),
+          },
+        ];
 
   return (
     <div className="min-h-screen bg-surface font-body-md text-on-surface flex flex-col antialiased">
@@ -166,32 +195,57 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Sidebar Bottom Widgets */}
         <div className="p-space-md flex flex-col gap-space-md">
-          {/* Monthly Sales Target Widget */}
-          <div className="bg-surface-container-low rounded-xl p-space-md shadow-sm">
-            <div className="flex items-center justify-between mb-space-xs">
-              <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
-                تارجت المبيعات الشهري
-              </span>
-              <span className="font-label-md text-label-md text-primary font-bold text-xs">78%</span>
+          {currentUser.role === 'admin' ? (
+            /* Admin System Status Widget */
+            <div className="bg-surface-container-low rounded-xl p-space-md shadow-sm border border-primary/20">
+              <div className="flex items-center justify-between mb-space-xs">
+                <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
+                  إدارة مستخدمي المنظومة
+                </span>
+                <span className="font-label-md text-label-md text-primary font-bold text-xs">
+                  {users.length} مستخدمين
+                </span>
+              </div>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-sm text-[11px]">
+                إجمالي وحدات المنظومة: {myUnits.length} وحدة مسجلة
+              </p>
+              <Link
+                href="/admin/users"
+                onClick={() => setMobileSidebarOpen(false)}
+                className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-container text-on-primary transition-all flex items-center justify-center gap-space-xs font-label-md text-label-md font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">manage_accounts</span>
+                إدارة المستخدمين
+              </Link>
             </div>
-            <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mb-space-sm">
-              <div className="bg-primary-container h-full rounded-full transition-all duration-700" style={{ width: '78%' }} />
+          ) : (
+            /* Monthly Sales Target Widget for Brokers */
+            <div className="bg-surface-container-low rounded-xl p-space-md shadow-sm">
+              <div className="flex items-center justify-between mb-space-xs">
+                <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
+                  تارجت المبيعات الشهري
+                </span>
+                <span className="font-label-md text-label-md text-primary font-bold text-xs">78%</span>
+              </div>
+              <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mb-space-sm">
+                <div className="bg-primary-container h-full rounded-full transition-all duration-700" style={{ width: '78%' }} />
+              </div>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-md text-[11px]">
+                متبقي 22% لإتمام هدف الربع الحالي بنجاح.
+              </p>
+              <button
+                onClick={() => {
+                  setMobileSidebarOpen(false);
+                  setIsAddUnitOpen(true);
+                }}
+                className="w-full py-space-sm px-space-md rounded-xl bg-secondary-container hover:bg-secondary text-on-secondary transition-all flex items-center justify-center gap-space-xs font-label-md text-label-md font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[18px]">add</span>
+                إضافة وحدة جديدة
+              </button>
             </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-md text-[11px]">
-              متبقي 22% لإتمام هدف الربع الحالي بنجاح.
-            </p>
-            <button
-              onClick={() => {
-                setMobileSidebarOpen(false);
-                setIsAddUnitOpen(true);
-              }}
-              className="w-full py-space-sm px-space-md rounded-xl bg-secondary-container hover:bg-secondary text-on-secondary transition-all flex items-center justify-center gap-space-xs font-label-md text-label-md font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
-              type="button"
-            >
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              إضافة وحدة جديدة
-            </button>
-          </div>
+          )}
 
           {/* Quick Logout */}
           <button
@@ -228,7 +282,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="بحث بالوحدات أو العملاء..."
+              placeholder={currentUser.role === 'admin' ? 'بحث في الوحدات أو الأكواد...' : 'بحث بالوحدات أو العملاء...'}
               className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] rounded-xl py-2 sm:py-space-sm pr-9 sm:pr-11 pl-7 sm:pl-space-md font-body-sm text-body-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:outline-none focus:ring-2 focus:ring-primary shadow-xs text-xs truncate"
             />
             {searchTerm && (
@@ -244,36 +298,39 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Left side actions: + New Client, Notifications, User Avatar */}
         <div className="flex items-center gap-space-sm lg:gap-space-md">
-          {/* + New Client Button */}
-          <button
-            onClick={() => setIsAddCustomerOpen(true)}
-            className="hidden sm:flex items-center gap-space-xs px-space-md py-space-sm rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-bold transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
-            type="button"
-          >
-            <span className="material-symbols-outlined text-[18px]">person_add</span>
-            + عميل جديد
-          </button>
-
-          {/* Notifications button */}
-          <div className="relative">
+          {/* + New Client Button (Brokers only) */}
+          {currentUser.role !== 'admin' && (
             <button
-              onClick={() => {
-                setNotifDropdownOpen(!notifDropdownOpen);
-                setProfileDropdownOpen(false);
-              }}
-              className="relative p-space-sm rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-on-surface transition-colors shadow-sm flex items-center justify-center cursor-pointer"
+              onClick={() => setIsAddCustomerOpen(true)}
+              className="hidden sm:flex items-center gap-space-xs px-space-md py-space-sm rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-bold transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
               type="button"
-              aria-label="التنبيهات"
             >
-              <span className="material-symbols-outlined text-[22px] text-on-surface-variant">
-                notifications
-              </span>
-              {myCustomers.filter((c) => c.nextFollowupAt).length > 0 && (
-                <span className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm text-[10px] font-bold">
-                  {myCustomers.filter((c) => c.nextFollowupAt).length}
-                </span>
-              )}
+              <span className="material-symbols-outlined text-[18px]">person_add</span>
+              + عميل جديد
             </button>
+          )}
+
+          {/* Notifications button (Brokers follow-ups only) */}
+          {currentUser.role !== 'admin' && (
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setNotifDropdownOpen(!notifDropdownOpen);
+                  setProfileDropdownOpen(false);
+                }}
+                className="relative p-space-sm rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-on-surface transition-colors shadow-sm flex items-center justify-center cursor-pointer"
+                type="button"
+                aria-label="التنبيهات"
+              >
+                <span className="material-symbols-outlined text-[22px] text-on-surface-variant">
+                  notifications
+                </span>
+                {myCustomers.filter((c) => c.nextFollowupAt).length > 0 && (
+                  <span className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm text-[10px] font-bold">
+                    {myCustomers.filter((c) => c.nextFollowupAt).length}
+                  </span>
+                )}
+              </button>
 
             {/* Notification Dropdown */}
             {notifDropdownOpen && (
@@ -318,6 +375,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             )}
           </div>
+        )}
 
           {/* User Profile */}
           <div className="relative">

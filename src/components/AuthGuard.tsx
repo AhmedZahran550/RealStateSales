@@ -19,8 +19,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       router.replace('/login');
     } else if (currentUser && isLoginPage) {
       router.replace('/');
+    } else if (currentUser && currentUser.role === 'admin' && (pathname.startsWith('/customers') || pathname === '/matching')) {
+      // دور المدير العام مخصص لإدارة المستخدمين واستعراض الوحدات فقط بدون عملاء أو مواعيد
+      router.replace('/units');
     }
-  }, [currentUser, isInitialized, isLoginPage, router]);
+  }, [currentUser, isInitialized, isLoginPage, pathname, router]);
 
   // إذا كان المسار هو صفحة تسجيل الدخول، اعرضها مباشرة دون إسقاط أي جزء
   if (isLoginPage) {

@@ -13,6 +13,7 @@ import { formatArabicFollowupDate } from '@/lib/date-utils';
 export default function DashboardPage() {
   const {
     currentUser,
+    users,
     myUnits,
     myCustomers,
     zones,
@@ -37,6 +38,352 @@ export default function DashboardPage() {
 
   if (!currentUser) return null;
 
+  // Formatted date in Arabic
+  const todayArabic = new Intl.DateTimeFormat('ar-EG', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date());
+
+  // ========================================================
+  // لوحة تحكم مخصصة للمدير العام (Admin Dashboard)
+  // بدون عملاء وبدون مواعيد متابعات - فقط إدارة المستخدمين والوحدات
+  // ========================================================
+  if (currentUser.role === 'admin') {
+    const availableUnits = myUnits.filter((u) => u.status === 'available');
+    const totalInventoryValue = availableUnits.reduce((acc, u) => acc + (u.price || 0), 0);
+    const totalReservedUnits = myUnits.filter((u) => u.status === 'reserved').length;
+    const totalSoldUnits = myUnits.filter((u) => u.status === 'sold').length;
+
+    return (
+      <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
+        {/* 1. Header Banner */}
+        <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-4 sm:p-6 lg:p-space-lg shadow-sm border border-surface-container-high/40">
+          <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -right-16 w-56 h-56 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-md">
+            <div className="flex flex-col gap-space-xs">
+              <div className="flex items-center gap-space-sm">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 font-label-sm text-label-sm font-bold text-xs">
+                  <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse" />
+                  لوحة الإدارة والرقابة المركزية
+                </span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 text-xs">
+                  <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                  {todayArabic}
+                </span>
+              </div>
+              <h1 className="font-headline-lg text-headline-lg text-on-surface font-extrabold tracking-tight text-xl sm:text-2xl lg:text-3xl">
+                مرحباً {currentUser.fullName}، لديك{' '}
+                <span className="text-amber-600 font-black">{users.length} مستخدمين</span> مسجلين في المنظومة و{' '}
+                <span className="text-primary font-black">{myUnits.length} وحدة</span> عقارية
+              </h1>
+              <p className="font-body-md text-body-md text-on-surface-variant text-xs sm:text-sm">
+                إدارة حسابات الوسطاء، تحديث بياناتهم وكلمات المرور، واستعراض كافة وحدات المحفظة العقارية وتصفيتها بحسب الوسيط.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-space-sm w-full sm:w-auto shrink-0">
+              <Link
+                href="/admin/users"
+                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-label-md text-label-md font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+              >
+                <span className="material-symbols-outlined text-[20px]">manage_accounts</span>
+                <span>إدارة حسابات الوسطاء</span>
+              </Link>
+              <Link
+                href="/units"
+                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-md text-label-md font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px] border border-surface-container-high"
+              >
+                <span className="material-symbols-outlined text-[20px]">apartment</span>
+                <span>استعراض محفظة الوحدات</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Key Metrics Row (4 Admin Stats) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+          {/* Stat 1: Total Users */}
+          <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm border border-surface-container-high/40">
+            <div className="flex items-start justify-between mb-space-sm">
+              <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 flex items-center justify-center">
+                <span className="material-symbols-outlined text-[26px]">manage_accounts</span>
+              </div>
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-label-sm text-label-sm font-bold text-xs">
+                المستخدمين
+              </span>
+            </div>
+            <div>
+              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
+                إجمالي الوسطاء والمديرين
+              </span>
+              <div className="flex items-baseline gap-space-xs">
+                <span className="font-headline-xl text-headline-xl text-on-surface font-extrabold tracking-tight text-3xl">
+                  {users.length}
+                </span>
+                <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">مستخدم</span>
+              </div>
+            </div>
+            <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2">
+              <Link href="/admin/users" className="text-amber-600 font-bold hover:underline text-xs flex items-center gap-1">
+                <span>تعديل وإدارة الصلاحيات</span>
+                <span className="material-symbols-outlined text-sm">arrow_back</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Stat 2: Total Units */}
+          <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm border border-surface-container-high/40">
+            <div className="flex items-start justify-between mb-space-sm">
+              <div className="w-12 h-12 rounded-xl bg-primary-fixed text-primary flex items-center justify-center">
+                <span className="material-symbols-outlined text-[26px]">apartment</span>
+              </div>
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-bold text-xs">
+                محفظة الوحدات
+              </span>
+            </div>
+            <div>
+              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
+                إجمالي الوحدات المسجلة
+              </span>
+              <div className="flex items-baseline gap-space-xs">
+                <span className="font-headline-xl text-headline-xl text-on-surface font-extrabold tracking-tight text-3xl">
+                  {myUnits.length}
+                </span>
+                <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">وحدة</span>
+              </div>
+            </div>
+            <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2 text-xs">
+              <span>تغطي مناطق الحي المتميز</span>
+              <span className="material-symbols-outlined text-primary text-[18px]">domain</span>
+            </div>
+          </div>
+
+          {/* Stat 3: Available Units & Value */}
+          <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm border border-surface-container-high/40">
+            <div className="flex items-start justify-between mb-space-sm">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center">
+                <span className="material-symbols-outlined text-[26px]">check_circle</span>
+              </div>
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-label-sm text-label-sm font-bold text-xs">
+                متاح للبيع
+              </span>
+            </div>
+            <div>
+              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
+                المعروض المتاح حالياً
+              </span>
+              <div className="flex items-baseline gap-space-xs">
+                <span className="font-headline-xl text-headline-xl text-emerald-600 font-extrabold tracking-tight text-3xl">
+                  {availableUnits.length}
+                </span>
+                <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">وحدة</span>
+              </div>
+            </div>
+            <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2 text-xs">
+              <span>بقيمة: <strong className="text-on-surface">{(totalInventoryValue / 1_000_000).toFixed(1)} مليون ج.م</strong></span>
+              <span className="material-symbols-outlined text-emerald-600 text-[18px]">attach_money</span>
+            </div>
+          </div>
+
+          {/* Stat 4: Reserved and Sold Units */}
+          <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm border border-surface-container-high/40">
+            <div className="flex items-start justify-between mb-space-sm">
+              <div className="w-12 h-12 rounded-xl bg-secondary-fixed text-on-secondary-fixed-variant flex items-center justify-center">
+                <span className="material-symbols-outlined text-[26px]">handshake</span>
+              </div>
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-label-sm text-label-sm font-bold text-xs">
+                حجز وتعاقد
+              </span>
+            </div>
+            <div>
+              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
+                حجز مؤقت ومباع
+              </span>
+              <div className="flex items-baseline gap-space-xs">
+                <span className="font-headline-xl text-headline-xl text-secondary font-extrabold tracking-tight text-3xl">
+                  {totalReservedUnits + totalSoldUnits}
+                </span>
+                <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">وحدة</span>
+              </div>
+            </div>
+            <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2 text-xs">
+              <span>{totalReservedUnits} حجز مؤقت • {totalSoldUnits} مباعة</span>
+              <span className="material-symbols-outlined text-secondary text-[18px]">verified</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Brokers Directory Section */}
+        <div className="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm border border-surface-container-high/40">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-xs mb-space-md pb-space-sm border-b border-surface-container-high/30">
+            <div>
+              <h2 className="font-headline-md text-headline-md text-on-surface font-bold text-xl flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-600">group</span>
+                <span>حسابات الوسطاء المسجلين ({users.length})</span>
+              </h2>
+              <p className="font-body-sm text-body-sm text-on-surface-variant text-xs mt-0.5">
+                نظرة سريعة على محفظة كل وسيط مع إمكانية تعديل بياناته والتصفية
+              </p>
+            </div>
+            <Link
+              href="/admin/users"
+              className="text-xs font-bold text-amber-600 hover:underline flex items-center gap-1 self-start sm:self-auto"
+            >
+              <span>إدارة وتعديل الحسابات بالكامل</span>
+              <span className="material-symbols-outlined text-sm">arrow_back</span>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+            {users.map((u) => {
+              const uUnits = myUnits.filter((unit) => unit.ownerId === u.id);
+              const uAvailable = uUnits.filter((unit) => unit.status === 'available');
+
+              return (
+                <div
+                  key={u.id}
+                  className="p-4 rounded-xl bg-surface-container-low border border-surface-container-high/50 hover:border-amber-500/50 transition-all flex flex-col justify-between gap-3 shadow-xs"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                        {u.fullName.charAt(0)}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm text-on-surface">{u.fullName}</h3>
+                        <p className="text-xs text-amber-700 dark:text-amber-400 font-mono font-semibold">@{u.username}</p>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      u.role === 'admin' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-slate-200 text-slate-800'
+                    }`}>
+                      {u.role === 'admin' ? 'مدير عام' : 'وسيط معتمد'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-surface-container-high/40">
+                    <div>
+                      <span className="text-[11px] text-on-surface-variant block">رقم الهاتف:</span>
+                      <span className="font-bold font-mono text-on-surface" dir="ltr">{u.phone || 'غير مسجل'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-on-surface-variant block">الوحدات:</span>
+                      <span className="font-bold text-primary">{uUnits.length} وحدة ({uAvailable.length} متاح)</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-surface-container-high/40">
+                    <Link
+                      href="/admin/users"
+                      className="flex-1 py-1.5 px-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200 text-center text-xs font-bold transition"
+                    >
+                      تعديل البيانات
+                    </Link>
+                    <Link
+                      href="/units"
+                      className="flex-1 py-1.5 px-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-center text-xs font-bold transition"
+                    >
+                      استعراض وحداته
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 4. Latest Units Overview */}
+        <div className="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm border border-surface-container-high/40">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-xs mb-space-md pb-space-sm border-b border-surface-container-high/30">
+            <div>
+              <h2 className="font-headline-md text-headline-md text-on-surface font-bold text-xl flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">apartment</span>
+                <span>أحدث الوحدات المسجلة في المنظومة</span>
+              </h2>
+              <p className="font-body-sm text-body-sm text-on-surface-variant text-xs mt-0.5">
+                استعراض سريع لأحدث الوحدات في الحي المتميز والوسطاء المسئولين عنها
+              </p>
+            </div>
+            <Link
+              href="/units"
+              className="text-xs font-bold text-primary hover:underline flex items-center gap-1 self-start sm:self-auto"
+            >
+              <span>عرض جميع الوحدات وتصفيتها بالوسيط ({myUnits.length})</span>
+              <span className="material-symbols-outlined text-sm">arrow_back</span>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+            {myUnits.slice(0, 6).map((unit) => {
+              const broker = users.find((u) => u.id === unit.ownerId);
+              const img =
+                unit.media?.[0]?.externalUrl ||
+                unit.media?.[0]?.storagePath ||
+                'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+
+              return (
+                <div
+                  key={unit.id}
+                  className="bg-surface-container-low rounded-2xl overflow-hidden border border-surface-container-high/60 shadow-xs flex flex-col justify-between"
+                >
+                  <div className="relative h-44 w-full">
+                    <img src={img} alt={`قطعة ${unit.plotNo}`} className="w-full h-full object-cover" />
+                    <div className="absolute top-2 right-2 flex flex-col gap-1">
+                      <span className="px-2 py-0.5 rounded-lg bg-surface-container-lowest/90 font-bold text-[11px] text-primary shadow-xs">
+                        منطقة {unit.zoneId} • قطعة {unit.plotNo}
+                      </span>
+                    </div>
+                    {broker && (
+                      <div className="absolute top-2 left-2">
+                        <span className="px-2 py-0.5 rounded-lg bg-slate-900/90 text-white font-bold text-[11px] shadow-xs flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[13px] text-amber-400">person</span>
+                          {broker.fullName}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-3.5 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-primary">#BD-{unit.zoneId}-{unit.plotNo}</span>
+                      <span className="font-bold text-sm text-on-surface">{unit.price.toLocaleString()} ج.م</span>
+                    </div>
+                    <p className="text-xs text-on-surface-variant line-clamp-1">{unit.description || 'وحدة سكنية متميزة'}</p>
+                    <div className="flex items-center justify-between pt-2 border-t border-surface-container-high/50 text-[11px] text-on-surface-variant">
+                      <span>المساحة: <strong>{unit.area} م²</strong></span>
+                      <span>الاستلام: <strong>{unit.deliveryNote || 'استلام فوري'}</strong></span>
+                    </div>
+                    <button
+                      onClick={() => setSelectedUnit(unit)}
+                      className="w-full mt-1 py-1.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs transition cursor-pointer"
+                    >
+                      عرض التفاصيل الكاملة
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Modal for unit details */}
+        <UnitDetailModal
+          unit={selectedUnit}
+          onClose={() => setSelectedUnit(null)}
+          onEdit={() => {}}
+          onDelete={() => {}}
+        />
+      </div>
+    );
+  }
+
+  // ========================================================
+  // لوحة تحكم الوسيط العقاري العادي (Broker Dashboard)
+  // ========================================================
   // Dynamic metrics derived purely from live state
   const availableUnitsCount = myUnits.filter((u) => u.status === 'available').length;
   const negotiatingCustomers = myCustomers.filter(
@@ -74,14 +421,6 @@ export default function DashboardPage() {
 
   // Recent units from the user's inventory
   const recentUnits = myUnits.slice(0, 3);
-
-  // Formatted date in Arabic
-  const todayArabic = new Intl.DateTimeFormat('ar-EG', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date());
 
   return (
     <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">

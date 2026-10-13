@@ -11,6 +11,7 @@ export default function UnitsPage() {
   const {
     currentUser,
     myUnits,
+    users,
     zones,
     buildings,
     services,
@@ -25,6 +26,7 @@ export default function UnitsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [zoneFilter, setZoneFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [brokerFilter, setBrokerFilter] = useState<string>('all');
 
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [isUnitFormOpen, setIsUnitFormOpen] = useState(false);
@@ -48,6 +50,11 @@ export default function UnitsPage() {
   // Filtered units
   const filteredUnits = useMemo(() => {
     return myUnits.filter((unit) => {
+      // فلترة بحسب الوسيط (للمدير العام فقط)
+      if (currentUser?.role === 'admin' && brokerFilter !== 'all') {
+        if (unit.ownerId !== brokerFilter) return false;
+      }
+
       // Status
       if (statusFilter !== 'all' && unit.status !== statusFilter) return false;
 
@@ -69,7 +76,7 @@ export default function UnitsPage() {
 
       return true;
     });
-  }, [myUnits, statusFilter, zoneFilter, typeFilter, searchTerm]);
+  }, [myUnits, currentUser, brokerFilter, statusFilter, zoneFilter, typeFilter, searchTerm]);
 
   const copyUnitDetails = (unit: Unit) => {
     const consultantName = currentUser?.fullName || 'المستشار العقاري';
@@ -124,17 +131,19 @@ export default function UnitsPage() {
             <span className="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span>
             تصدير Excel
           </button>
-          <button
-            onClick={() => {
-              setEditingUnit(null);
-              setIsUnitFormOpen(true);
-            }}
-            className="flex items-center justify-center gap-space-xs px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary transition-all shadow-md font-label-lg text-label-lg font-bold text-sm cursor-pointer min-h-[42px]"
-            type="button"
-          >
-            <span className="material-symbols-outlined text-[20px]">add_home_work</span>
-            + إضافة وحدة عقارية جديدة
-          </button>
+          {currentUser?.role !== 'admin' && (
+            <button
+              onClick={() => {
+                setEditingUnit(null);
+                setIsUnitFormOpen(true);
+              }}
+              className="flex items-center justify-center gap-space-xs px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary transition-all shadow-md font-label-lg text-label-lg font-bold text-sm cursor-pointer min-h-[42px]"
+              type="button"
+            >
+              <span className="material-symbols-outlined text-[20px]">add_home_work</span>
+              + إضافة وحدة عقارية جديدة
+            </button>
+          )}
         </div>
       </div>
 
@@ -288,7 +297,7 @@ export default function UnitsPage() {
         </div>
 
         {/* Filter Inputs Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-sm">
+        <div className={`grid grid-cols-1 ${currentUser?.role === 'admin' ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-space-sm`}>
           {/* Search */}
           <div className="relative">
             <span className="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-slate-400 text-[20px] pointer-events-none">
@@ -342,12 +351,46 @@ export default function UnitsPage() {
               expand_more
             </span>
           </div>
+
+          {/* Broker Filter (For Admin Only) */}
+          {currentUser?.role === 'admin' && (
+            <div className="relative">
+              <select
+                value={brokerFilter}
+                onChange={(e) => setBrokerFilter(e.target.value)}
+                className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] rounded-xl py-2.5 pr-space-md pl-8 font-body-sm text-body-sm text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
+              >
+                <option value="all" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
+                  فلترة بالوسيط (كافة الوسطاء)
+                </option>
+                {users.map((u) => {
+                  const uUnitsCount = myUnits.filter((un) => un.ownerId === u.id).length;
+                  return (
+                    <option key={u.id} value={u.id} className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
+                      {u.fullName} ({uUnitsCount} وحدة)
+                    </option>
+                  );
+                })}
+              </select>
+              <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-slate-400 text-[18px] pointer-events-none">
+                person
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Active Filter Chips */}
-        {(zoneFilter !== 'all' || typeFilter !== 'all' || searchTerm) && (
+        {(zoneFilter !== 'all' || typeFilter !== 'all' || brokerFilter !== 'all' || searchTerm) && (
           <div className="flex items-center flex-wrap gap-space-xs pt-1 border-t border-surface-container-low pt-2">
             <span className="font-label-sm text-label-sm text-outline text-xs">الفلاتر المطبقة:</span>
+            {currentUser?.role === 'admin' && brokerFilter !== 'all' && (
+              <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface font-label-sm text-label-sm text-xs">
+                الوسيط: {users.find((u) => u.id === brokerFilter)?.fullName || brokerFilter}
+                <button onClick={() => setBrokerFilter('all')} className="hover:text-error cursor-pointer">
+                  ✕
+                </button>
+              </span>
+            )}
             {zoneFilter !== 'all' && (
               <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface font-label-sm text-label-sm text-xs">
                 المنطقة: منطقة {zoneFilter}
@@ -366,6 +409,7 @@ export default function UnitsPage() {
             )}
             <button
               onClick={() => {
+                setBrokerFilter('all');
                 setZoneFilter('all');
                 setTypeFilter('all');
                 setSearchTerm('');
@@ -419,11 +463,17 @@ export default function UnitsPage() {
                       </span>
                     </div>
 
-                    <div className="absolute top-space-sm left-space-sm">
+                    <div className="absolute top-space-sm left-space-sm flex flex-col gap-1 items-end">
                       <span className="px-space-sm py-0.5 rounded-lg bg-surface-container-lowest/95 backdrop-blur-md text-on-surface font-label-sm text-label-sm font-bold shadow-sm flex items-center gap-1 text-xs">
                         <span className="material-symbols-outlined text-[14px] text-tertiary">schedule</span>
                         {unit.deliveryNote || 'استلام فوري'}
                       </span>
+                      {currentUser?.role === 'admin' && (
+                        <span className="px-2 py-0.5 rounded-lg bg-slate-900/90 text-white font-label-sm text-label-sm font-bold shadow-sm flex items-center gap-1 text-[11px]">
+                          <span className="material-symbols-outlined text-[13px] text-amber-400">person</span>
+                          {users.find((u) => u.id === unit.ownerId)?.fullName || 'غير محدد'}
+                        </span>
+                      )}
                     </div>
 
                     <div className="absolute bottom-space-sm right-space-sm text-surface-container-lowest flex items-center gap-space-xs">
@@ -527,7 +577,7 @@ export default function UnitsPage() {
                         className="w-full py-space-xs text-center text-primary hover:text-primary-container font-label-sm text-label-sm font-bold transition-colors text-xs cursor-pointer"
                         type="button"
                       >
-                        تفاصيل كاملة وتعديل الوحدة ←
+                        {currentUser?.role === 'admin' ? 'عرض كافة تفاصيل ومواصفات الوحدة ←' : 'تفاصيل كاملة وتعديل الوحدة ←'}
                       </button>
                     </div>
                   </div>
@@ -538,7 +588,7 @@ export default function UnitsPage() {
             <div className="col-span-full p-12 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high">
               <span className="material-symbols-outlined text-4xl text-outline mb-2">apartment</span>
               <p className="text-on-surface font-bold text-base">لا توجد وحدات تطابق هذه المحددات.</p>
-              <p className="text-xs text-on-surface-variant mt-1">جرّب تغيير فلاتر البحث أو إضافة وحدة جديدة.</p>
+              <p className="text-xs text-on-surface-variant mt-1">جرّب تغيير فلاتر البحث أو اختيار وسيط آخر.</p>
             </div>
           )}
         </div>
@@ -550,6 +600,7 @@ export default function UnitsPage() {
               <thead className="bg-surface-container-low text-on-surface-variant font-bold border-b border-surface-container-high">
                 <tr>
                   <th className="p-3.5">كود الوحدة</th>
+                  {currentUser?.role === 'admin' && <th className="p-3.5">الوسيط المسؤول</th>}
                   <th className="p-3.5">المنطقة والقطعة</th>
                   <th className="p-3.5">نوع الوحدة</th>
                   <th className="p-3.5">المساحة</th>
@@ -562,6 +613,11 @@ export default function UnitsPage() {
                 {filteredUnits.map((u) => (
                   <tr key={u.id} className="hover:bg-surface-container-low/50 transition-colors">
                     <td className="p-3.5 font-bold text-primary">#BD-{u.zoneId}-{u.plotNo}</td>
+                    {currentUser?.role === 'admin' && (
+                      <td className="p-3.5 font-bold text-slate-800 dark:text-slate-200">
+                        {users.find((user) => user.id === u.ownerId)?.fullName || 'غير محدد'}
+                      </td>
+                    )}
                     <td className="p-3.5">منطقة {u.zoneId} • قطعة {u.plotNo}</td>
                     <td className="p-3.5">{UNIT_KIND_LABELS[u.unitKind] || 'شقة'}</td>
                     <td className="p-3.5 font-bold">{u.area} م²</td>

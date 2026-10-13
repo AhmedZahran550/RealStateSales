@@ -154,6 +154,34 @@ function CustomersContent() {
     });
   }, [myCustomers, selectedStage, followupFilter, budgetFilter, searchTerm, todayStart, todayEnd]);
 
+  if (currentUser?.role === 'admin') {
+    return (
+      <div className="p-8 max-w-2xl mx-auto my-12 bg-surface-container-lowest rounded-3xl border border-surface-container-high text-center shadow-sm">
+        <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 flex items-center justify-center mx-auto mb-4">
+          <span className="material-symbols-outlined text-[32px]">shield_person</span>
+        </div>
+        <h2 className="text-xl font-bold text-on-surface mb-2">قسم مخصص للوسطاء العقاريين</h2>
+        <p className="text-sm text-on-surface-variant mb-6 leading-relaxed">
+          سجل العملاء والمتابعات ومواعيد الاتصال مخصص حصرياً للوسطاء العقاريين لمتابعة عملائهم وصفقاتهم. بصفتك مديراً عاماً للنظام، دورك مخصص لإدارة حسابات المستخدمين واستعراض وتصفية كافة وحدات المنظومة.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <Link
+            href="/admin/users"
+            className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition"
+          >
+            إدارة حسابات المستخدمين
+          </Link>
+          <Link
+            href="/units"
+            className="px-5 py-2.5 rounded-xl bg-surface-container-high text-on-surface font-bold text-xs hover:bg-surface-container-highest transition"
+          >
+            استعراض محفظة الوحدات
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
       {/* 1. Header & Action Ribbon */}

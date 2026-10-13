@@ -15,24 +15,57 @@ import {
   ShieldCheck,
   AtSign,
   User,
+  Edit3,
+  X,
+  Save,
+  Building,
 } from 'lucide-react';
 
 export default function AdminUsersPage() {
-  const { currentUser, users, addUser, deleteUser, updateUserPassword, setCurrentUser } = useApp();
+  const {
+    currentUser,
+    users,
+    units,
+    addUser,
+    deleteUser,
+    updateUserProfile,
+    updateUserPassword,
+    setCurrentUser,
+  } = useApp();
+
+  // Create User Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<AppRole>('user');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [createError, setCreateError] = useState('');
+
+  // Edit User Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [editFullName, setEditFullName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editRole, setEditRole] = useState<AppRole>('user');
+  const [editError, setEditError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Toast feedback
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage('');
+    setCreateError('');
 
     if (!fullName.trim() || !username.trim()) {
-      setErrorMessage('يرجى كتابة الاسم بالكامل واسم المستخدم.');
+      setCreateError('يرجى كتابة الاسم بالكامل واسم المستخدم.');
       return;
     }
 
@@ -41,7 +74,7 @@ export default function AdminUsersPage() {
       (u) => u.username.toLowerCase() === username.trim().toLowerCase()
     );
     if (existing) {
-      setErrorMessage('اسم المستخدم هذا مسجل مسبقاً، يرجى اختيار اسم مستخدم آخر.');
+      setCreateError('اسم المستخدم هذا مسجل مسبقاً، يرجى اختيار اسم مستخدم آخر.');
       return;
     }
 
@@ -58,10 +91,62 @@ export default function AdminUsersPage() {
     setPhone('');
     setPassword('');
     setIsAddModalOpen(false);
+    showToast('تم إنشاء الحساب الجديد بنجاح.');
+  };
+
+  const openEditModal = (u: UserProfile) => {
+    setEditingUser(u);
+    setEditFullName(u.fullName);
+    setEditPhone(u.phone || '');
+    setEditPassword('');
+    setEditRole(u.role);
+    setEditError('');
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setEditError('');
+
+    if (!editFullName.trim()) {
+      setEditError('يرجى إدخال الاسم بالكامل.');
+      return;
+    }
+
+    setIsSaving(true);
+    const updates: Partial<UserProfile> = {
+      fullName: editFullName.trim(),
+      phone: editPhone.trim(),
+      role: editRole,
+    };
+
+    if (editPassword.trim()) {
+      updates.password = editPassword.trim();
+    }
+
+    const success = await updateUserProfile(editingUser.id, updates);
+    setIsSaving(false);
+
+    if (success) {
+      setIsEditModalOpen(false);
+      setEditingUser(null);
+      showToast(`تم تحديث بيانات المستخدم ${editFullName} بنجاح.`);
+    } else {
+      setEditError('حدث خطأ أثناء حفظ التعديلات في قاعدة البيانات، يرجى المحاولة ثانية.');
+    }
   };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2.5 bg-slate-900 text-white rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold animate-in fade-in border border-slate-700">
+          <CheckCircle className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* الترويسة الرئيسية */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex items-center gap-3">
@@ -73,7 +158,7 @@ export default function AdminUsersPage() {
               إدارة المستخدمين وحسابات الوسطاء
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              إنشاء حسابات باسم المستخدم وكلمة المرور وتعيين الصلاحيات
+              تعديل بيانات الوسطاء، أرقام الهواتف، كلمات المرور، وإدارة الصلاحيات
             </p>
           </div>
         </div>
@@ -91,9 +176,9 @@ export default function AdminUsersPage() {
       <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 flex items-center gap-3 text-xs text-amber-900 dark:text-amber-200">
         <Shield className="w-5 h-5 flex-shrink-0 text-amber-600" />
         <div>
-          <span className="font-bold">سياسة التسجيل الداخلي المعتمد: </span>
+          <span className="font-bold">صلاحيات المدير العام (Admin): </span>
           <span>
-            التسجيل العام مغلق تماماً. يتم دخول جميع الوسطاء العقاريين باستخدام (اسم المستخدم) و(كلمة المرور) المنشأة حصرياً من قبل مدير النظام.
+            يمكنك من هنا تعديل اسم أي وسيط، رقم هاتفه المعتمد للتواصل مع العملاء، وكلمة المرور الخاصة بدخوله، بالإضافة لإضافة وحذف الحسابات.
           </span>
         </div>
       </div>
@@ -114,8 +199,9 @@ export default function AdminUsersPage() {
             <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold">
               <tr>
                 <th className="py-3.5 px-4">الاسم بالكامل</th>
-                <th className="py-3.5 px-4">اسم المستخدم للدخول</th>
-                <th className="py-3.5 px-4">رقم الهاتف المحمول</th>
+                <th className="py-3.5 px-4">اسم المستخدم</th>
+                <th className="py-3.5 px-4">رقم الهاتف (واتساب)</th>
+                <th className="py-3.5 px-4">الوحدات المسجلة</th>
                 <th className="py-3.5 px-4">نوع الصلاحية</th>
                 <th className="py-3.5 px-4">تاريخ الإنشاء</th>
                 <th className="py-3.5 px-4 text-center">إجراءات الحساب</th>
@@ -124,6 +210,8 @@ export default function AdminUsersPage() {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {users.map((u) => {
                 const isCurrent = currentUser ? u.id === currentUser.id : false;
+                const userUnitsCount = units.filter((unit) => unit.ownerId === u.id).length;
+
                 return (
                   <tr
                     key={u.id}
@@ -152,7 +240,21 @@ export default function AdminUsersPage() {
                     </td>
 
                     <td className="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-300">
-                      {u.phone || 'غير مسجل'}
+                      {u.phone ? (
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                          <span dir="ltr">{u.phone}</span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400">لم يُسجل</span>
+                      )}
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <span className="inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                        <Building className="w-3 h-3 text-slate-400" />
+                        <span>{userUnitsCount} وحدة</span>
+                      </span>
                     </td>
 
                     <td className="py-3.5 px-4">
@@ -172,39 +274,33 @@ export default function AdminUsersPage() {
                     </td>
 
                     <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-1.5">
+                        {/* زر تعديل بيانات المستخدم */}
+                        <button
+                          onClick={() => openEditModal(u)}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:hover:bg-amber-900/60 dark:text-amber-200 transition cursor-pointer"
+                          title="تعديل بيانات المستخدم ورقم الهاتف وكلمة المرور"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>تعديل</span>
+                        </button>
+
                         {!isCurrent && (
                           <button
                             onClick={() => setCurrentUser(u)}
-                            className="px-3 py-1 rounded-xl text-xs font-bold bg-slate-100 hover:bg-amber-50 text-slate-700 hover:text-amber-700 dark:bg-slate-800 dark:hover:bg-slate-700 transition cursor-pointer"
+                            className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 transition cursor-pointer"
                             title="التبديل إلى هذا الحساب فوراً"
                           >
                             دخول كـ
                           </button>
                         )}
 
-                        <button
-                          onClick={async () => {
-                            const newPass = prompt(
-                              `أدخل كلمة المرور الجديدة للمستخدم @${u.username}:`,
-                              '123456'
-                            );
-                            if (newPass && newPass.trim()) {
-                              await updateUserPassword(u.id, newPass.trim());
-                              alert('تم تحديث وحفظ كلمة المرور بنجاح في قاعدة البيانات.');
-                            }
-                          }}
-                          className="p-1.5 rounded-xl text-slate-400 hover:text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                          title="تغيير كلمة المرور"
-                        >
-                          <KeyRound className="w-4 h-4" />
-                        </button>
-
                         {users.length > 1 && !isCurrent && (
                           <button
                             onClick={() => {
                               if (confirm(`هل أنت متأكد من حذف حساب ${u.fullName} نهائياً؟`)) {
                                 deleteUser(u.id);
+                                showToast(`تم حذف حساب ${u.fullName}.`);
                               }
                             }}
                             className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
@@ -223,6 +319,116 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
+      {/* نافذة تعديل بيانات المستخدم */}
+      {isEditModalOpen && editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
+              <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-amber-600" />
+                <span>تعديل بيانات المستخدم: @{editingUser.username}</span>
+              </h3>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {editError && (
+              <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-bold">
+                {editError}
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateUser} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                  الاسم بالكامل *
+                </label>
+                <input
+                  type="text"
+                  value={editFullName}
+                  onChange={(e) => setEditFullName(e.target.value)}
+                  placeholder="مثال: أحمد زهران"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                  رقم الهاتف المحمول (للتواصل والواتساب)
+                </label>
+                <input
+                  type="tel"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  placeholder="01122334455"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  سيتم استخدام هذا الرقم عند تسجيل الدخول وعند نسخ أو مشاركة تفاصيل أي وحدة عقارية مع العملاء.
+                </p>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                  كلمة المرور الجديدة
+                </label>
+                <input
+                  type="password"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  placeholder="اترك الحقل فارغاً إذا لم ترغب في التغيير"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  إذا تركت هذا الحقل فارغاً، ستظل كلمة المرور الحالية كما هي دون تعديل.
+                </p>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                  نوع الصلاحية
+                </label>
+                <select
+                  value={editRole}
+                  onChange={(e) => setEditRole(e.target.value as AppRole)}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs cursor-pointer"
+                >
+                  <option value="user" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
+                    وسيط عقاري (متاح له إضافة ومتابعة وحداته وعملائه)
+                  </option>
+                  <option value="admin" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
+                    مدير عام للنظام (إدارة المستخدمين والاطلاع على كافة الوحدات)
+                  </option>
+                </select>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-md shadow-amber-600/20 cursor-pointer transition disabled:opacity-50"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{isSaving ? 'جاري الحفظ...' : 'حفظ التعديلات'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* نافذة إضافة مستخدم جديد */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
@@ -232,9 +438,9 @@ export default function AdminUsersPage() {
               <span>إنشاء حساب وسيط عقاري / مدير جديد</span>
             </h3>
 
-            {errorMessage && (
+            {createError && (
               <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-bold">
-                {errorMessage}
+                {createError}
               </div>
             )}
 
