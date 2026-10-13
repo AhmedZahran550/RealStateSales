@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Unit, UNIT_KIND_LABELS, UNIT_STATUS_CONFIG } from '@/lib/types';
+import { useApp } from '@/context/AppContext';
 import {
   X,
   Building2,
@@ -20,6 +21,8 @@ import {
   Edit,
   Trash2,
   Navigation,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 interface UnitDetailModalProps {
@@ -37,7 +40,9 @@ export default function UnitDetailModal({
   onDelete,
   isOwner = true,
 }: UnitDetailModalProps) {
+  const { currentUser } = useApp();
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
+  const [copied, setCopied] = useState(false);
 
   if (!unit) return null;
 
@@ -48,11 +53,23 @@ export default function UnitDetailModal({
   // رابط وموقع خرائط جوجل
   const googleMapsUrl = unit.lat && unit.lng ? `https://www.google.com/maps?q=${unit.lat},${unit.lng}` : null;
 
+  // معلومات المستشار للتواصل
+  const consultantName = currentUser?.fullName || 'المستشار العقاري';
+  const consultantPhone = currentUser?.phone ? `\nللتواصل والاستفسار (هاتف / واتساب): ${currentUser.phone}` : '';
+  const servicesText = unit.services && unit.services.length > 0 ? `\nالمعالم والخدمات المحيطة: ${unit.services.join('، ')}` : '';
+
+  const plainShareContent = `عقار مميز بالحي المتميز (مدينة بدر):
+كود الوحدة: #BD-${unit.zoneId}-${unit.plotNo}
+المنطقة: منطقة ${unit.zoneId} | قطعة رقم ${unit.plotNo}
+النوع: ${UNIT_KIND_LABELS[unit.unitKind] || 'شقة سكنية'}
+المساحة: ${unit.area} م² ${unit.gardenArea ? `+ حديقة ${unit.gardenArea} م²` : ''}
+السعر: ${unit.price.toLocaleString('ar-EG')} ج.م
+الاستلام: ${unit.deliveryNote || 'استلام فوري'}
+نظام السداد: ${unit.paymentTerms || 'كاش أو تقسيط'}${servicesText}${googleMapsUrl ? `\nالموقع على الخريطة: ${googleMapsUrl}` : ''}
+المستشار العقاري: ${consultantName}${consultantPhone}`;
+
   // رسالة مشاركة الواتساب
-  const shareText = encodeURIComponent(
-    `عقار مميز بالحي المتميز (مدينة بدر):\nالمنطقة: ${unit.zoneId}، قطعة: ${unit.plotNo}\nالنوع: ${UNIT_KIND_LABELS[unit.unitKind]}\nالمساحة: ${unit.area} م²\nالسعر: ${unit.price.toLocaleString('ar-EG')} ج.م\nالتسليم: ${unit.deliveryNote}\nنظام السداد: ${unit.paymentTerms}${googleMapsUrl ? `\nالموقع على الخريطة: ${googleMapsUrl}` : ''}`
-  );
-  const waShareUrl = `https://wa.me/?text=${shareText}`;
+  const waShareUrl = `https://wa.me/?text=${encodeURIComponent(plainShareContent)}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
@@ -202,6 +219,20 @@ export default function UnitDetailModal({
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(plainShareContent);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs transition cursor-pointer"
+                type="button"
+                title="نسخ تفاصيل الوحدة"
+              >
+                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                <span>{copied ? 'تم النسخ!' : 'نسخ التفاصيل'}</span>
+              </button>
+
               <a
                 href={waShareUrl}
                 target="_blank"

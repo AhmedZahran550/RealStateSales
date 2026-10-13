@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import UnitFormModal from '@/components/UnitFormModal';
 import CustomerModal from '@/components/CustomerModal';
+import ProfileModal from '@/components/ProfileModal';
 import { formatArabicFollowupDate } from '@/lib/date-utils';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -34,6 +35,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   // Global Quick Action Modals
   const [isAddUnitOpen, setIsAddUnitOpen] = useState(false);
   const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const isLoginPage = pathname === '/login';
 
@@ -345,13 +347,35 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
             {/* Profile Dropdown */}
             {profileDropdownOpen && (
-              <div className="absolute left-0 mt-2 w-[calc(100vw-24px)] max-w-xs sm:w-64 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high p-3 z-50 animate-in fade-in zoom-in-95">
+              <div className="absolute left-0 mt-2 w-[calc(100vw-24px)] max-w-xs sm:w-72 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high p-3 z-50 animate-in fade-in zoom-in-95">
                 <div className="pb-3 border-b border-surface-container-high mb-2">
                   <p className="text-sm font-bold text-on-surface">{currentUser.fullName}</p>
                   <p className="text-xs text-on-surface-variant">@{currentUser.username}</p>
+                  {currentUser.phone ? (
+                    <div className="flex items-center gap-1.5 mt-1.5 text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg">
+                      <span className="material-symbols-outlined text-[16px]">call</span>
+                      <span dir="ltr">{currentUser.phone}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2 py-1 rounded-lg">
+                      <span className="material-symbols-outlined text-[15px]">add_call</span>
+                      <span>لم يُسجل رقم هاتف بعد</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-1">
+                  <button
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      setIsProfileModalOpen(true);
+                    }}
+                    className="w-full flex items-center gap-2 p-2 rounded-xl text-right text-xs font-bold text-primary hover:bg-primary-fixed/20 transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">manage_accounts</span>
+                    تعديل الملف الشخصي ورقم الهاتف
+                  </button>
+
                   <button
                     onClick={() => {
                       setProfileDropdownOpen(false);
@@ -408,6 +432,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           addCustomer(customerData);
           setIsAddCustomerOpen(false);
         }}
+      />
+
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
       />
     </div>
   );

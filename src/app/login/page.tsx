@@ -15,14 +15,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(true);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
     setLoading(true);
 
     if (!username.trim()) {
-      setError('يرجى إدخال اسم المستخدم أو البريد الإلكتروني');
+      setError('يرجى إدخال اسم المستخدم أو رقم الهاتف المسجل');
       setLoading(false);
       return;
     }
@@ -33,7 +33,7 @@ export default function LoginPage() {
       return;
     }
 
-    const res = loginWithUsername(username.trim(), password.trim());
+    const res = await loginWithUsername(username.trim(), password.trim());
     if (res.success) {
       setSuccess(res.message);
       setTimeout(() => {
@@ -116,7 +116,7 @@ export default function LoginPage() {
                 تسجيل الدخول إلى حسابك
               </h2>
               <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">
-                أدخل اسم المستخدم أو بريدك الوظيفي وكلمة المرور للمتابعة للوحة التحكم
+                أدخل اسم المستخدم أو رقم هاتفك المسجل وكلمة المرور للمتابعة للوحة التحكم
               </p>
             </div>
 
@@ -134,18 +134,16 @@ export default function LoginPage() {
               </div>
             )}
 
-
-
             {/* نموذج تسجيل الدخول */}
             <form onSubmit={handleLogin} className="space-y-4">
-              {/* حقل اسم المستخدم */}
+              {/* حقل اسم المستخدم أو رقم الهاتف */}
               <div className="space-y-1.5">
                 <label className="block font-label-md text-label-md text-slate-800 dark:text-slate-200 font-semibold text-sm" htmlFor="sales-id">
-                  اسم المستخدم أو البريد الإلكتروني
+                  اسم المستخدم أو رقم الهاتف
                 </label>
                 <div className="relative flex items-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary focus-within:border-primary">
                   <div className="pr-3.5 pl-2 flex items-center text-slate-400 pointer-events-none">
-                    <span className="material-symbols-outlined text-xl">alternate_email</span>
+                    <span className="material-symbols-outlined text-xl">badge</span>
                   </div>
                   <input
                     id="sales-id"
@@ -153,7 +151,7 @@ export default function LoginPage() {
                     required
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="AhmedZahran أو ahmed.sales@aqarsales.com"
+                    placeholder="AhmedZahran أو 01122334455"
                     className="w-full py-3.5 pl-4 pr-1 bg-transparent font-body-md text-body-md text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:outline-none"
                   />
                 </div>

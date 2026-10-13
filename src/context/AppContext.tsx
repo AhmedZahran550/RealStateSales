@@ -49,7 +49,8 @@ interface AppContextType {
   addUser: (user: Omit<UserProfile, 'id' | 'createdAt'>) => void;
   deleteUser: (id: string) => void;
   updateUserPassword: (id: string, newPass: string) => Promise<void>;
-  loginWithUsername: (username: string, password?: string) => { success: boolean; message: string };
+  updateUserProfile: (id: string, updates: Partial<UserProfile>) => Promise<boolean>;
+  loginWithUsername: (username: string, password?: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
   resetAllData: () => void;
   searchTerm: string;
@@ -244,6 +245,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }));
         setUsers(mappedProfiles);
         localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(mappedProfiles));
+
+        // مزامنة المستخدم الحالي المسجل دخوله في حال تم تحديث هاتفه أو بياناته
+        setCurrentUser((prev) => {
+          if (!prev) return null;
+          const fresh = mappedProfiles.find((u) => u.id === prev.id);
+          if (fresh) {
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(fresh));
+            return fresh;
+          }
+          return prev;
+        });
       }
     } catch (err) {
       console.warn('تنبيه أثناء مزامنة البيانات مع سوبابيز:', err);
@@ -796,17 +808,132 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const loginWithUsername = (username: string, password?: string) => {
-    const user = users.find(
-      (u) => u.username.toLowerCase() === username.trim().toLowerCase()
+  const updateUserProfile = async (id: string, updates: Partial<UserProfile>) => {
+    // 1. تحديث قائمة المستخدمين محلياً
+    setUsers((prev) =>
+      prev.map((u) => {
+        if (u.id === id) {
+          return { ...u, ...updates };
+        }
+        return u;
+      })
     );
+
+    // 2. تحديث المستخدم الحالي إن كان هو نفسه وتحديث localStorage
+    setCurrentUser((prev) => {
+      if (prev && prev.id === id) {
+        const updated = { ...prev, ...updates };
+        try {
+          localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(updated));
+        } catch {}
+        return updated;
+      }
+      return prev;
+    });
+
+    // 3. المزامنة مع سوبابيز
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const dbUpdates: any = {};
+        if (updates.fullName !== undefined) dbUpdates.full_name = updates.fullName;
+        if (updates.phone !== undefined) dbUpdates.phone = updates.phone?.trim() || null;
+        if (updates.password !== undefined) dbUpdates.password = updates.password;
+        if (updates.role !== undefined) dbUpdates.role = updates.role;
+
+        const { error } = await supabase.from('profiles').update(dbUpdates).eq('id', id);
+        if (error) {
+          console.error('فشل تحديث الملف الشخصي في قاعدة البيانات:', error);
+          return false;
+        }
+      } catch (err) {
+        console.error('خطأ أثناء حفظ الملف الشخصي:', err);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const loginWithUsername = async (identifier: string, password?: string) => {
+    const trimmed = identifier.trim();
+    if (!trimmed) {
+      return { success: false, message: 'يرجى إدخال اسم المستخدم أو رقم الهاتف' };
+    }
+
+    const cleanInputDigits = trimmed.replace(/[^0-9]/g, '');
+
+    const matchUser = (u: UserProfile) => {
+      // 1. مطابقة اسم المستخدم
+      if (u.username && u.username.toLowerCase() === trimmed.toLowerCase()) return true;
+
+      // 2. مطابقة رقم الهاتف (تطابق تام أو مجرد بالأرقام)
+      if (u.phone) {
+        const uPhoneDigits = u.phone.replace(/[^0-9]/g, '');
+        if (u.phone === trimmed || (cleanInputDigits && uPhoneDigits === cleanInputDigits)) return true;
+        // مطابقة بكود الدولة أو بدونه
+        if (cleanInputDigits.length >= 8 && uPhoneDigits.length >= 8) {
+          if (cleanInputDigits.endsWith(uPhoneDigits) || uPhoneDigits.endsWith(cleanInputDigits)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+
+    let user = users.find(matchUser);
+
+    // إن لم يكن متوفراً بالذاكرة بعد، نبحث مباشرة في قاعدة بيانات سوبابيز
+    if (!user && isSupabaseConfigured && supabase) {
+      try {
+        const { data: dbProfiles, error } = await supabase.from('profiles').select('*');
+        if (!error && dbProfiles && dbProfiles.length > 0) {
+          const matchedDb = dbProfiles.find((p: any) => {
+            if (p.username && p.username.toLowerCase() === trimmed.toLowerCase()) return true;
+            if (p.phone) {
+              const pPhoneDigits = p.phone.replace(/[^0-9]/g, '');
+              if (p.phone === trimmed || (cleanInputDigits && pPhoneDigits === cleanInputDigits)) return true;
+              if (cleanInputDigits.length >= 8 && pPhoneDigits.length >= 8) {
+                if (cleanInputDigits.endsWith(pPhoneDigits) || pPhoneDigits.endsWith(cleanInputDigits)) {
+                  return true;
+                }
+              }
+            }
+            return false;
+          });
+
+          if (matchedDb) {
+            user = {
+              id: matchedDb.id,
+              fullName: matchedDb.full_name,
+              username: matchedDb.username,
+              password: matchedDb.password || 'Test@1234',
+              phone: matchedDb.phone || '',
+              role: matchedDb.role,
+              createdAt: matchedDb.created_at,
+            };
+            setUsers((prev) => {
+              if (prev.some((x) => x.id === user!.id)) {
+                return prev.map((x) => (x.id === user!.id ? user! : x));
+              }
+              return [...prev, user!];
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('تعذر البحث عن المستخدم في سوبابيز:', err);
+      }
+    }
+
     if (!user) {
-      return { success: false, message: 'اسم المستخدم غير موجود في النظام' };
+      return { success: false, message: 'اسم المستخدم أو رقم الهاتف غير مسجل في النظام' };
     }
     if (password && user.password && user.password !== password) {
       return { success: false, message: 'كلمة المرور غير صحيحة' };
     }
+
     setCurrentUser(user);
+    try {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+    } catch {}
     return { success: true, message: `مرحباً بك ${user.fullName}` };
   };
 
@@ -852,6 +979,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addUser,
         deleteUser,
         updateUserPassword,
+        updateUserProfile,
         loginWithUsername,
         logout,
         resetAllData,

@@ -80,7 +80,7 @@ function MatchingContent() {
     if (!currentCustomer || !activeUnit) return '';
 
     const consultantName = currentUser?.fullName || 'أحمد زهران';
-    const consultantPhone = currentUser?.phone || '01122334455';
+    const consultantPhone = currentUser?.phone || '';
     const budgetStr = currentCustomer.budget
       ? `في حدود ميزانية ${(currentCustomer.budget / 1000000).toFixed(1)} مليون ج.م`
       : 'بمدينة بدر';
@@ -111,7 +111,7 @@ ${locationFeatures}
 
 تحياتي،
 *${consultantName} | مستشار عقاري معتمد*
-📞 ${consultantPhone}`;
+${consultantPhone ? `📞 رقم الهاتف للتواصل / واتساب: ${consultantPhone}` : ''}`;
   }, [currentCustomer, activeUnit, currentUser]);
 
   const handleCopyProposal = () => {

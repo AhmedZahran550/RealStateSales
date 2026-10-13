@@ -72,6 +72,9 @@ export default function UnitsPage() {
   }, [myUnits, statusFilter, zoneFilter, typeFilter, searchTerm]);
 
   const copyUnitDetails = (unit: Unit) => {
+    const consultantName = currentUser?.fullName || 'المستشار العقاري';
+    const phoneLine = currentUser?.phone ? `\nللتواصل والاستفسار (هاتف / واتساب): ${currentUser.phone}` : '';
+    const servicesLine = unit.services && unit.services.length > 0 ? `\nالمعالم والخدمات المحيطة: ${unit.services.join('، ')}` : '';
     const text = `وحدة عقارية مميزة - الحي المتميز بمدينة بدر
 كود الوحدة: #BD-${unit.zoneId}-${unit.plotNo}
 المنطقة: منطقة ${unit.zoneId} | قطعة رقم ${unit.plotNo}
@@ -79,8 +82,8 @@ export default function UnitsPage() {
 المساحة: ${unit.area} م² ${unit.gardenArea ? `+ حديقة ${unit.gardenArea} م²` : ''}
 السعر: ${unit.price.toLocaleString()} ج.م
 نظام السداد: ${unit.paymentTerms || 'كاش أو تقسيط ميسر'}
-ميعاد الاستلام: ${unit.deliveryNote || 'استلام فوري'}
-للتواصل والمعاينة: مستشار عقارات عقار سيلز`;
+ميعاد الاستلام: ${unit.deliveryNote || 'استلام فوري'}${servicesLine}
+المستشار العقاري: ${consultantName}${phoneLine}`;
 
     navigator.clipboard.writeText(text);
     showToast(`تم نسخ تفاصيل الوحدة #BD-${unit.zoneId}-${unit.plotNo} بنجاح!`);
@@ -509,7 +512,7 @@ export default function UnitsPage() {
                         <a
                           className="flex items-center justify-center gap-1 py-space-sm px-space-xs rounded-xl bg-primary-container hover:bg-primary text-on-primary transition-colors font-label-sm text-label-sm font-bold text-xs"
                           href={`https://wa.me/?text=${encodeURIComponent(
-                            `مرحباً، إليك تفاصيل الوحدة #BD-${unit.zoneId}-${unit.plotNo} في الحي المتميز:\nالمساحة: ${unit.area}م²\nالسعر: ${unit.price.toLocaleString()} ج.م\nللمعاينة والحجز: عقار سيلز`
+                            `مرحباً، إليك تفاصيل الوحدة #BD-${unit.zoneId}-${unit.plotNo} في الحي المتميز:\nالمساحة: ${unit.area} م²\nالسعر: ${unit.price.toLocaleString()} ج.م\nالاستلام: ${unit.deliveryNote || 'استلام فوري'}\nنظام السداد: ${unit.paymentTerms || 'كاش أو تقسيط'}\nللتواصل والمعاينة: ${currentUser?.fullName || 'المستشار العقاري'}${currentUser?.phone ? ` - ${currentUser.phone}` : ''}`
                           )}`}
                           target="_blank"
                           rel="noreferrer"
@@ -589,12 +592,12 @@ export default function UnitsPage() {
                         </button>
                         <a
                           href={`https://wa.me/?text=${encodeURIComponent(
-                            `تفاصيل وحدة BD-${u.zoneId}-${u.plotNo} السعر: ${u.price.toLocaleString()} ج.م`
+                            `تفاصيل وحدة #BD-${u.zoneId}-${u.plotNo} بالحي المتميز\nالمساحة: ${u.area} م² | السعر: ${u.price.toLocaleString()} ج.م\nللتواصل والاستفسار: ${currentUser?.fullName || 'المستشار العقاري'}${currentUser?.phone ? ` - ${currentUser.phone}` : ''}`
                           )}`}
                           target="_blank"
                           rel="noreferrer"
                           className="p-1 rounded-lg hover:bg-surface-container text-primary cursor-pointer"
-                          title="واتساب"
+                          title="مشاركة عبر واتساب"
                         >
                           <span className="material-symbols-outlined text-[18px]">chat</span>
                         </a>

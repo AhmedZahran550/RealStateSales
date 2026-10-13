@@ -583,7 +583,7 @@ export default function DashboardPage() {
                       </button>
                       <a
                         href={`https://wa.me/?text=${encodeURIComponent(
-                          `عرض خاص - وحدة كود BD-${unit.zoneId}-${unit.plotNo}\nالمساحة: ${unit.area}م²\nالسعر: ${unit.price.toLocaleString()} ج.م\nللتواصل والاستفسار: عقار سيلز`
+                          `عرض خاص - وحدة كود #BD-${unit.zoneId}-${unit.plotNo} بالحي المتميز\nالمساحة: ${unit.area} م²\nالسعر: ${unit.price.toLocaleString()} ج.م\nالاستلام: ${unit.deliveryNote || 'استلام فوري'}\nنظام السداد: ${unit.paymentTerms || 'كاش أو تقسيط'}\nللتواصل والمعاينة: ${currentUser?.fullName || 'المستشار العقاري'}${currentUser?.phone ? ` - ${currentUser.phone}` : ''}`
                         )}`}
                         target="_blank"
                         rel="noreferrer"
