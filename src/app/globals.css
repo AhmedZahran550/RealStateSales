@@ -96,6 +96,26 @@ body {
   background: #1b7a58;
 }
 
+/* Universal input visibility & autofill handling */
+input, select, textarea {
+  color-scheme: light dark;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0f172a;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+@media (prefers-color-scheme: dark) {
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #f8fafc;
+  }
+}
+
 /* Material Symbols font display helper */
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';

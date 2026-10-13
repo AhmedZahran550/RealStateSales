@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { UserProfile, AppRole } from '@/lib/types';
 import {
@@ -78,8 +79,8 @@ export default function AdminUsersPage() {
     }
 
     // التحقق من عدم تكرار اسم المستخدم
-    const existing = users.find(
-      (u) => u.username.toLowerCase() === cleanUsername
+    const existing = (users || []).find(
+      (u) => (u.username || '').toLowerCase() === cleanUsername
     );
     if (existing) {
       setCreateError('اسم المستخدم هذا مسجل مسبقاً، يرجى اختيار اسم مستخدم آخر.');
@@ -88,7 +89,7 @@ export default function AdminUsersPage() {
 
     // التحقق من عدم تكرار رقم الهاتف
     if (cleanPhone) {
-      const existingPhone = users.find(
+      const existingPhone = (users || []).find(
         (u) => u.phone && u.phone.trim() === cleanPhone
       );
       if (existingPhone) {
@@ -119,11 +120,11 @@ export default function AdminUsersPage() {
 
   const openEditModal = (u: UserProfile) => {
     setEditingUser(u);
-    setEditFullName(u.fullName);
-    setEditUsername(u.username);
+    setEditFullName(u.fullName || '');
+    setEditUsername(u.username || '');
     setEditPhone(u.phone || '');
     setEditPassword('');
-    setEditRole(u.role);
+    setEditRole(u.role || 'user');
     setEditError('');
     setIsEditModalOpen(true);
   };
@@ -142,8 +143,8 @@ export default function AdminUsersPage() {
     }
 
     // التحقق من عدم تكرار اسم المستخدم مع حساب آخر
-    const existing = users.find(
-      (u) => u.id !== editingUser.id && u.username.toLowerCase() === cleanUsername
+    const existing = (users || []).find(
+      (u) => u.id !== editingUser.id && (u.username || '').toLowerCase() === cleanUsername
     );
     if (existing) {
       setEditError('اسم المستخدم هذا مسجل مسبقاً لحساب آخر، يرجى اختيار اسم مستخدم آخر.');
@@ -152,7 +153,7 @@ export default function AdminUsersPage() {
 
     // التحقق من عدم تكرار رقم الهاتف مع حساب آخر
     if (cleanPhone) {
-      const existingPhone = users.find(
+      const existingPhone = (users || []).find(
         (u) => u.id !== editingUser.id && u.phone && u.phone.trim() === cleanPhone
       );
       if (existingPhone) {
@@ -185,15 +186,46 @@ export default function AdminUsersPage() {
     }
   };
 
-  // تصفية المستخدمين بحسب البحث مع تحويل البحث دائماً لحروف صغيرة
-  const filteredUsers = users.filter((u) => {
+  // حظر الوصول المباشر للوسطاء غير المدراء
+  if (currentUser && currentUser.role !== 'admin') {
+    return (
+      <div className="p-8 max-w-2xl mx-auto my-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-center shadow-sm">
+        <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 flex items-center justify-center mx-auto mb-4">
+          <Shield className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+          قسم مخصص لإدارة النظام فقط (Admin)
+        </h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+          إدارة حسابات الوسطاء والمستخدمين وتعيين الصلاحيات مخصصة حصرياً للمدير العام. يمكنك متابعة وحداتك وعملائك من خلال الأقسام المخصصة لك.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <Link
+            href="/"
+            className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition"
+          >
+            العودة للرئيسية
+          </Link>
+          <Link
+            href="/units"
+            className="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+          >
+            استعراض الوحدات
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // تصفية المستخدمين بحسب البحث مع حماية تامة من القيم الفارغة أو غير المعرفة
+  const filteredUsers = (users || []).filter((u) => {
+    if (!u) return false;
     if (!searchQuery.trim()) return true;
     const q = searchQuery.trim().toLowerCase();
-    return (
-      u.username.toLowerCase().includes(q) ||
-      u.fullName.toLowerCase().includes(q) ||
-      (u.phone && u.phone.toLowerCase().includes(q))
-    );
+    const usernameMatch = (u.username || '').toLowerCase().includes(q);
+    const fullNameMatch = (u.fullName || '').toLowerCase().includes(q);
+    const phoneMatch = u.phone ? u.phone.toLowerCase().includes(q) : false;
+    return usernameMatch || fullNameMatch || phoneMatch;
   });
 
   return (
@@ -303,115 +335,123 @@ export default function AdminUsersPage() {
               {filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-10 text-center text-slate-400 font-medium">
-                    لا توجد حسابات تطابق بحثك: &quot;{searchQuery}&quot;
+                    {searchQuery
+                      ? `لا توجد حسابات تطابق بحثك: "${searchQuery}"`
+                      : 'لا توجد حسابات مسجلة حالياً'}
                   </td>
                 </tr>
-              ) : filteredUsers.map((u) => {
+              ) : (
+                filteredUsers.map((u) => {
                   const isCurrent = currentUser ? u.id === currentUser.id : false;
-                  const userUnitsCount = units.filter((unit) => unit.ownerId === u.id).length;
+                  const userUnitsCount = (units || []).filter((unit) => unit.ownerId === u.id).length;
+                  const displayName = u.fullName || u.username || 'مستخدم بدون اسم';
+                  const avatarLetter = (u.fullName || u.username || 'م').slice(0, 1);
 
-                return (
-                  <tr
-                    key={u.id}
-                    className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition ${
-                      isCurrent ? 'bg-amber-50/30 dark:bg-amber-950/20' : ''
-                    }`}
-                  >
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-amber-600 text-white font-black flex items-center justify-center text-xs">
-                          {u.fullName.slice(0, 1)}
+                  return (
+                    <tr
+                      key={u.id}
+                      className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition ${
+                        isCurrent ? 'bg-amber-50/30 dark:bg-amber-950/20' : ''
+                      }`}
+                    >
+                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-xl bg-amber-600 text-white font-black flex items-center justify-center text-xs">
+                            {avatarLetter}
+                          </div>
+                          <div>
+                            <span>{displayName}</span>
+                            {isCurrent && (
+                              <span className="mr-2 text-[10px] bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-bold px-2 py-0.5 rounded-full">
+                                حسابك الحالي
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <span>{u.fullName}</span>
-                          {isCurrent && (
-                            <span className="mr-2 text-[10px] bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-bold px-2 py-0.5 rounded-full">
-                              حسابك الحالي
-                            </span>
+                      </td>
+
+                      <td className="py-3.5 px-4 font-mono font-bold text-amber-700 dark:text-amber-400">
+                        @{u.username || 'user'}
+                      </td>
+
+                      <td className="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-300">
+                        {u.phone ? (
+                          <div className="flex items-center gap-1">
+                            <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                            <span dir="ltr">{u.phone}</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400">لم يُسجل</span>
+                        )}
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <span className="inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                          <Building className="w-3 h-3 text-slate-400" />
+                          <span>{userUnitsCount} وحدة</span>
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                            u.role === 'admin'
+                              ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300'
+                              : 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300'
+                          }`}
+                        >
+                          {u.role === 'admin' ? 'مدير عام للنظام' : 'وسيط عقاري معتمد'}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-slate-500" suppressHydrationWarning>
+                        {u.createdAt && !isNaN(new Date(u.createdAt).getTime())
+                          ? new Date(u.createdAt).toLocaleDateString('ar-EG')
+                          : '—'}
+                      </td>
+
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          {/* زر تعديل بيانات المستخدم */}
+                          <button
+                            onClick={() => openEditModal(u)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:hover:bg-amber-900/60 dark:text-amber-200 transition cursor-pointer"
+                            title="تعديل بيانات المستخدم ورقم الهاتف وكلمة المرور"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>تعديل</span>
+                          </button>
+
+                          {!isCurrent && (
+                            <button
+                              onClick={() => setCurrentUser(u)}
+                              className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 transition cursor-pointer"
+                              title="التبديل إلى هذا الحساب فوراً"
+                            >
+                              دخول كـ
+                            </button>
+                          )}
+
+                          {users.length > 1 && !isCurrent && (
+                            <button
+                              onClick={() => {
+                                if (confirm(`هل أنت متأكد من حذف حساب ${displayName} نهائياً؟`)) {
+                                  deleteUser(u.id);
+                                  showToast(`تم حذف حساب ${displayName}.`);
+                                }
+                              }}
+                              className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
+                              title="حذف الحساب"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           )}
                         </div>
-                      </div>
-                    </td>
-
-                    <td className="py-3.5 px-4 font-mono font-bold text-amber-700 dark:text-amber-400">
-                      @{u.username}
-                    </td>
-
-                    <td className="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-300">
-                      {u.phone ? (
-                        <div className="flex items-center gap-1">
-                          <Phone className="w-3.5 h-3.5 text-emerald-600" />
-                          <span dir="ltr">{u.phone}</span>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400">لم يُسجل</span>
-                      )}
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                        <Building className="w-3 h-3 text-slate-400" />
-                        <span>{userUnitsCount} وحدة</span>
-                      </span>
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
-                          u.role === 'admin'
-                            ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300'
-                            : 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300'
-                        }`}
-                      >
-                        {u.role === 'admin' ? 'مدير عام للنظام' : 'وسيط عقاري معتمد'}
-                      </span>
-                    </td>
-
-                    <td className="py-3.5 px-4 text-slate-500">
-                      {new Date(u.createdAt).toLocaleDateString('ar-EG')}
-                    </td>
-
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        {/* زر تعديل بيانات المستخدم */}
-                        <button
-                          onClick={() => openEditModal(u)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:hover:bg-amber-900/60 dark:text-amber-200 transition cursor-pointer"
-                          title="تعديل بيانات المستخدم ورقم الهاتف وكلمة المرور"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                          <span>تعديل</span>
-                        </button>
-
-                        {!isCurrent && (
-                          <button
-                            onClick={() => setCurrentUser(u)}
-                            className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 transition cursor-pointer"
-                            title="التبديل إلى هذا الحساب فوراً"
-                          >
-                            دخول كـ
-                          </button>
-                        )}
-
-                        {users.length > 1 && !isCurrent && (
-                          <button
-                            onClick={() => {
-                              if (confirm(`هل أنت متأكد من حذف حساب ${u.fullName} نهائياً؟`)) {
-                                deleteUser(u.id);
-                                showToast(`تم حذف حساب ${u.fullName}.`);
-                              }
-                            }}
-                            className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
-                            title="حذف الحساب"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -442,7 +482,7 @@ export default function AdminUsersPage() {
 
             <form onSubmit={handleUpdateUser} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                <label className="block font-bold text-slate-900 dark:text-slate-100 mb-1">
                   الاسم بالكامل *
                 </label>
                 <input
@@ -450,13 +490,13 @@ export default function AdminUsersPage() {
                   value={editFullName}
                   onChange={(e) => setEditFullName(e.target.value)}
                   placeholder="مثال: أحمد زهران"
-                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                <label className="block font-bold text-slate-900 dark:text-slate-100 mb-1">
                   اسم المستخدم للدخول (UserName) *
                 </label>
                 <div className="relative">
@@ -469,17 +509,17 @@ export default function AdminUsersPage() {
                     autoCorrect="off"
                     spellCheck="false"
                     placeholder="username"
-                    className="w-full pl-3 pr-8 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-bold font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+                    className="w-full pl-3 pr-8 py-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-black font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                     required
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                   يتم حفظ اسم المستخدم دائماً بحروف صغيرة (lowercase) تلقائياً لتسجيل الدخول والبحث
                 </p>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                <label className="block font-bold text-slate-900 dark:text-slate-100 mb-1">
                   رقم الهاتف المحمول (للتواصل والواتساب)
                 </label>
                 <input
@@ -487,15 +527,15 @@ export default function AdminUsersPage() {
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
                   placeholder="01122334455"
-                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-black font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                   يجب أن يكون رقم الهاتف فريداً لكل مستخدم (غير مكرر) حيث يُستخدم لتسجيل الدخول وعند نسخ أو مشاركة تفاصيل أي وحدة عقارية مع العملاء.
                 </p>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                <label className="block font-bold text-slate-900 dark:text-slate-100 mb-1">
                   كلمة المرور الجديدة
                 </label>
                 <input
@@ -503,21 +543,21 @@ export default function AdminUsersPage() {
                   value={editPassword}
                   onChange={(e) => setEditPassword(e.target.value)}
                   placeholder="اترك الحقل فارغاً إذا لم ترغب في التغيير"
-                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                   إذا تركت هذا الحقل فارغاً، ستظل كلمة المرور الحالية كما هي دون تعديل.
                 </p>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                <label className="block font-bold text-slate-900 dark:text-slate-100 mb-1">
                   نوع الصلاحية
                 </label>
                 <select
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value as AppRole)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs cursor-pointer"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs cursor-pointer"
                 >
                   <option value="user" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
                     وسيط عقاري (متاح له إضافة ومتابعة وحداته وعملائه)
@@ -532,7 +572,7 @@ export default function AdminUsersPage() {
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition"
+                  className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition"
                 >
                   إلغاء
                 </button>
@@ -567,7 +607,7 @@ export default function AdminUsersPage() {
 
             <form onSubmit={handleCreateUser} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                <label className="block font-bold text-slate-900 dark:text-slate-100 mb-1">
                   الاسم بالكامل *
                 </label>
                 <input
@@ -575,13 +615,13 @@ export default function AdminUsersPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="مثال: م/ عمرو رضوان"
-                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                <label className="block font-bold text-slate-900 dark:text-slate-100 mb-1">
                   اسم المستخدم للدخول (UserName) *
                 </label>
                 <div className="relative">
@@ -594,15 +634,15 @@ export default function AdminUsersPage() {
                     autoCorrect="off"
                     spellCheck="false"
                     placeholder="amr_radwan"
-                    className="w-full pl-3 pr-8 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-bold font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+                    className="w-full pl-3 pr-8 py-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-black font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                     required
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">يتم حفظ اسم المستخدم دائماً بحروف صغيرة (lowercase) تلقائياً لتسجيل الدخول والبحث</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">يتم حفظ اسم المستخدم دائماً بحروف صغيرة (lowercase) تلقائياً لتسجيل الدخول والبحث</p>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                <label className="block font-bold text-slate-900 dark:text-slate-100 mb-1">
                   رقم الهاتف المحمول
                 </label>
                 <input
@@ -610,13 +650,13 @@ export default function AdminUsersPage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="010XXXXXXXX"
-                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-black font-mono focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">يجب أن يكون رقم الهاتف فريداً لكل مستخدم (غير مكرر) حيث يُستخدم لتسجيل الدخول.</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">يجب أن يكون رقم الهاتف فريداً لكل مستخدم (غير مكرر) حيث يُستخدم لتسجيل الدخول.</p>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                <label className="block font-bold text-slate-900 dark:text-slate-100 mb-1">
                   كلمة المرور
                 </label>
                 <input
@@ -624,18 +664,18 @@ export default function AdminUsersPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="•••••••• (افتراضياً: 123456)"
-                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                <label className="block font-bold text-slate-900 dark:text-slate-100 mb-1">
                   نوع الصلاحية
                 </label>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as AppRole)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs cursor-pointer"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs cursor-pointer"
                 >
                   <option value="user" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">وسيط عقاري (متاح له إضافة ومتابعة وحداته وعملائه)</option>
                   <option value="admin" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">مدير عام للنظام (صلاحية كاملة لجميع الأقسام والمستخدمين)</option>
