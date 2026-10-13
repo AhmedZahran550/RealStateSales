@@ -80,10 +80,15 @@ function MatchingContent() {
     if (!currentCustomer || !activeUnit) return '';
 
     const consultantName = currentUser?.fullName || 'أحمد زهران';
-    const consultantPhone = currentUser?.phone || '01023456789';
+    const consultantPhone = currentUser?.phone || '01122334455';
     const budgetStr = currentCustomer.budget
       ? `في حدود ميزانية ${(currentCustomer.budget / 1000000).toFixed(1)} مليون ج.م`
       : 'بمدينة بدر';
+
+    const locationFeatures =
+      activeUnit.services && activeUnit.services.length > 0
+        ? `قريب من: ${activeUnit.services.join('، ')}`
+        : activeUnit.description || 'الحي المتميز بمدينة بدر';
 
     return `مساء الخير يا ${currentCustomer.name}، أتمنى تكون بخير 🌿
 
@@ -94,19 +99,18 @@ function MatchingContent() {
 🏡 *كود الوحدة:* #BD-${activeUnit.zoneId}-${activeUnit.plotNo}
 📍 *الموقع:* الحي المتميز - منطقة ${activeUnit.zoneId} (قطعة ${activeUnit.plotNo})
 📐 *المساحة:* ${activeUnit.area} م² ${activeUnit.gardenArea ? `+ حديقة خاصة ${activeUnit.gardenArea} م²` : ''}
-🏗 *نوع الوحدة:* ${UNIT_KIND_LABELS[activeUnit.unitKind] || 'شقة سكنية فاخرة'}
+🏗 *نوع الوحدة:* ${UNIT_KIND_LABELS[activeUnit.unitKind] || 'شقة سكنية'}
 💰 *السعر الإجمالي:* ${activeUnit.price.toLocaleString()} ج.م
-💳 *نظام السداد:*
-- مقدم ${(activeUnit.price * 0.1).toLocaleString()} ج.م فقط (10%)
-- ${activeUnit.paymentTerms || 'أقساط متساوية بدون فوائد'}
-⏳ *الاستلام:* ${activeUnit.deliveryNote || 'استلام فوري جاهز للمعاينة'}
+💳 *نظام السداد:* ${activeUnit.paymentTerms || 'كاش أو تقسيط بتسهيلات'}
+⏳ *الاستلام:* ${activeUnit.deliveryNote || 'استلام فوري'}
 
-📍 *الموقع:* الحي المتميز - دقيقتين من طريق السويس ومحطة القطار الكهربائي الخفيف (LRT).
+📍 *المعالم والخدمات المحيطة:*
+${locationFeatures}
 
-حضرتك تحب نرتب ميعاد معاينة للموقع مع المستشار العقاري غداً أو بعد غد؟
+حضرتك تحب نرتب ميعاد معاينة للموقع مع المستشار العقاري؟
 
 تحياتي،
-*${consultantName} | كبير مستشاري عقار سيلز*
+*${consultantName} | مستشار عقاري معتمد*
 📞 ${consultantPhone}`;
   }, [currentCustomer, activeUnit, currentUser]);
 
@@ -179,19 +183,19 @@ function MatchingContent() {
                 عميل مسجل
               </span>
             </label>
-            <div className="relative">
-              <select
-                id="client-select"
-                value={selectedCustomerId}
-                onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="w-full bg-surface-container-low text-on-surface rounded-xl py-3 pr-10 pl-4 font-body-md text-body-md appearance-none focus:outline-none focus:ring-2 focus:ring-primary shadow-inner cursor-pointer font-medium text-xs"
-              >
-                {myCustomers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} — ميزانية {c.budget ? `${(c.budget / 1000000).toFixed(1)} مليون ج.م` : 'غير محددة'} ({c.phone})
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="client-select"
+                  value={selectedCustomerId}
+                  onChange={(e) => setSelectedCustomerId(e.target.value)}
+                  className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white rounded-xl py-3 pr-10 pl-4 font-body-md text-body-md appearance-none focus:outline-none focus:ring-2 focus:ring-primary shadow-xs cursor-pointer font-bold text-xs"
+                >
+                  {myCustomers.map((c) => (
+                    <option key={c.id} value={c.id} className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
+                      {c.name} — ميزانية {c.budget ? `${(c.budget / 1000000).toFixed(1)} مليون ج.م` : 'غير محددة'} ({c.phone})
+                    </option>
+                  ))}
+                </select>
               <span className="material-symbols-outlined absolute right-3 top-3 text-primary text-[20px] pointer-events-none">
                 verified_user
               </span>

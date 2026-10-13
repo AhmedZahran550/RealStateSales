@@ -110,7 +110,7 @@ export default function AdminServicesPage() {
             </h3>
             <form onSubmit={handleAdd} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
                   اسم المعلم / الخدمة *
                 </label>
                 <input
@@ -118,31 +118,31 @@ export default function AdminServicesPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="مثال: مول سيتي كلوب أو مجمع بنوك..."
-                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-semibold"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
                   تصنيف الخدمة
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as any)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs cursor-pointer"
                 >
-                  <option value="mall">مول ومركز تجاري</option>
-                  <option value="club">نادي ومساحات ترفيهية</option>
-                  <option value="road">محور وطريق رئيسي</option>
-                  <option value="school">جامعة أو مدرسة</option>
-                  <option value="hospital">طبي ومستشفى</option>
-                  <option value="other">أخرى</option>
+                  <option value="mall" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">مول ومركز تجاري</option>
+                  <option value="club" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">نادي ومساحات ترفيهية</option>
+                  <option value="road" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">محور وطريق رئيسي</option>
+                  <option value="school" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">جامعة أو مدرسة</option>
+                  <option value="hospital" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">طبي ومستشفى</option>
+                  <option value="other" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">أخرى</option>
                 </select>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
                   ملاحظات وموقع المعلم
                 </label>
                 <textarea
@@ -150,7 +150,7 @@ export default function AdminServicesPage() {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="تفاصيل الخدمات، الشارع، أو الفائدة للملاك..."
-                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs leading-relaxed"
                 />
               </div>
 
@@ -158,13 +158,13 @@ export default function AdminServicesPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-slate-500 font-bold hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="px-4 py-2 rounded-xl text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-md shadow-amber-600/20"
+                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-md shadow-amber-600/20 cursor-pointer transition"
                 >
                   حفظ المعلم
                 </button>

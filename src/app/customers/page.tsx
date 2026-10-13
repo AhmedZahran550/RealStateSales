@@ -8,6 +8,7 @@ import { Customer, CustomerStage, STAGE_CONFIG } from '@/lib/types';
 import CrmKanban from '@/components/CrmKanban';
 import CustomerModal from '@/components/CustomerModal';
 import CustomerDetailModal from '@/components/CustomerDetailModal';
+import { formatArabicFollowupDate } from '@/lib/date-utils';
 
 function CustomersContent() {
   const {
@@ -244,10 +245,10 @@ function CustomersContent() {
               معاينات ميدانية نشطة
             </span>
             <span className="font-headline-lg text-headline-lg text-primary font-bold text-2xl">
-              {stageCounts.viewed || 3} زيارات
+              {stageCounts.viewed} زيارات
             </span>
             <span className="font-label-sm text-label-sm text-primary font-semibold mt-0.5 text-[11px]">
-              +4 هذا الأسبوع
+              مرحلة المعاينة الميدانية
             </span>
           </div>
           <div className="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary">
@@ -261,7 +262,7 @@ function CustomersContent() {
               صفقات قيد التفاوض
             </span>
             <span className="font-headline-lg text-headline-lg text-tertiary font-bold text-2xl">
-              {stageCounts.negotiating || 2} صفقات
+              {stageCounts.negotiating} صفقات
             </span>
             <span className="font-label-sm text-label-sm text-on-surface-variant mt-0.5 text-[11px]">
               في مرحلة تقديم العروض
@@ -278,10 +279,10 @@ function CustomersContent() {
               نسبة تحويل الصفقات
             </span>
             <span className="font-headline-lg text-headline-lg text-primary-container font-bold text-2xl">
-              24.8%
+              {myCustomers.length > 0 ? Math.round(((stageCounts.reserved + stageCounts.closed) / myCustomers.length) * 100) : 0}%
             </span>
             <span className="font-label-sm text-label-sm text-primary font-semibold mt-0.5 text-[11px]">
-              متفوق على معدل الشهر السابق
+              معدل الإغلاق والتعاقد
             </span>
           </div>
           <div className="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
@@ -451,7 +452,7 @@ function CustomersContent() {
             {/* Advanced Filters */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm items-center pt-space-xs border-t border-surface-container-low pt-2">
               <div className="relative">
-                <span className="material-symbols-outlined absolute right-space-md top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">
+                <span className="material-symbols-outlined absolute right-space-md top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 text-[20px] pointer-events-none">
                   search
                 </span>
                 <input
@@ -459,7 +460,7 @@ function CustomersContent() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="بحث بالاسم، رقم الموبايل أو الملاحظات..."
-                  className="w-full bg-surface-container-low rounded-xl py-2.5 pr-11 pl-space-md font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary text-xs"
+                  className="w-full bg-white dark:bg-[#151d2a] border border-stone-300 dark:border-stone-700/80 rounded-xl py-2.5 pr-11 pl-space-md font-semibold text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-xs shadow-xs"
                 />
               </div>
 
@@ -467,7 +468,7 @@ function CustomersContent() {
                 <select
                   value={budgetFilter}
                   onChange={(e) => setBudgetFilter(e.target.value)}
-                  className="w-full bg-surface-container-low rounded-xl py-2.5 pr-space-md pl-8 font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs"
+                  className="w-full bg-white dark:bg-[#151d2a] border border-stone-300 dark:border-stone-700/80 rounded-xl py-2.5 pr-space-md pl-8 font-bold text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 appearance-none cursor-pointer text-xs shadow-xs"
                 >
                   <option value="all">نطاق الميزانية (الكل)</option>
                   <option value="1-3">1 - 3 مليون ج.م</option>
@@ -475,7 +476,7 @@ function CustomersContent() {
                   <option value="6-10">6 - 10 مليون ج.م</option>
                   <option value="10-30">أكثر من 10 مليون ج.م</option>
                 </select>
-                <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-outline text-[18px] pointer-events-none">
+                <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 text-[18px] pointer-events-none">
                   expand_more
                 </span>
               </div>
@@ -487,245 +488,141 @@ function CustomersContent() {
             {filteredCustomers.length > 0 ? (
               filteredCustomers.map((lead) => {
                 const stageConfig = STAGE_CONFIG[lead.stage] || STAGE_CONFIG.lead;
+                const leadTimestamp = lead.nextFollowupAt ? new Date(lead.nextFollowupAt).getTime() : 0;
+                const isLeadOverdue = leadTimestamp > 0 && todayStart > 0 && leadTimestamp < todayStart;
+                const isLeadToday = leadTimestamp > 0 && todayStart > 0 && todayEnd > 0 && leadTimestamp >= todayStart && leadTimestamp < todayEnd;
 
                 return (
                   <div
                     key={lead.id}
-                    className="client-card bg-surface-container-lowest rounded-2xl p-3.5 sm:p-5 lg:p-space-lg shadow-sm hover:shadow-md transition-all flex flex-col xl:flex-row xl:items-center justify-between gap-4 xl:gap-space-lg border border-surface-container-high/40"
+                    className="client-card bg-surface-container-lowest rounded-2xl p-3.5 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row md:items-center justify-between gap-3.5 sm:gap-4 border border-surface-container-high/50 hover:border-primary/40"
                   >
-                    {/* Lead Identity & Contacts */}
-                    <div className="flex items-start gap-3 sm:gap-space-md w-full xl:w-auto xl:min-w-[260px]">
-                      <div className="relative shrink-0">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-primary-fixed text-primary flex items-center justify-center font-headline-md text-headline-md font-bold shadow-sm text-lg sm:text-xl">
-                          {lead.name.charAt(0)}
-                        </div>
-                        <span className="absolute -bottom-1 -left-1 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 border-surface-container-lowest bg-primary" />
+                    {/* 1. هوية العميل والحالة ورقم التليفون وموعد المتابعة */}
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                      {/* الحرف الأول من الاسم */}
+                      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-primary-fixed text-primary flex items-center justify-center font-bold text-base sm:text-lg shrink-0 shadow-xs">
+                        {lead.name.charAt(0)}
                       </div>
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <div className="flex items-center gap-space-xs flex-wrap">
-                          <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold text-base truncate">
+
+                      {/* البيانات الأساسية */}
+                      <div className="flex flex-col min-w-0 flex-1 gap-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-bold text-sm sm:text-base text-on-surface truncate">
                             {lead.name}
                           </h3>
-                          <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm text-xs shrink-0">
-                            {lead.source || 'عميل مسجل'}
+                          {/* الحالة */}
+                          <span className={`px-2.5 py-0.5 rounded-full font-label-sm text-[11px] font-bold border ${stageConfig.bg} ${stageConfig.color} ${stageConfig.border}`}>
+                            {stageConfig.label}
                           </span>
                         </div>
-                        <span className="font-label-sm text-label-sm text-outline mt-0.5 text-xs">
-                          سجل الاهتمام: {new Date(lead.createdAt).toLocaleDateString('ar-EG')}
-                        </span>
 
-                        {/* Quick Contact Icons */}
-                        <div className="flex items-center gap-space-xs mt-space-sm flex-wrap">
-                          <a
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary text-primary transition-colors font-label-sm text-label-sm font-semibold text-xs min-h-[36px]"
-                            href={`tel:${lead.phone}`}
-                          >
-                            <span className="material-symbols-outlined text-[16px]">call</span>
-                            <span dir="ltr">{lead.phone}</span>
-                          </a>
-                          <a
-                            className="inline-flex items-center justify-center p-2 rounded-lg bg-surface-container-low hover:bg-primary-container text-primary-container hover:text-on-primary transition-colors min-h-[36px] min-w-[36px]"
-                            href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            title="محادثة واتساب"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">chat</span>
-                          </a>
+                        <div className="flex items-center gap-2 sm:gap-3 flex-wrap text-xs text-on-surface-variant">
+                          {/* رقم التليفون وأيقونات التواصل */}
+                          <div className="flex items-center gap-1.5 font-semibold bg-surface-container-low px-2 py-0.5 rounded-lg">
+                            <a
+                              href={`tel:${lead.phone}`}
+                              className="flex items-center gap-1 hover:text-primary transition font-mono text-[12px]"
+                              dir="ltr"
+                              title="اتصال هاتفياً"
+                            >
+                              <span className="material-symbols-outlined text-[15px] text-primary">call</span>
+                              <span>{lead.phone}</span>
+                            </a>
+                            <a
+                              href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-emerald-600 hover:text-emerald-700 transition"
+                              title="محادثة واتساب"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">chat</span>
+                            </a>
+                          </div>
+
+                          {/* موعد المتابعة مع اسم اليوم والوقت */}
+                          {lead.nextFollowupAt ? (
+                            (() => {
+                              const followup = formatArabicFollowupDate(lead.nextFollowupAt);
+                              return (
+                                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border transition-all ${
+                                  followup.isOverdue
+                                    ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-300 dark:border-rose-900/60 shadow-xs'
+                                    : followup.isToday
+                                    ? 'bg-amber-50 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 border-amber-300 dark:border-amber-900/60 shadow-xs'
+                                    : 'bg-emerald-50 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200 border-emerald-300 dark:border-emerald-900/60 shadow-xs'
+                                }`}>
+                                  <span className="material-symbols-outlined text-[15px]">alarm</span>
+                                  <span>
+                                    {followup.isOverdue ? '⚠️ متأخرة: ' : followup.isToday ? '🔔 اليوم: ' : '📅 '}
+                                    <strong className="text-stone-900 dark:text-stone-100 font-extrabold">{followup.dayName}</strong>
+                                    {' '}
+                                    <span>({followup.formattedDate})</span>
+                                    {' • '}
+                                    <span className="font-mono">{followup.formattedTime}</span>
+                                  </span>
+                                </div>
+                              );
+                            })()
+                          ) : (
+                            <span className="text-[11px] text-stone-400 font-medium">بدون موعد متابعة</span>
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Budget & Request */}
-                    <div className="flex flex-col w-full xl:w-auto xl:min-w-[240px] xl:max-w-sm bg-surface-container-low p-3 sm:p-space-sm rounded-xl border border-surface-container-high/30">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-label-sm text-label-sm text-on-surface-variant font-medium text-xs">
-                          الميزانية المقررة:
-                        </span>
-                        <span className="font-label-md text-label-md text-primary font-extrabold text-sm">
-                          {lead.budget ? `${(lead.budget / 1000000).toFixed(1)}M ج.م` : 'غير محددة'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-space-xs text-on-surface font-body-sm text-body-sm font-semibold text-xs">
-                        <span className="material-symbols-outlined text-primary text-[18px]">villa</span>
-                        <span>وحدات الحي المتميز بمدينة بدر</span>
-                      </div>
-                      <div className="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm mt-1 text-[11px]">
-                        <span className="material-symbols-outlined text-[15px]">location_on</span>
-                        <span>مدينة بدر - بالقرب من الخدمات والمحاور</span>
-                      </div>
+                    {/* 2. شريط أزرار الإجراءات المنظم: عرض التفاصيل والمطابقة وتعديل وحذف */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pt-2.5 md:pt-0 border-t md:border-t-0 border-surface-container-high/30 w-full md:w-auto justify-end">
+                      {/* زر عرض التفاصيل */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCustomer(lead)}
+                        className="flex-1 md:flex-none px-3.5 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer min-h-[38px]"
+                        title="عرض كافة التفاصيل والملاحظات وسجل العميل"
+                      >
+                        <span className="material-symbols-outlined text-[17px] text-primary">visibility</span>
+                        <span>عرض التفاصيل</span>
+                      </button>
+
+                      {/* زر المطابقة */}
+                      <Link
+                        href={`/matching?customerId=${lead.id}`}
+                        className="flex-1 md:flex-none px-3.5 py-2 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm font-bold transition flex items-center justify-center gap-1.5 shadow-sm text-xs min-h-[38px]"
+                        title="مطابقة الوحدات المعروضة لطلب العميل"
+                      >
+                        <span className="material-symbols-outlined text-[17px]">travel_explore</span>
+                        <span>المطابقة</span>
+                      </Link>
+
+                      {/* زر التعديل */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingCustomer(lead);
+                          setIsCustomerModalOpen(true);
+                        }}
+                        className="px-3 py-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-300/80 dark:border-amber-800/80 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-600 dark:hover:text-white transition-all flex items-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[38px]"
+                        title="تعديل بيانات ومتابعة العميل"
+                      >
+                        <span className="material-symbols-outlined text-[17px]">edit_note</span>
+                        <span>تعديل</span>
+                      </button>
+
+                      {/* زر الحذف */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`هل أنت متأكد من حذف العميل "${lead.name}" نهائياً؟`)) {
+                            deleteCustomer(lead.id);
+                            showToast(`تم حذف العميل "${lead.name}" بنجاح`);
+                          }
+                        }}
+                        className="px-3 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-300/80 dark:border-rose-800/80 hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white transition-all flex items-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[38px]"
+                        title="حذف العميل"
+                      >
+                        <span className="material-symbols-outlined text-[17px]">delete_forever</span>
+                        <span>حذف</span>
+                      </button>
                     </div>
-
-                    {/* Stage Selector & Sales Notes */}
-                    <div className="flex flex-col flex-1 w-full max-w-full xl:max-w-md">
-                      <div className="flex items-center justify-between gap-space-xs mb-1">
-                        <span className="font-label-sm text-label-sm text-on-surface-variant text-xs">
-                          المرحلة الحالية:
-                        </span>
-                        <div className="relative">
-                          <select
-                            value={lead.stage}
-                            onChange={(e) => updateCustomerStage(lead.id, e.target.value as CustomerStage)}
-                            className="px-space-sm py-1.5 pr-6 rounded-lg bg-surface-container-high text-primary font-label-sm text-label-sm font-bold appearance-none cursor-pointer focus:outline-none text-xs min-h-[36px]"
-                          >
-                            <option value="lead">عميل محتمل</option>
-                            <option value="asking">استفسار وتواصل</option>
-                            <option value="viewed">تمت المعاينة</option>
-                            <option value="negotiating">تفاوض ومفاضلة</option>
-                            <option value="reserved">حجز مؤقت</option>
-                            <option value="closed">صفقة ناجحة</option>
-                          </select>
-                          <span className="material-symbols-outlined absolute right-1.5 top-1/2 -translate-y-1/2 text-primary text-[16px] pointer-events-none">
-                            expand_more
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Last note recorded */}
-                      <div className="bg-surface-container rounded-lg p-2.5 flex items-start gap-space-xs text-xs">
-                        <span className="material-symbols-outlined text-[18px] text-tertiary mt-0.5 shrink-0">sticky_note_2</span>
-                        <p className="font-body-sm text-body-sm text-on-surface leading-relaxed line-clamp-2">
-                          {lead.notes || 'العميل مهتم بمعاينة موقع الوحدة على المخطط والاطلاع على تسهيلات السداد.'}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Follow-up Time Badge & Actions */}
-                    {(() => {
-                      const leadTimestamp = lead.nextFollowupAt ? new Date(lead.nextFollowupAt).getTime() : 0;
-                      const isLeadOverdue = leadTimestamp > 0 && todayStart > 0 && leadTimestamp < todayStart;
-                      const isLeadToday = leadTimestamp > 0 && todayStart > 0 && todayEnd > 0 && leadTimestamp >= todayStart && leadTimestamp < todayEnd;
-                      const isLeadUpcoming = leadTimestamp > 0 && todayEnd > 0 && leadTimestamp >= todayEnd;
-
-                      return (
-                        <div className="flex flex-col sm:flex-row xl:flex-col items-stretch sm:items-center xl:items-end justify-between gap-2.5 w-full xl:w-auto xl:min-w-[240px]">
-                          {/* Follow-up status card */}
-                          <div className={`w-full rounded-xl p-2.5 flex items-center justify-between border ${
-                            isLeadOverdue
-                              ? 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900'
-                              : isLeadToday
-                              ? 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900'
-                              : lead.nextFollowupAt
-                              ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900'
-                              : 'bg-surface-container-low border-surface-container-high/40'
-                          }`}>
-                            <div className="flex flex-col">
-                              <span className="font-label-sm text-label-sm text-on-surface-variant font-bold flex items-center gap-1 text-[11px]">
-                                <span className={`material-symbols-outlined text-[16px] ${
-                                  isLeadOverdue ? 'text-rose-600' : isLeadToday ? 'text-amber-600' : 'text-primary'
-                                }`}>alarm</span>
-                                المتابعة القادمة:
-                              </span>
-                              <span className="font-body-sm text-body-sm text-on-surface font-extrabold mt-0.5 text-xs">
-                                {lead.nextFollowupAt
-                                  ? new Date(lead.nextFollowupAt).toLocaleString('ar-EG', {
-                                      month: 'short',
-                                      day: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    })
-                                  : 'لم يحدد موعد'}
-                              </span>
-                            </div>
-                            <span className={`px-2 py-0.5 rounded-full font-label-sm text-label-sm text-[10px] font-bold ${
-                              isLeadOverdue
-                                ? 'bg-rose-500 text-white'
-                                : isLeadToday
-                                ? 'bg-amber-500 text-white'
-                                : lead.nextFollowupAt
-                                ? 'bg-emerald-600 text-white'
-                                : 'bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-300'
-                            }`}>
-                              {isLeadOverdue
-                                ? '⚠️ متأخرة'
-                                : isLeadToday
-                                ? '🔔 اليوم'
-                                : lead.nextFollowupAt
-                                ? '📅 مجدولة'
-                                : '⏳ بدون موعد'}
-                            </span>
-                          </div>
-
-                          {/* 1-Click Quick Reschedule Shortcuts */}
-                          <div className="w-full flex items-center justify-between gap-1 text-[10px] bg-surface-container-low/60 p-1 rounded-lg">
-                            <span className="text-on-surface-variant font-bold shrink-0">تأجيل:</span>
-                            <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => handleQuickReschedule(lead.id, lead.name, 'today')}
-                                className="px-1.5 py-0.5 rounded bg-surface-container hover:bg-amber-100 hover:text-amber-800 text-on-surface font-bold transition"
-                                title="تأجيل موعد المتابعة لساعتين من الآن"
-                              >
-                                +2س
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleQuickReschedule(lead.id, lead.name, 'tomorrow')}
-                                className="px-1.5 py-0.5 rounded bg-surface-container hover:bg-amber-100 hover:text-amber-800 text-on-surface font-bold transition"
-                                title="تأجيل موعد المتابعة لغداً ظهراً"
-                              >
-                                غداً
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleQuickReschedule(lead.id, lead.name, '3days')}
-                                className="px-1.5 py-0.5 rounded bg-surface-container hover:bg-amber-100 hover:text-amber-800 text-on-surface font-bold transition"
-                                title="تأجيل موعد المتابعة لـ 3 أيام"
-                              >
-                                3 أيام
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Actions: Details, Edit, Delete, Match */}
-                          <div className="grid grid-cols-4 gap-1.5 w-full">
-                            <button
-                              onClick={() => setSelectedCustomer(lead)}
-                              className="min-h-[36px] py-1.5 px-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-bold transition-all flex items-center justify-center gap-1 text-xs cursor-pointer"
-                              type="button"
-                              title="عرض التفاصيل وسجل الأنشطة"
-                            >
-                              <span className="material-symbols-outlined text-[16px] text-primary">visibility</span>
-                              <span className="hidden sm:inline">تفاصيل</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                setEditingCustomer(lead);
-                                setIsCustomerModalOpen(true);
-                              }}
-                              className="min-h-[36px] py-1.5 px-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-900/50 hover:bg-amber-100 transition-all flex items-center justify-center gap-1 text-xs font-bold cursor-pointer"
-                              type="button"
-                              title="تعديل بيانات العميل"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">edit</span>
-                              <span className="hidden sm:inline">تعديل</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (confirm(`هل أنت متأكد من حذف العميل "${lead.name}" نهائياً؟`)) {
-                                  deleteCustomer(lead.id);
-                                  showToast(`تم حذف العميل "${lead.name}" بنجاح`);
-                                }
-                              }}
-                              className="min-h-[36px] py-1.5 px-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 hover:bg-rose-100 transition-all flex items-center justify-center gap-1 text-xs font-bold cursor-pointer"
-                              type="button"
-                              title="حذف العميل"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">delete</span>
-                              <span className="hidden sm:inline">حذف</span>
-                            </button>
-                            <Link
-                              href={`/matching?customerId=${lead.id}`}
-                              className="min-h-[36px] py-1.5 px-1.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm font-bold transition-all flex items-center justify-center gap-1 shadow-sm text-xs"
-                              title="مطابقة الوحدات المعروضة"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">travel_explore</span>
-                              <span className="hidden sm:inline">مطابقة</span>
-                            </Link>
-                          </div>
-                        </div>
-                      );
-                    })()}
                   </div>
                 );
               })
@@ -776,6 +673,12 @@ function CustomersContent() {
         onClose={() => {
           setIsCustomerModalOpen(false);
           setEditingCustomer(null);
+        }}
+        onDelete={(customerId) => {
+          deleteCustomer(customerId);
+          setIsCustomerModalOpen(false);
+          setEditingCustomer(null);
+          showToast('تم حذف العميل بنجاح');
         }}
         onSubmit={(customerData) => {
           if (editingCustomer) {

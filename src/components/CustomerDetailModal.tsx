@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Customer, CustomerStage, ActivityType, Unit, STAGE_CONFIG, UNIT_KIND_LABELS } from '@/lib/types';
+import { formatArabicFollowupDate } from '@/lib/date-utils';
 import {
   X,
   Phone,
@@ -89,14 +90,8 @@ export default function CustomerDetailModal({
       return;
     }
     onUpdateCustomer(customer.id, { nextFollowupAt: newDateIso });
-    const formatted = new Date(newDateIso).toLocaleString('ar-EG', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    onAddActivity(customer.id, 'call', `تم تعديل موعد المتابعة القادمة إلى: ${formatted}`);
+    const fInfo = formatArabicFollowupDate(newDateIso);
+    onAddActivity(customer.id, 'call', `تم تعديل موعد المتابعة القادمة إلى: ${fInfo.dayName} (${fInfo.formattedDate}) الساعة ${fInfo.formattedTime}`);
   };
 
   const getQuickDateIso = (preset: 'today' | 'tomorrow' | '3days' | 'nextweek') => {
@@ -166,10 +161,10 @@ export default function CustomerDetailModal({
                   onEdit(customer);
                   onClose();
                 }}
-                className="p-2 sm:px-3 rounded-xl text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 transition flex items-center gap-1.5 text-xs font-bold border border-amber-200 dark:border-amber-900/50"
+                className="px-3.5 py-2 rounded-xl text-amber-800 dark:text-amber-300 bg-amber-500/10 dark:bg-amber-950/60 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-600 dark:hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold border border-amber-300/80 dark:border-amber-800/80 shadow-xs cursor-pointer"
                 title="تعديل بيانات العميل"
               >
-                <Edit className="w-4 h-4 text-amber-600" />
+                <Edit className="w-4 h-4 text-amber-600 group-hover:text-white" />
                 <span>تعديل</span>
               </button>
             )}
@@ -180,7 +175,7 @@ export default function CustomerDetailModal({
                   onClose();
                 }
               }}
-              className="p-2 sm:px-3 rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 transition flex items-center gap-1.5 text-xs font-bold border border-rose-200 dark:border-rose-900/50"
+              className="px-3.5 py-2 rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold border border-rose-300/80 dark:border-rose-800/80 shadow-xs cursor-pointer"
               title="حذف العميل"
             >
               <Trash2 className="w-4 h-4" />
@@ -289,18 +284,23 @@ export default function CustomerDetailModal({
                       ? '📅 موعد المتابعة القادمة مجدول:'
                       : '⏳ لم يتم تحديد موعد متابعة بعد'}
                   </p>
-                  <p className="text-xs mt-0.5 font-bold">
-                    {customer.nextFollowupAt
-                      ? new Date(customer.nextFollowupAt).toLocaleString('ar-EG', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
-                      : 'حدد موعداً لضمان عدم نسيان العميل'}
-                  </p>
+                  {customer.nextFollowupAt ? (
+                    (() => {
+                      const fInfo = formatArabicFollowupDate(customer.nextFollowupAt);
+                      return (
+                        <div className="flex items-center flex-wrap gap-1.5 mt-1">
+                          <span className="px-2 py-0.5 rounded-lg bg-amber-600/15 dark:bg-amber-400/20 text-amber-900 dark:text-amber-200 font-black text-xs">
+                            {fInfo.dayName}
+                          </span>
+                          <span className="font-bold text-xs">{fInfo.formattedDate}</span>
+                          <span className="opacity-50">•</span>
+                          <span className="font-bold font-mono text-xs">{fInfo.formattedTime}</span>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <p className="text-xs mt-0.5 font-bold">حدد موعداً لضمان عدم نسيان العميل</p>
+                  )}
                 </div>
               </div>
 
@@ -317,7 +317,7 @@ export default function CustomerDetailModal({
                       handleReschedule(undefined);
                     }
                   }}
-                  className="text-xs px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="text-xs px-2.5 py-1.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#151d2a] font-mono font-semibold text-stone-900 dark:text-stone-50 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-xs"
                 />
               </div>
             </div>
@@ -436,24 +436,24 @@ export default function CustomerDetailModal({
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 placeholder="اكتب خلاصة المكالمة أو تفاصيل الزيارة أو متطلبات العميل..."
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full text-xs p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 shadow-xs"
                 required
               />
 
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-500">تحديث المتابعة القادمة:</span>
+                  <span className="text-stone-700 dark:text-stone-300 font-bold">تحديث المتابعة القادمة:</span>
                   <input
                     type="date"
                     value={newFollowupDate}
                     onChange={(e) => setNewFollowupDate(e.target.value)}
-                    className="text-xs px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                    className="text-xs px-2.5 py-1 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-mono font-semibold shadow-xs"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-md shadow-amber-600/20 transition"
+                  className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white text-xs font-bold shadow-md shadow-amber-600/30 transition-all cursor-pointer"
                 >
                   حفظ النشاط
                 </button>

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import UnitFormModal from '@/components/UnitFormModal';
 import CustomerModal from '@/components/CustomerModal';
+import { formatArabicFollowupDate } from '@/lib/date-utils';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -22,6 +23,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     buildings,
     services,
     myUnits,
+    myCustomers,
     addBuilding,
   } = useApp();
 
@@ -225,7 +227,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="بحث بالوحدات أو العملاء..."
-              className="w-full bg-surface-container-lowest rounded-xl py-2 sm:py-space-sm pr-9 sm:pr-11 pl-7 sm:pl-space-md font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary shadow-sm text-xs truncate"
+              className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] rounded-xl py-2 sm:py-space-sm pr-9 sm:pr-11 pl-7 sm:pl-space-md font-body-sm text-body-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:outline-none focus:ring-2 focus:ring-primary shadow-xs text-xs truncate"
             />
             {searchTerm && (
               <button
@@ -264,31 +266,52 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <span className="material-symbols-outlined text-[22px] text-on-surface-variant">
                 notifications
               </span>
-              <span className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm text-[10px] font-bold">
-                5
-              </span>
+              {myCustomers.filter((c) => c.nextFollowupAt).length > 0 && (
+                <span className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm text-[10px] font-bold">
+                  {myCustomers.filter((c) => c.nextFollowupAt).length}
+                </span>
+              )}
             </button>
 
             {/* Notification Dropdown */}
             {notifDropdownOpen && (
               <div className="absolute left-0 mt-2 w-[calc(100vw-24px)] max-w-xs sm:w-80 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high p-3 z-50 animate-in fade-in zoom-in-95">
                 <div className="flex items-center justify-between pb-2 border-b border-surface-container-high mb-2">
-                  <span className="font-bold text-sm text-on-surface">إشعارات المتابعات اليومية</span>
-                  <span className="text-xs text-primary font-bold">5 جديدة</span>
+                  <span className="font-bold text-sm text-on-surface">إشعارات المتابعات</span>
+                  <span className="text-xs text-primary font-bold">
+                    {myCustomers.filter((c) => c.nextFollowupAt).length} مستحقة
+                  </span>
                 </div>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
-                  <div className="p-2 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors text-right">
-                    <p className="text-xs font-bold text-on-surface">متابعة د. مروان البدري</p>
-                    <p className="text-[11px] text-on-surface-variant">اليوم 01:30 م • فيلا تاون هاوس</p>
-                  </div>
-                  <div className="p-2 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors text-right">
-                    <p className="text-xs font-bold text-on-surface">متابعة م. سارة القحطاني</p>
-                    <p className="text-[11px] text-on-surface-variant">اليوم 03:00 م • شقة فندقية</p>
-                  </div>
-                  <div className="p-2 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors text-right">
-                    <p className="text-xs font-bold text-on-surface">متابعة أ. كريم عبد الوهاب</p>
-                    <p className="text-[11px] text-on-surface-variant">اليوم 05:45 م • مقر تجاري 120م²</p>
-                  </div>
+                  {myCustomers.filter((c) => c.nextFollowupAt).length > 0 ? (
+                    myCustomers
+                      .filter((c) => c.nextFollowupAt)
+                      .map((lead) => {
+                        const f = formatArabicFollowupDate(lead.nextFollowupAt);
+                        return (
+                          <Link
+                            key={lead.id}
+                            href={`/customers?q=${encodeURIComponent(lead.name)}`}
+                            onClick={() => setNotifDropdownOpen(false)}
+                            className="block p-2 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors text-right"
+                          >
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-bold text-on-surface">{lead.name}</p>
+                              <span className="text-[10px] text-primary font-semibold">
+                                {f.dayName} • {f.formattedTime}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-on-surface-variant truncate">
+                              {lead.notes || (lead.budget ? `${(lead.budget / 1000000).toFixed(1)} مليون ج.م` : 'متابعة دورية')}
+                            </p>
+                          </Link>
+                        );
+                      })
+                  ) : (
+                    <p className="text-xs text-on-surface-variant text-center py-4">
+                      لا توجد مواعيد متابعة مستحقة لليوم
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -315,7 +338,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   {currentUser.fullName}
                 </span>
                 <span className="font-label-sm text-label-sm text-on-surface-variant leading-tight text-[11px]">
-                  {currentUser.role === 'admin' ? 'مدير عام المنظومة' : 'Senior Property Consultant'}
+                  {currentUser.role === 'admin' ? 'مدير عام المنظومة' : 'مستشار عقاري معتمد'}
                 </span>
               </div>
             </button>

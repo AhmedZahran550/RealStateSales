@@ -339,7 +339,7 @@ export const INITIAL_UNITS: Unit[] = [
 
 export const INITIAL_CUSTOMERS: Customer[] = [
   {
-    id: 'cust-1',
+    id: 'c0000000-0000-0000-0000-000000000001',
     ownerId: 'a0000000-0000-0000-0000-000000000002',
     ownerName: 'Ahmed Zahran',
     name: 'د. طارق العوضي',
@@ -353,16 +353,16 @@ export const INITIAL_CUSTOMERS: Customer[] = [
     interestedUnitIds: ['b0000000-0000-0000-0000-000000000007'],
     activities: [
       {
-        id: 'act-1',
-        customerId: 'cust-1',
+        id: 'd0000000-0000-0000-0000-000000000001',
+        customerId: 'c0000000-0000-0000-0000-000000000001',
         type: 'call',
         note: 'مكالمة هاتفية: شرح تفاصيل الدوبلكس ومساحة الأرض 500 م² والجاردن.',
         createdAt: '2026-03-06T10:00:00Z',
         authorName: 'Ahmed Zahran',
       },
       {
-        id: 'act-2',
-        customerId: 'cust-1',
+        id: 'd0000000-0000-0000-0000-000000000002',
+        customerId: 'c0000000-0000-0000-0000-000000000001',
         type: 'visit',
         note: 'معاينة موقعية لقطعة 139 وأعجبهم الإطلالة المباشرة على الجاردن.',
         createdAt: '2026-03-08T15:00:00Z',
@@ -373,7 +373,7 @@ export const INITIAL_CUSTOMERS: Customer[] = [
     updatedAt: '2026-03-08T15:00:00Z',
   },
   {
-    id: 'cust-2',
+    id: 'c0000000-0000-0000-0000-000000000002',
     ownerId: 'a0000000-0000-0000-0000-000000000002',
     ownerName: 'Ahmed Zahran',
     name: 'م/ مصطفى كمال',
@@ -387,8 +387,8 @@ export const INITIAL_CUSTOMERS: Customer[] = [
     interestedUnitIds: ['b0000000-0000-0000-0000-000000000003'],
     activities: [
       {
-        id: 'act-3',
-        customerId: 'cust-2',
+        id: 'd0000000-0000-0000-0000-000000000003',
+        customerId: 'c0000000-0000-0000-0000-000000000002',
         type: 'whatsapp',
         note: 'إرسال صور وتفاصيل الأرضي بجاردن متسلمة للجهاز.',
         createdAt: '2026-03-07T11:20:00Z',
@@ -399,7 +399,7 @@ export const INITIAL_CUSTOMERS: Customer[] = [
     updatedAt: '2026-03-07T11:20:00Z',
   },
   {
-    id: 'cust-3',
+    id: 'c0000000-0000-0000-0000-000000000003',
     ownerId: 'a0000000-0000-0000-0000-000000000002',
     ownerName: 'Ahmed Zahran',
     name: 'أ. خالد منصور (مستثمر)',
@@ -413,8 +413,8 @@ export const INITIAL_CUSTOMERS: Customer[] = [
     interestedUnitIds: ['b0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000006'],
     activities: [
       {
-        id: 'act-4',
-        customerId: 'cust-3',
+        id: 'd0000000-0000-0000-0000-000000000004',
+        customerId: 'c0000000-0000-0000-0000-000000000003',
         type: 'note',
         note: 'شرح جدول الأقساط بمقدم 50% وتسهيلات على سنة.',
         createdAt: '2026-03-09T14:30:00Z',

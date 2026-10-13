@@ -5,7 +5,6 @@ import { Unit, UnitKind, UnitStatus, Zone, Building, Service, UNIT_KIND_LABELS }
 import { X, Building2, Image as ImageIcon, Plus, Check, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import LiveMapPicker from '@/components/LiveMapPicker';
 import { useApp } from '@/context/AppContext';
-import { INITIAL_ZONES, INITIAL_BUILDINGS, INITIAL_SERVICES } from '@/lib/mock-data';
 
 interface UnitFormModalProps {
   isOpen: boolean;
@@ -36,32 +35,28 @@ export default function UnitFormModal({
 
   const zones = (propsZones && propsZones.length > 0)
     ? propsZones
-    : (contextApp?.zones && contextApp.zones.length > 0 ? contextApp.zones : INITIAL_ZONES);
+    : (contextApp?.zones || []);
 
   const buildings = (propsBuildings && propsBuildings.length > 0)
     ? propsBuildings
-    : (contextApp?.buildings && contextApp.buildings.length > 0 ? contextApp.buildings : INITIAL_BUILDINGS);
+    : (contextApp?.buildings || []);
 
   const services = (propsServices && propsServices.length > 0)
     ? propsServices
-    : (contextApp?.services && contextApp.services.length > 0 ? contextApp.services : INITIAL_SERVICES);
+    : (contextApp?.services || []);
 
   const onAddBuilding = propsOnAddBuilding || contextApp?.addBuilding || ((b: any) => ({ ...b, id: Date.now() }));
   const [zoneId, setZoneId] = useState<number>(defaultZoneId || initialUnit?.zoneId || 1);
-  const [plotNo, setPlotNo] = useState<number>(defaultPlotNo || initialUnit?.plotNo || 42);
+  const [plotNo, setPlotNo] = useState<number>(defaultPlotNo || initialUnit?.plotNo || 1);
   const [unitKind, setUnitKind] = useState<UnitKind>(initialUnit?.unitKind || 'floor_1');
   const [floor, setFloor] = useState<number>(initialUnit?.floor ?? 1);
-  const [side, setSide] = useState<string>(initialUnit?.side || 'بحري صريح');
-  const [area, setArea] = useState<number>(initialUnit?.area || 180);
+  const [side, setSide] = useState<string>(initialUnit?.side || '');
+  const [area, setArea] = useState<number>(initialUnit?.area || 140);
   const [gardenArea, setGardenArea] = useState<number>(initialUnit?.gardenArea || 0);
-  const [price, setPrice] = useState<number>(initialUnit?.price || 3200000);
-  const [negotiable, setNegotiable] = useState<boolean>(initialUnit?.negotiable ?? true);
-  const [deliveryNote, setDeliveryNote] = useState<string>(
-    initialUnit?.deliveryNote || 'تسليم فوري نصف تشطيب'
-  );
-  const [paymentTerms, setPaymentTerms] = useState<string>(
-    initialUnit?.paymentTerms || 'مقدم 50% والباقي بتسهيلات على سنتين'
-  );
+  const [price, setPrice] = useState<number>(initialUnit?.price || 1500000);
+  const [negotiable, setNegotiable] = useState<boolean>(initialUnit?.negotiable ?? false);
+  const [deliveryNote, setDeliveryNote] = useState<string>(initialUnit?.deliveryNote || '');
+  const [paymentTerms, setPaymentTerms] = useState<string>(initialUnit?.paymentTerms || '');
   const [description, setDescription] = useState<string>(initialUnit?.description || '');
   const [status, setStatus] = useState<UnitStatus>(initialUnit?.status || 'available');
   const [lat, setLat] = useState<number | undefined>(initialUnit?.lat || 30.1382);
@@ -69,11 +64,10 @@ export default function UnitFormModal({
   const [showLiveMap, setShowLiveMap] = useState<boolean>(true);
 
   const [imageUrl, setImageUrl] = useState<string>(
-    initialUnit?.media?.[0]?.externalUrl ||
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'
+    initialUnit?.media?.[0]?.externalUrl || ''
   );
   const [selectedServices, setSelectedServices] = useState<string[]>(
-    initialUnit?.services || ['هايبر وان', 'محور طريق الروبيكي']
+    initialUnit?.services || []
   );
 
   useEffect(() => {
@@ -96,10 +90,23 @@ export default function UnitFormModal({
       setImageUrl(initialUnit.media?.[0]?.externalUrl || '');
       setSelectedServices(initialUnit.services || []);
     } else {
-      if (defaultZoneId) setZoneId(defaultZoneId);
-      if (defaultPlotNo) setPlotNo(defaultPlotNo);
+      setZoneId(defaultZoneId || 1);
+      setPlotNo(defaultPlotNo || 1);
+      setUnitKind('floor_1');
+      setFloor(1);
+      setSide('');
+      setArea(140);
+      setGardenArea(0);
+      setPrice(1500000);
+      setNegotiable(false);
+      setDeliveryNote('');
+      setPaymentTerms('');
+      setDescription('');
+      setStatus('available');
       setLat(30.1382);
       setLng(31.7415);
+      setImageUrl('');
+      setSelectedServices([]);
     }
   }, [initialUnit, defaultZoneId, defaultPlotNo]);
 
@@ -192,17 +199,17 @@ export default function UnitFormModal({
           {/* Zone & Plot */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
                 المنطقة (منطقة 1 - 16) *
               </label>
               <select
                 value={zoneId}
                 onChange={(e) => setZoneId(Number(e.target.value))}
-                className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs cursor-pointer"
                 required
               >
                 {(zones || []).map((z) => (
-                  <option key={z.id} value={z.id}>
+                  <option key={z.id} value={z.id} className="bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50">
                     {z.name} ({z.direction})
                   </option>
                 ))}
@@ -210,7 +217,7 @@ export default function UnitFormModal({
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
                 رقم القطعة (المبنى) *
               </label>
               <input
@@ -219,7 +226,7 @@ export default function UnitFormModal({
                 max="999"
                 value={plotNo}
                 onChange={(e) => setPlotNo(Number(e.target.value))}
-                className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                 placeholder="مثال: 42 أو 88 أو 139..."
                 required
               />
@@ -238,7 +245,7 @@ export default function UnitFormModal({
               <button
                 type="button"
                 onClick={() => setShowLiveMap(!showLiveMap)}
-                className="text-amber-800 dark:text-amber-300 font-bold text-[11px] flex items-center gap-1 hover:underline"
+                className="text-amber-800 dark:text-amber-300 font-bold text-[11px] flex items-center gap-1 hover:underline cursor-pointer"
               >
                 <span>{showLiveMap ? 'إخفاء الخريطة' : 'إظهار الخريطة'}</span>
                 {showLiveMap ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -263,16 +270,16 @@ export default function UnitFormModal({
           {/* Unit Kind & Floor */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
                 نوع الوحدة *
               </label>
               <select
                 value={unitKind}
                 onChange={(e) => setUnitKind(e.target.value as UnitKind)}
-                className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs cursor-pointer"
               >
                 {Object.entries(UNIT_KIND_LABELS).map(([k, label]) => (
-                  <option key={k} value={k}>
+                  <option key={k} value={k} className="bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50">
                     {label}
                   </option>
                 ))}
@@ -280,24 +287,24 @@ export default function UnitFormModal({
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
                 الدور
               </label>
               <select
                 value={floor}
                 onChange={(e) => setFloor(Number(e.target.value))}
-                className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs cursor-pointer"
               >
-                <option value={0}>أرضي</option>
-                <option value={1}>أول متكرر</option>
-                <option value={2}>ثاني متكرر</option>
-                <option value={3}>ثالث</option>
-                <option value={4}>روف</option>
+                <option value={0} className="bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50">أرضي</option>
+                <option value={1} className="bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50">أول متكرر</option>
+                <option value={2} className="bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50">ثاني متكرر</option>
+                <option value={3} className="bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50">ثالث</option>
+                <option value={4} className="bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50">روف</option>
               </select>
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
                 الواجهة / الاتجاه
               </label>
               <input
@@ -305,7 +312,7 @@ export default function UnitFormModal({
                 value={side}
                 onChange={(e) => setSide(e.target.value)}
                 placeholder="مثال: بحري، يمين، واجهة..."
-                className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
               />
             </div>
           </div>
@@ -313,27 +320,27 @@ export default function UnitFormModal({
           {/* Area & Garden Area */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
                 المساحة الإجمالية (م²)*
               </label>
               <input
                 type="number"
                 value={area}
                 onChange={(e) => setArea(Number(e.target.value))}
-                className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                 required
               />
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
                 مساحة الحديقة إن وجدت (م²)
               </label>
               <input
                 type="number"
                 value={gardenArea}
                 onChange={(e) => setGardenArea(Number(e.target.value))}
-                className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                 placeholder="0 إذا لم يوجد"
               />
             </div>
@@ -342,14 +349,14 @@ export default function UnitFormModal({
           {/* Price & Negotiable */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
                 السعر المطلوب (جنيه مصري) *
               </label>
               <input
                 type="number"
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
-                className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
                 required
               />
             </div>
@@ -362,7 +369,7 @@ export default function UnitFormModal({
                 onChange={(e) => setNegotiable(e.target.checked)}
                 className="w-4 h-4 text-amber-600 rounded border-stone-300 focus:ring-amber-500"
               />
-              <label htmlFor="negotiable" className="font-bold text-stone-700 dark:text-stone-300">
+              <label htmlFor="negotiable" className="font-bold text-stone-800 dark:text-stone-200 cursor-pointer">
                 السعر قابل للتفاوض البسيط
               </label>
             </div>
@@ -371,7 +378,7 @@ export default function UnitFormModal({
           {/* Delivery & Payment Terms */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
                 حالة وموعد الاستلام
               </label>
               <input
@@ -379,12 +386,12 @@ export default function UnitFormModal({
                 value={deliveryNote}
                 onChange={(e) => setDeliveryNote(e.target.value)}
                 placeholder="استلام فوري، تحت الإنشاء، 6 شهور..."
-                className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
                 طريقة وتسهيلات الدفع
               </label>
               <input
@@ -392,14 +399,14 @@ export default function UnitFormModal({
                 value={paymentTerms}
                 onChange={(e) => setPaymentTerms(e.target.value)}
                 placeholder="كاش، مقدم 50% وتسهيلات..."
-                className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
               />
             </div>
           </div>
 
           {/* Image URL */}
           <div>
-            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+            <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
               رابط صورة المعاينة أو الواجهة
             </label>
             <input
@@ -407,13 +414,13 @@ export default function UnitFormModal({
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               placeholder="https://images.unsplash.com/..."
-              className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none text-left font-mono"
+              className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs text-left font-mono"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+            <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
               الوصف التفصيلي والمزايا
             </label>
             <textarea
@@ -421,13 +428,13 @@ export default function UnitFormModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="تقسيم الغرف، نوع التشطيب، فيو الشارع، المصعد، العدادات..."
-              className="w-full p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#0b0f17] font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs leading-relaxed"
             />
           </div>
 
           {/* Surrounding Services Selector */}
           <div>
-            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-2">
+            <label className="block font-bold text-stone-800 dark:text-stone-200 mb-2">
               الخدمات المجاورة للقطعة:
             </label>
             <div className="flex flex-wrap gap-2">
@@ -438,10 +445,10 @@ export default function UnitFormModal({
                     type="button"
                     key={s.id}
                     onClick={() => toggleService(s.name)}
-                    className={`px-2.5 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
+                    className={`px-2.5 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer border ${
                       isSelected
-                        ? 'bg-amber-600 text-white shadow-sm'
-                        : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200'
+                        ? 'bg-amber-600 border-amber-600 text-white shadow-sm'
+                        : 'bg-white dark:bg-[#151d2a] border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:border-amber-400'
                     }`}
                   >
                     {isSelected && <Check className="w-3 h-3" />}
@@ -457,13 +464,13 @@ export default function UnitFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 font-bold"
+              className="px-4 py-2.5 rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 font-bold cursor-pointer transition"
             >
               إلغاء
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-700 via-amber-600 to-amber-500 hover:from-amber-800 hover:to-amber-600 text-white font-black shadow-md shadow-amber-600/30 transition transform active:scale-95"
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-700 via-amber-600 to-amber-500 hover:from-amber-800 hover:to-amber-600 text-white font-black shadow-md shadow-amber-600/30 transition transform active:scale-95 cursor-pointer"
             >
               {initialUnit ? 'حفظ التعديلات' : 'إضافة الوحدة الآن'}
             </button>

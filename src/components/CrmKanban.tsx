@@ -13,6 +13,7 @@ import {
   AlertCircle,
   User,
 } from 'lucide-react';
+import { formatArabicFollowupDate } from '@/lib/date-utils';
 
 interface CrmKanbanProps {
   customers: Customer[];
@@ -127,32 +128,30 @@ export default function CrmKanban({
                       </div>
 
                       {/* Followup notice */}
+                      {/* Followup notice with Arabic Day Name */}
                       {cust.nextFollowupAt ? (
-                        <div
-                          className={`mt-2.5 flex items-center justify-between text-[10px] font-bold px-2 py-1 rounded-lg ${
-                            isOverdue
-                              ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'
-                              : isToday
-                              ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
-                              : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
-                          }`}
-                        >
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            <span>
-                              {new Date(cust.nextFollowupAt).toLocaleDateString('ar-EG', {
-                                month: 'numeric',
-                                day: 'numeric',
-                              })}
-                              {' • '}
-                              {new Date(cust.nextFollowupAt).toLocaleTimeString('ar-EG', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </span>
-                          </div>
-                          <span>{isOverdue ? '⚠️ متأخرة' : isToday ? '🔔 اليوم' : 'مجدولة'}</span>
-                        </div>
+                        (() => {
+                          const followup = formatArabicFollowupDate(cust.nextFollowupAt);
+                          return (
+                            <div
+                              className={`mt-2.5 flex items-center justify-between text-[10px] font-bold px-2 py-1.5 rounded-lg ${
+                                followup.isOverdue
+                                  ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'
+                                  : followup.isToday
+                                  ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
+                                  : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
+                              }`}
+                            >
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>
+                                  <strong>{followup.dayName}</strong> ({followup.formattedDate}) • {followup.formattedTime}
+                                </span>
+                              </div>
+                              <span>{followup.isOverdue ? '⚠️ متأخرة' : followup.isToday ? '🔔 اليوم' : 'مجدولة'}</span>
+                            </div>
+                          );
+                        })()
                       ) : (
                         <div className="mt-2 text-[10px] text-slate-400 font-medium px-1 flex items-center gap-1">
                           <Clock className="w-3 h-3" />

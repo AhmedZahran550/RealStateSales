@@ -8,6 +8,7 @@ import UnitDetailModal from '@/components/UnitDetailModal';
 import UnitFormModal from '@/components/UnitFormModal';
 import CustomerModal from '@/components/CustomerModal';
 import CustomerDetailModal from '@/components/CustomerDetailModal';
+import { formatArabicFollowupDate } from '@/lib/date-utils';
 
 export default function DashboardPage() {
   const {
@@ -36,8 +37,35 @@ export default function DashboardPage() {
 
   if (!currentUser) return null;
 
-  // Filter urgent customers or mock fallback follow-ups
+  // Dynamic metrics derived purely from live state
+  const availableUnitsCount = myUnits.filter((u) => u.status === 'available').length;
+  const negotiatingCustomers = myCustomers.filter(
+    (c) => c.stage === 'negotiating' || c.stage === 'reserved'
+  );
+  const negotiatingSum = negotiatingCustomers.reduce((acc, c) => acc + (c.budget || 0), 0);
+  const formattedNegotiatingSum =
+    negotiatingSum >= 1_000_000
+      ? (negotiatingSum / 1_000_000).toFixed(1)
+      : negotiatingSum > 0
+      ? (negotiatingSum / 1_000).toFixed(0)
+      : '0';
+  const negotiatingSumUnit = negotiatingSum >= 1_000_000 ? 'مليون ج.م' : negotiatingSum > 0 ? 'ألف ج.م' : 'ج.م';
+  const expectedCommission = Math.round(negotiatingSum * 0.025);
+
+  // Urgent followups from actual customers
   const urgentFollowups = myCustomers.slice(0, 4);
+
+  // Pipeline stage counts
+  const newLeadsCount = myCustomers.filter((c) => c.stage === 'lead' || c.stage === 'asking').length;
+  const viewedCount = myCustomers.filter((c) => c.stage === 'viewed').length;
+  const inNegotiationCount = myCustomers.filter((c) => c.stage === 'negotiating').length;
+  const closedCount = myCustomers.filter((c) => c.stage === 'reserved' || c.stage === 'closed').length;
+  const totalInPipeline = myCustomers.length || 1;
+
+  const leadPct = myCustomers.length > 0 ? Math.round((newLeadsCount / totalInPipeline) * 100) : 0;
+  const viewedPct = myCustomers.length > 0 ? Math.round((viewedCount / totalInPipeline) * 100) : 0;
+  const negPct = myCustomers.length > 0 ? Math.round((inNegotiationCount / totalInPipeline) * 100) : 0;
+  const closedPct = myCustomers.length > 0 ? Math.round((closedCount / totalInPipeline) * 100) : 0;
 
   const markFollowupDone = (id: string) => {
     setCompletedFollowups((prev) => ({ ...prev, [id]: true }));
@@ -75,14 +103,14 @@ export default function DashboardPage() {
               </span>
             </div>
             <h1 className="font-headline-lg text-headline-lg text-on-surface font-extrabold tracking-tight text-xl sm:text-2xl lg:text-3xl">
-              مرحباً {currentUser.fullName}، لديك اليوم{' '}
+              مرحباً {currentUser.fullName}، لديك{' '}
               <span className="text-primary font-black">
-                {myCustomers.length > 0 ? myCustomers.length : 6} متابعات هامة
+                {myCustomers.length} عملاء مسجلين
               </span>{' '}
-              و <span className="text-secondary font-black">3 عروض</span> بانتظار الرد!
+              و <span className="text-secondary font-black">{negotiatingCustomers.length} صفقات</span> قيد التفاوض والحجز
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant text-xs sm:text-sm">
-              استعد ليوم واعد؛ معدل إغلاق صفقاتك مرتفع بنسبة 14% مقارنة بالشهر السابق.
+              إدارة المخزون العقاري ومتابعة العملاء المحتملين لمدينة بدر والحي المتميز لحظياً.
             </p>
           </div>
 
@@ -116,24 +144,24 @@ export default function DashboardPage() {
               <span className="material-symbols-outlined text-[26px]">apartment</span>
             </div>
             <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-bold text-xs">
-              <span className="material-symbols-outlined text-[14px]">trending_up</span>
-              +4 هذا الأسبوع
+              <span className="material-symbols-outlined text-[14px]">inventory_2</span>
+              المخزون
             </span>
           </div>
           <div>
             <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
-              إجمالي الوحدات المتاحة
+              إجمالي الوحدات المسجلة
             </span>
             <div className="flex items-baseline gap-space-xs">
               <span className="font-headline-xl text-headline-xl text-on-surface font-extrabold tracking-tight text-3xl">
-                {myUnits.length > 0 ? myUnits.length : 48}
+                {myUnits.length}
               </span>
               <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">وحدة</span>
             </div>
           </div>
           <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2">
             <span className="font-body-sm text-body-sm text-xs">
-              منها <strong className="text-primary font-bold">12 وحدة حصرية</strong>
+              منها <strong className="text-primary font-bold">{availableUnitsCount} وحدة متاحة</strong>
             </span>
             <span className="material-symbols-outlined text-primary text-[18px]">verified</span>
           </div>
@@ -146,16 +174,16 @@ export default function DashboardPage() {
               <span className="material-symbols-outlined text-[26px]">groups</span>
             </div>
             <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-bold text-xs">
-              نشط وحيوي
+              قاعدة العملاء
             </span>
           </div>
           <div>
             <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
-              العملاء النشطين
+              العملاء المسجلين
             </span>
             <div className="flex items-baseline gap-space-xs">
               <span className="font-headline-xl text-headline-xl text-primary font-extrabold tracking-tight text-3xl">
-                {myCustomers.length > 0 ? myCustomers.length : 34}
+                {myCustomers.length}
               </span>
               <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">عميل</span>
             </div>
@@ -173,34 +201,36 @@ export default function DashboardPage() {
               <span className="material-symbols-outlined text-[26px]">handshake</span>
             </div>
             <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-label-sm text-label-sm font-bold text-xs">
-              8 صفقات
+              {negotiatingCustomers.length} صفقات
             </span>
           </div>
           <div>
             <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
-              الصفقات قيد التفاوض
+              حجم الصفقات قيد التفاوض
             </span>
             <div className="flex items-baseline gap-space-xs">
               <span className="font-headline-xl text-headline-xl text-secondary font-extrabold tracking-tight text-3xl">
-                42.5
+                {formattedNegotiatingSum}
               </span>
-              <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">مليون ج.م</span>
+              <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">{negotiatingSumUnit}</span>
             </div>
           </div>
           <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2">
-            <span className="font-body-sm text-body-sm text-xs">متوقع إغلاق 3 هذا الأسبوع</span>
+            <span className="font-body-sm text-body-sm text-xs">
+              {negotiatingCustomers.length > 0 ? 'مراحل تفاوض وحجز جارية' : 'لا توجد مفاوضات حالياً'}
+            </span>
             <span className="material-symbols-outlined text-secondary text-[18px]">hourglass_top</span>
           </div>
         </div>
 
-        {/* Stat 4: Expected Commission & Target */}
+        {/* Stat 4: Expected Commission */}
         <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between border border-surface-container-high/40">
           <div className="flex items-start justify-between mb-space-sm">
             <div className="w-12 h-12 rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-[26px]">payments</span>
             </div>
             <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-tertiary-fixed-dim text-on-tertiary-fixed font-label-sm text-label-sm font-bold text-xs">
-              82% التارجت
+              عمولة 2.5%
             </span>
           </div>
           <div>
@@ -209,14 +239,17 @@ export default function DashboardPage() {
             </span>
             <div className="flex items-baseline gap-space-xs">
               <span className="font-headline-xl text-headline-xl text-tertiary font-extrabold tracking-tight text-3xl">
-                385,000
+                {expectedCommission.toLocaleString()}
               </span>
               <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">ج.م</span>
             </div>
           </div>
           <div className="mt-space-sm pt-space-xs">
             <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
-              <div className="bg-tertiary h-full rounded-full transition-all duration-700" style={{ width: '82%' }} />
+              <div
+                className="bg-tertiary h-full rounded-full transition-all duration-700"
+                style={{ width: negotiatingCustomers.length > 0 ? '100%' : '0%' }}
+              />
             </div>
           </div>
         </div>
@@ -233,7 +266,7 @@ export default function DashboardPage() {
                 متابعات اليوم العاجلة
               </h2>
               <span className="px-2.5 py-0.5 rounded-lg bg-surface-container-high text-primary font-label-sm text-label-sm font-bold text-xs">
-                {myCustomers.length} مستحقة
+                {urgentFollowups.length} مستحقة
               </span>
             </div>
             <span className="font-body-sm text-body-sm text-on-surface-variant text-xs">
@@ -281,24 +314,24 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-space-xs self-start sm:self-auto bg-surface-container-lowest px-2.5 py-1 rounded-lg">
-                        <span className="material-symbols-outlined text-secondary text-[18px]">alarm</span>
+                      <div className="flex items-center gap-1.5 self-start sm:self-auto bg-surface-container-lowest px-2.5 py-1 rounded-lg border border-surface-container-high/40 shadow-xs">
+                        <span className="material-symbols-outlined text-secondary text-[16px]">alarm</span>
                         <span className="font-label-sm text-label-sm text-on-surface font-bold text-xs">
                           {lead.nextFollowupAt
-                            ? new Date(lead.nextFollowupAt).toLocaleTimeString('ar-EG', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })
-                            : 'اليوم • 01:30 م'}
+                            ? (() => {
+                                const f = formatArabicFollowupDate(lead.nextFollowupAt);
+                                return `${f.dayName} • ${f.formattedTime}`;
+                              })()
+                            : 'غير محدد'}
                         </span>
                       </div>
                     </div>
 
                     <div className="bg-surface-container-lowest rounded-lg p-space-sm mb-space-md">
                       <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-space-xs text-xs">
-                        <span className="material-symbols-outlined text-[16px] text-primary">history</span>
+                        <span className="material-symbols-outlined text-primary text-[16px]">history</span>
                         <strong>آخر تحديث:</strong>{' '}
-                        {lead.activities?.[0]?.note || 'مهتم بالتقسيط الممتد، بانتظار جدول الدفعات النهائي للاختيار.'}
+                        {lead.activities?.[0]?.note || lead.notes || 'عميل مسجل في قاعدة البيانات'}
                       </p>
                     </div>
 
@@ -362,17 +395,17 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-space-xs">
                   <span className="w-3 h-3 rounded-full bg-primary-container" />
                   <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
-                    1. عملاء جدد (New Leads)
+                    1. استفسارات وعملاء جدد
                   </span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-primary font-extrabold text-sm">42</span>
+                <span className="font-headline-sm text-headline-sm text-primary font-extrabold text-sm">{newLeadsCount}</span>
               </div>
               <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-                <div className="bg-primary h-full rounded-full" style={{ width: '100%' }} />
+                <div className="bg-primary h-full rounded-full" style={{ width: `${leadPct}%` }} />
               </div>
               <div className="flex items-center justify-between mt-1 text-on-surface-variant font-body-sm text-body-sm text-[11px]">
-                <span>إجمالي استفسارات الأسبوع</span>
-                <span className="font-bold">100%</span>
+                <span>المرحلة الأولى</span>
+                <span className="font-bold">{leadPct}%</span>
               </div>
             </div>
 
@@ -384,14 +417,14 @@ export default function DashboardPage() {
                     2. معاينات وزيارات ميدانية
                   </span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-primary-container font-extrabold text-sm">26</span>
+                <span className="font-headline-sm text-headline-sm text-primary-container font-extrabold text-sm">{viewedCount}</span>
               </div>
               <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-                <div className="bg-primary-container h-full rounded-full" style={{ width: '62%' }} />
+                <div className="bg-primary-container h-full rounded-full" style={{ width: `${viewedPct}%` }} />
               </div>
               <div className="flex items-center justify-between mt-1 text-on-surface-variant font-body-sm text-body-sm text-[11px]">
                 <span>معدل تحويل للمعاينة</span>
-                <span className="font-bold">62%</span>
+                <span className="font-bold">{viewedPct}%</span>
               </div>
             </div>
 
@@ -403,14 +436,14 @@ export default function DashboardPage() {
                     3. مرحلة التفاوض والعروض
                   </span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-tertiary font-extrabold text-sm">14</span>
+                <span className="font-headline-sm text-headline-sm text-tertiary font-extrabold text-sm">{inNegotiationCount}</span>
               </div>
               <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-                <div className="bg-tertiary-container h-full rounded-full" style={{ width: '33%' }} />
+                <div className="bg-tertiary-container h-full rounded-full" style={{ width: `${negPct}%` }} />
               </div>
               <div className="flex items-center justify-between mt-1 text-on-surface-variant font-body-sm text-body-sm text-[11px]">
                 <span>معدل تقديم عروض أسعار</span>
-                <span className="font-bold">33%</span>
+                <span className="font-bold">{negPct}%</span>
               </div>
             </div>
 
@@ -422,14 +455,14 @@ export default function DashboardPage() {
                     4. حجز وإبرام عقود
                   </span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-secondary font-extrabold text-sm">8</span>
+                <span className="font-headline-sm text-headline-sm text-secondary font-extrabold text-sm">{closedCount}</span>
               </div>
               <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-                <div className="bg-secondary-container h-full rounded-full" style={{ width: '19%' }} />
+                <div className="bg-secondary-container h-full rounded-full" style={{ width: `${closedPct}%` }} />
               </div>
               <div className="flex items-center justify-between mt-1 text-on-surface-variant font-body-sm text-body-sm text-[11px]">
                 <span>نسبة الإغلاق الكلية (Closing)</span>
-                <span className="font-bold text-secondary">19%</span>
+                <span className="font-bold text-secondary">{closedPct}%</span>
               </div>
             </div>
           </div>
@@ -439,13 +472,13 @@ export default function DashboardPage() {
               <div className="flex items-center gap-space-xs">
                 <span className="material-symbols-outlined text-primary text-[22px]">insights</span>
                 <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
-                  متوسط وقت إغلاق الصفقة
+                  إجمالي العملاء في المسار
                 </span>
               </div>
-              <span className="font-headline-sm text-headline-sm text-primary font-black text-sm">18 يوماً</span>
+              <span className="font-headline-sm text-headline-sm text-primary font-black text-sm">{myCustomers.length} عملاء</span>
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 text-[11px]">
-              أسرع بمقدار 4 أيام مقارنة بمتوسط فريق مبيعات الفرع.
+              مزامنة فورية مع قاعدة بيانات سحابية لحظياً.
             </p>
           </div>
         </div>

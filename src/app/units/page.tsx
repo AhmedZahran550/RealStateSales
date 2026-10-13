@@ -194,7 +194,7 @@ export default function UnitsPage() {
               استلام فوري
             </span>
             <span className="font-headline-lg text-headline-lg text-on-surface font-extrabold mt-0.5 text-xl sm:text-2xl">
-              {myUnits.filter((u) => u.deliveryNote?.includes('فوري')).length || 14} وحدة
+              {myUnits.filter((u) => u.deliveryNote?.includes('فوري')).length} وحدة
             </span>
             <span className="font-label-sm text-label-sm text-primary font-bold mt-0.5 text-[11px]">
               أعلى طلب للمستثمرين
@@ -288,7 +288,7 @@ export default function UnitsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-sm">
           {/* Search */}
           <div className="relative">
-            <span className="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-outline text-[20px] pointer-events-none">
+            <span className="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-slate-400 text-[20px] pointer-events-none">
               search
             </span>
             <input
@@ -296,7 +296,7 @@ export default function UnitsPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="كود الوحدة، رقم القطعة، الوصف..."
-              className="w-full bg-surface-container-low rounded-xl py-2.5 pr-10 pl-space-sm font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary text-xs"
+              className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] rounded-xl py-2.5 pr-10 pl-space-sm font-body-sm text-body-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:outline-none focus:ring-2 focus:ring-primary text-xs shadow-xs"
             />
           </div>
 
@@ -305,16 +305,16 @@ export default function UnitsPage() {
             <select
               value={zoneFilter}
               onChange={(e) => setZoneFilter(e.target.value)}
-              className="w-full bg-surface-container-low rounded-xl py-2.5 pr-space-md pl-8 font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs"
+              className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] rounded-xl py-2.5 pr-space-md pl-8 font-body-sm text-body-sm text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
             >
-              <option value="all">كافة مناطق الحي المتميز (1-16)</option>
+              <option value="all" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">كافة مناطق الحي المتميز (1-16)</option>
               {Array.from({ length: 16 }, (_, i) => i + 1).map((z) => (
-                <option key={z} value={z.toString()}>
+                <option key={z} value={z.toString()} className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
                   منطقة {z}
                 </option>
               ))}
             </select>
-            <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-outline text-[18px] pointer-events-none">
+            <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-slate-400 text-[18px] pointer-events-none">
               expand_more
             </span>
           </div>
@@ -324,18 +324,18 @@ export default function UnitsPage() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full bg-surface-container-low rounded-xl py-2.5 pr-space-md pl-8 font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs"
+              className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] rounded-xl py-2.5 pr-space-md pl-8 font-body-sm text-body-sm text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
             >
-              <option value="all">نوع الوحدة (الكل)</option>
-              <option value="duplex">دوبلكس</option>
-              <option value="ground_garden">أرضي بحديقة</option>
-              <option value="floor_1">دور أول متكرر</option>
-              <option value="floor_2">دور ثاني</option>
-              <option value="floor_3">دور ثالث</option>
-              <option value="roof">رووف</option>
-              <option value="other">أخرى</option>
+              <option value="all" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">نوع الوحدة (الكل)</option>
+              <option value="duplex" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">دوبلكس</option>
+              <option value="ground_garden" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">أرضي بحديقة</option>
+              <option value="floor_1" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">دور أول متكرر</option>
+              <option value="floor_2" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">دور ثاني</option>
+              <option value="floor_3" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">دور ثالث</option>
+              <option value="roof" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">رووف</option>
+              <option value="other" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">أخرى</option>
             </select>
-            <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-outline text-[18px] pointer-events-none">
+            <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-slate-400 text-[18px] pointer-events-none">
               expand_more
             </span>
           </div>

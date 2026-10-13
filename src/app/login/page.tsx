@@ -140,11 +140,11 @@ export default function LoginPage() {
             <form onSubmit={handleLogin} className="space-y-4">
               {/* حقل اسم المستخدم */}
               <div className="space-y-1.5">
-                <label className="block font-label-md text-label-md text-on-surface font-semibold text-sm" htmlFor="sales-id">
+                <label className="block font-label-md text-label-md text-slate-800 dark:text-slate-200 font-semibold text-sm" htmlFor="sales-id">
                   اسم المستخدم أو البريد الإلكتروني
                 </label>
-                <div className="relative flex items-center rounded-xl bg-surface-container-low shadow-sm transition-all focus-within:bg-surface-container-lowest focus-within:ring-2 focus-within:ring-primary">
-                  <div className="pr-3.5 pl-2 flex items-center text-outline pointer-events-none">
+                <div className="relative flex items-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary focus-within:border-primary">
+                  <div className="pr-3.5 pl-2 flex items-center text-slate-400 pointer-events-none">
                     <span className="material-symbols-outlined text-xl">alternate_email</span>
                   </div>
                   <input
@@ -154,7 +154,7 @@ export default function LoginPage() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="AhmedZahran أو ahmed.sales@aqarsales.com"
-                    className="w-full py-3.5 pl-4 pr-1 bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline-variant focus:outline-none"
+                    className="w-full py-3.5 pl-4 pr-1 bg-transparent font-body-md text-body-md text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:outline-none"
                   />
                 </div>
               </div>
@@ -162,15 +162,15 @@ export default function LoginPage() {
               {/* حقل كلمة المرور */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="block font-label-md text-label-md text-on-surface font-semibold text-sm" htmlFor="password-input">
+                  <label className="block font-label-md text-label-md text-slate-800 dark:text-slate-200 font-semibold text-sm" htmlFor="password-input">
                     كلمة المرور
                   </label>
                   <a href="#" className="font-label-sm text-label-sm text-secondary font-bold hover:underline transition-all text-xs">
                     نسيت كلمة المرور؟
                   </a>
                 </div>
-                <div className="relative flex items-center rounded-xl bg-surface-container-low shadow-sm transition-all focus-within:bg-surface-container-lowest focus-within:ring-2 focus-within:ring-primary">
-                  <div className="pr-3.5 pl-2 flex items-center text-outline pointer-events-none">
+                <div className="relative flex items-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary focus-within:border-primary">
+                  <div className="pr-3.5 pl-2 flex items-center text-slate-400 pointer-events-none">
                     <span className="material-symbols-outlined text-xl">lock</span>
                   </div>
                   <input
@@ -180,14 +180,14 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full py-3.5 px-2 bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline-variant focus:outline-none"
+                    className="w-full py-3.5 px-2 bg-transparent font-body-md text-body-md text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:outline-none"
                   />
                   <button
                     id="toggle-pwd"
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label="إظهار كلمة المرور"
-                    className="pl-3.5 pr-2 flex items-center text-outline hover:text-on-surface transition-colors focus:outline-none"
+                    className="pl-3.5 pr-2 flex items-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors focus:outline-none cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-xl">
                       {showPassword ? 'visibility' : 'visibility_off'}

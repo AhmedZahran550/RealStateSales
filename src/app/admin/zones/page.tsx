@@ -98,7 +98,7 @@ export default function AdminZonesPage() {
             value={csvContent}
             onChange={(e) => setCsvContent(e.target.value)}
             placeholder={`الصق أسطر CSV هنا...\n${sampleCsv}`}
-            className="w-full text-xs font-mono p-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full text-xs font-mono p-3 rounded-2xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 shadow-xs"
           />
 
           <div className="flex flex-wrap items-center justify-between gap-3">

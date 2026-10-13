@@ -161,7 +161,7 @@ export default function ZoneDrawer({
                 placeholder="بحث برقم القطعة..."
                 value={plotSearch}
                 onChange={(e) => setPlotSearch(e.target.value)}
-                className="w-full text-xs px-2.5 py-1 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="w-full text-xs px-2.5 py-1.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 shadow-xs"
               />
             </div>
           </div>
