@@ -11,6 +11,8 @@ import {
   Edit,
   Trash2,
   Navigation,
+  Camera,
+  Film,
 } from 'lucide-react';
 
 interface UnitCardProps {
@@ -22,9 +24,12 @@ interface UnitCardProps {
 
 export default function UnitCard({ unit, onView, onEdit, onDelete }: UnitCardProps) {
   const statusInfo = UNIT_STATUS_CONFIG[unit.status];
+  const imageMedia = unit.media?.find((m) => m.kind === 'image');
+  const videoMedia = unit.media?.find((m) => m.kind === 'video');
   const primaryImage =
+    imageMedia?.externalUrl ||
+    imageMedia?.storagePath ||
     unit.media?.[0]?.externalUrl ||
-    unit.media?.[0]?.storagePath ||
     'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
 
   return (
@@ -53,6 +58,19 @@ export default function UnitCard({ unit, onView, onEdit, onDelete }: UnitCardPro
           >
             {statusInfo.label}
           </span>
+          {unit.media && unit.media.length > 0 && (
+            <span
+              className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg bg-black/70 text-white backdrop-blur-sm border border-white/10 shadow-sm"
+              title={`يتوفر ${unit.media.length} ملفات وسائط`}
+            >
+              {videoMedia ? (
+                <Film className="w-3 h-3 text-amber-400" />
+              ) : (
+                <Camera className="w-3 h-3 text-amber-400" />
+              )}
+              <span>{unit.media.length}</span>
+            </span>
+          )}
           {unit.lat && unit.lng && (
             <span
               className="p-1 rounded-xl bg-amber-600/90 text-white shadow-md backdrop-blur-sm"

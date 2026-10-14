@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Unit, UnitKind, UnitStatus, Zone, Building, Service, UNIT_KIND_LABELS } from '@/lib/types';
+import { Unit, UnitKind, UnitStatus, Zone, Building, Service, UNIT_KIND_LABELS, UnitMedia } from '@/lib/types';
 import { X, Building2, Image as ImageIcon, Plus, Check, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import LiveMapPicker from '@/components/LiveMapPicker';
+import MediaUploader from '@/components/MediaUploader';
 import { useApp } from '@/context/AppContext';
 
 interface UnitFormModalProps {
@@ -63,8 +64,8 @@ export default function UnitFormModal({
   const [lng, setLng] = useState<number | undefined>(initialUnit?.lng || 31.7415);
   const [showLiveMap, setShowLiveMap] = useState<boolean>(true);
 
-  const [imageUrl, setImageUrl] = useState<string>(
-    initialUnit?.media?.[0]?.externalUrl || ''
+  const [unitMedia, setUnitMedia] = useState<UnitMedia[]>(
+    initialUnit?.media || []
   );
   const [selectedServices, setSelectedServices] = useState<string[]>(
     initialUnit?.services || []
@@ -87,7 +88,7 @@ export default function UnitFormModal({
       setStatus(initialUnit.status);
       setLat(initialUnit.lat || 30.1382);
       setLng(initialUnit.lng || 31.7415);
-      setImageUrl(initialUnit.media?.[0]?.externalUrl || '');
+      setUnitMedia(initialUnit.media || []);
       setSelectedServices(initialUnit.services || []);
     } else {
       setZoneId(defaultZoneId || 1);
@@ -105,7 +106,7 @@ export default function UnitFormModal({
       setStatus('available');
       setLat(30.1382);
       setLng(31.7415);
-      setImageUrl('');
+      setUnitMedia([]);
       setSelectedServices([]);
     }
   }, [initialUnit, defaultZoneId, defaultPlotNo]);
@@ -143,19 +144,7 @@ export default function UnitFormModal({
       lat: lat ? Number(lat) : undefined,
       lng: lng ? Number(lng) : undefined,
       services: selectedServices,
-      media: imageUrl
-        ? [
-            {
-              id: `m-${Date.now()}`,
-              unitId: initialUnit?.id || `unit-${Date.now()}`,
-              ownerId: 'curr',
-              kind: 'image' as const,
-              externalUrl: imageUrl,
-              caption: 'صورة الواجهة والتصميم',
-              createdAt: new Date().toISOString(),
-            },
-          ]
-        : [],
+      media: unitMedia,
     };
 
     onSubmit(payload);
@@ -404,19 +393,12 @@ export default function UnitFormModal({
             </div>
           </div>
 
-          {/* Image URL */}
-          <div>
-            <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
-              رابط صورة المعاينة أو الواجهة
-            </label>
-            <input
-              type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://images.unsplash.com/..."
-              className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs text-left font-mono"
-            />
-          </div>
+          {/* Cloudinary Media Uploader */}
+          <MediaUploader
+            media={unitMedia}
+            onChange={setUnitMedia}
+            unitId={initialUnit?.id}
+          />
 
           {/* Description */}
           <div>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { Customer, Unit, UNIT_KIND_LABELS } from '@/lib/types';
+import { formatCustomerProposalMessage } from '@/lib/shareUtils';
 
 function MatchingContent() {
   const { currentUser, myCustomers, myUnits } = useApp();
@@ -129,39 +130,12 @@ function MatchingContent() {
   const whatsappProposalText = useMemo(() => {
     if (!currentCustomer || !activeUnit) return '';
 
-    const consultantName = currentUser?.fullName || 'أحمد زهران';
-    const consultantPhone = currentUser?.phone || '';
-    const budgetStr = currentCustomer.budget
-      ? `في حدود ميزانية ${(currentCustomer.budget / 1000000).toFixed(1)} مليون ج.م`
-      : 'بمدينة بدر';
-
-    const locationFeatures =
-      activeUnit.services && activeUnit.services.length > 0
-        ? `قريب من: ${activeUnit.services.join('، ')}`
-        : activeUnit.description || 'الحي المتميز بمدينة بدر';
-
-    return `مساء الخير يا ${currentCustomer.name}، أتمنى تكون بخير 🌿
-
-بناءً على طلب حضرتك بخصوص البحث عن وحدة مميزة في الحي المتميز بمدينة بدر ${budgetStr}:
-
-لقيت لحضرتك فرصة استثنائية مطابقة تماماً لطلبك:
-
-🏡 *كود الوحدة:* #BD-${activeUnit.zoneId}-${activeUnit.plotNo}
-📍 *الموقع:* الحي المتميز - منطقة ${activeUnit.zoneId} (قطعة ${activeUnit.plotNo})
-📐 *المساحة:* ${activeUnit.area} م² ${activeUnit.gardenArea ? `+ حديقة خاصة ${activeUnit.gardenArea} م²` : ''}
-🏗 *نوع الوحدة:* ${UNIT_KIND_LABELS[activeUnit.unitKind] || 'شقة سكنية'}
-💰 *السعر الإجمالي:* ${activeUnit.price.toLocaleString()} ج.م
-💳 *نظام السداد:* ${activeUnit.paymentTerms || 'كاش أو تقسيط بتسهيلات'}
-⏳ *الاستلام:* ${activeUnit.deliveryNote || 'استلام فوري'}
-
-📍 *المعالم والخدمات المحيطة:*
-${locationFeatures}
-
-حضرتك تحب نرتب ميعاد معاينة للموقع مع المستشار العقاري؟
-
-تحياتي،
-*${consultantName} | مستشار عقاري معتمد*
-${consultantPhone ? `📞 رقم الهاتف للتواصل / واتساب: ${consultantPhone}` : ''}`;
+    return formatCustomerProposalMessage(
+      currentCustomer.name,
+      activeUnit,
+      currentUser,
+      currentCustomer.budget
+    );
   }, [currentCustomer, activeUnit, currentUser]);
 
   const handleCopyProposal = () => {

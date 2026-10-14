@@ -9,6 +9,7 @@ import UnitFormModal from '@/components/UnitFormModal';
 import CustomerModal from '@/components/CustomerModal';
 import CustomerDetailModal from '@/components/CustomerDetailModal';
 import { formatArabicFollowupDate } from '@/lib/date-utils';
+import { createUnitWhatsAppUrl } from '@/lib/shareUtils';
 
 export default function DashboardPage() {
   const {
@@ -921,9 +922,7 @@ export default function DashboardPage() {
                         تفاصيل
                       </button>
                       <a
-                        href={`https://wa.me/?text=${encodeURIComponent(
-                          `عرض خاص - وحدة كود #BD-${unit.zoneId}-${unit.plotNo} بالحي المتميز\nالمساحة: ${unit.area} م²\nالسعر: ${unit.price.toLocaleString()} ج.م\nالاستلام: ${unit.deliveryNote || 'استلام فوري'}\nنظام السداد: ${unit.paymentTerms || 'كاش أو تقسيط'}\nللتواصل والمعاينة: ${currentUser?.fullName || 'المستشار العقاري'}${currentUser?.phone ? ` - ${currentUser.phone}` : ''}`
-                        )}`}
+                        href={createUnitWhatsAppUrl(unit, currentUser)}
                         target="_blank"
                         rel="noreferrer"
                         className="p-2 rounded-xl bg-primary-container text-on-primary hover:bg-primary transition-all flex items-center justify-center shadow-sm cursor-pointer"

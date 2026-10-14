@@ -23,7 +23,12 @@ import {
   Navigation,
   Copy,
   Check,
+  Download,
+  Loader2,
+  Film,
 } from 'lucide-react';
+import { downloadMediaFile } from '@/lib/cloudinary';
+import { formatUnitFullDetails, createUnitWhatsAppUrl } from '@/lib/shareUtils';
 
 interface UnitDetailModalProps {
   unit: Unit | null;
@@ -43,6 +48,8 @@ export default function UnitDetailModal({
   const { currentUser } = useApp();
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   if (!unit) return null;
 
@@ -53,23 +60,31 @@ export default function UnitDetailModal({
   // رابط وموقع خرائط جوجل
   const googleMapsUrl = unit.lat && unit.lng ? `https://www.google.com/maps?q=${unit.lat},${unit.lng}` : null;
 
-  // معلومات المستشار للتواصل
-  const consultantName = currentUser?.fullName || 'المستشار العقاري';
-  const consultantPhone = currentUser?.phone ? `\nللتواصل والاستفسار (هاتف / واتساب): ${currentUser.phone}` : '';
-  const servicesText = unit.services && unit.services.length > 0 ? `\nالمعالم والخدمات المحيطة: ${unit.services.join('، ')}` : '';
+  // تنزيل وحفظ الصورة أو الفيديو الحالي
+  const handleDownloadCurrentMedia = async () => {
+    if (!currentMedia) return;
+    const url = currentMedia.externalUrl || currentMedia.storagePath;
+    if (!url) return;
 
-  const plainShareContent = `عقار مميز بالحي المتميز (مدينة بدر):
-كود الوحدة: #BD-${unit.zoneId}-${unit.plotNo}
-المنطقة: منطقة ${unit.zoneId} | قطعة رقم ${unit.plotNo}
-النوع: ${UNIT_KIND_LABELS[unit.unitKind] || 'شقة سكنية'}
-المساحة: ${unit.area} م² ${unit.gardenArea ? `+ حديقة ${unit.gardenArea} م²` : ''}
-السعر: ${unit.price.toLocaleString('ar-EG')} ج.م
-الاستلام: ${unit.deliveryNote || 'استلام فوري'}
-نظام السداد: ${unit.paymentTerms || 'كاش أو تقسيط'}${servicesText}${googleMapsUrl ? `\nالموقع على الخريطة: ${googleMapsUrl}` : ''}
-المستشار العقاري: ${consultantName}${consultantPhone}`;
+    setIsDownloading(true);
+    setDownloadSuccess(false);
 
-  // رسالة مشاركة الواتساب
-  const waShareUrl = `https://wa.me/?text=${encodeURIComponent(plainShareContent)}`;
+    const ext = currentMedia.kind === 'video' ? 'mp4' : 'jpg';
+    const filename = `unit_${unit.zoneId}_${unit.plotNo}_media_${activeMediaIndex + 1}.${ext}`;
+    const success = await downloadMediaFile(url, filename);
+
+    setIsDownloading(false);
+    if (success) {
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 2500);
+    }
+  };
+
+  // توليد نص التفاصيل الشامل متضمناً روابط الصور والفيديوهات
+  const plainShareContent = formatUnitFullDetails(unit, currentUser);
+
+  // رابط مشاركة الواتساب المتضمن لكافة الروابط
+  const waShareUrl = createUnitWhatsAppUrl(unit, currentUser);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
@@ -135,14 +150,53 @@ export default function UnitDetailModal({
           {/* Media Gallery / Lightbox */}
           {mediaList.length > 0 ? (
             <div className="space-y-3">
-              <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-stone-200 dark:border-stone-800 group">
-                <img
-                  src={currentMedia.externalUrl || currentMedia.storagePath || '/placeholder.jpg'}
-                  alt={currentMedia.caption || 'صورة الوحدة'}
-                  className="w-full h-full object-cover"
-                />
-                {currentMedia.caption && (
-                  <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/80 to-transparent text-white text-xs font-semibold">
+              <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-stone-200 dark:border-stone-800 group flex items-center justify-center">
+                {currentMedia?.kind === 'video' ? (
+                  <video
+                    key={currentMedia.externalUrl || currentMedia.storagePath}
+                    src={currentMedia.externalUrl || currentMedia.storagePath}
+                    controls
+                    playsInline
+                    className="w-full h-full object-contain bg-black"
+                  />
+                ) : (
+                  <img
+                    src={currentMedia?.externalUrl || currentMedia?.storagePath || '/placeholder.jpg'}
+                    alt={currentMedia?.caption || 'صورة الوحدة'}
+                    className="w-full h-full object-contain bg-black"
+                  />
+                )}
+
+                {/* Save / Download Media Button */}
+                <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleDownloadCurrentMedia}
+                    disabled={isDownloading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/75 hover:bg-black/90 text-white text-xs font-bold backdrop-blur-md border border-white/20 shadow-lg transition cursor-pointer"
+                    title={currentMedia?.kind === 'video' ? 'تحميل الفيديو' : 'حفظ الصورة'}
+                  >
+                    {downloadSuccess ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>تم الحفظ!</span>
+                      </>
+                    ) : isDownloading ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                        <span>جاري التحميل...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-3.5 h-3.5 text-amber-400" />
+                        <span>{currentMedia?.kind === 'video' ? 'تحميل الفيديو' : 'حفظ الصورة'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {currentMedia?.caption && (
+                  <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/80 to-transparent text-white text-xs font-semibold pointer-events-none">
                     {currentMedia.caption}
                   </div>
                 )}
@@ -152,7 +206,8 @@ export default function UnitDetailModal({
                       onClick={() =>
                         setActiveMediaIndex((prev) => (prev > 0 ? prev - 1 : mediaList.length - 1))
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/70 text-white hover:bg-amber-600 transition"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/70 text-white hover:bg-amber-600 transition z-10 cursor-pointer"
+                      title="السابق"
                     >
                       <ChevronRight className="w-5 h-5" />
                     </button>
@@ -160,7 +215,8 @@ export default function UnitDetailModal({
                       onClick={() =>
                         setActiveMediaIndex((prev) => (prev < mediaList.length - 1 ? prev + 1 : 0))
                       }
-                      className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/70 text-white hover:bg-amber-600 transition"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/70 text-white hover:bg-amber-600 transition z-10 cursor-pointer"
+                      title="التالي"
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
@@ -173,17 +229,24 @@ export default function UnitDetailModal({
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {mediaList.map((m, idx) => (
                     <button
-                      key={m.id}
+                      key={m.id || idx}
                       onClick={() => setActiveMediaIndex(idx)}
-                      className={`relative w-20 h-14 rounded-lg overflow-hidden border-2 flex-shrink-0 transition ${
-                        idx === activeMediaIndex ? 'border-amber-500 scale-105' : 'border-transparent opacity-60'
+                      className={`relative w-20 h-14 rounded-lg overflow-hidden border-2 flex-shrink-0 transition bg-black cursor-pointer ${
+                        idx === activeMediaIndex ? 'border-amber-500 scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-90'
                       }`}
                     >
-                      <img
-                        src={m.externalUrl || m.storagePath}
-                        alt="thumb"
-                        className="w-full h-full object-cover"
-                      />
+                      {m.kind === 'video' ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-amber-400 bg-stone-900">
+                          <Film className="w-4 h-4" />
+                          <span className="text-[9px] font-bold">فيديو</span>
+                        </div>
+                      ) : (
+                        <img
+                          src={m.externalUrl || m.storagePath}
+                          alt="thumb"
+                          className="w-full h-full object-cover"
+                        />
+                      )}
                     </button>
                   ))}
                 </div>
