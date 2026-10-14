@@ -17,12 +17,24 @@ import {
   Sparkles,
   User,
   LogOut,
+  Building,
 } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { currentUser, logout, resetAllData, myUnits, myCustomers } = useApp();
+  const {
+    currentUser,
+    currentCompany,
+    isSuperAdmin,
+    isCompanyAdmin,
+    isBroker,
+    logout,
+    resetAllData,
+    myUnits,
+    myCustomers,
+  } = useApp();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [followupsToday, setFollowupsToday] = useState(0);
@@ -43,77 +55,131 @@ export default function Navbar() {
 
   const activeUnitsCount = myUnits.filter((u) => u.status === 'available').length;
 
-  const navLinks = [
-    {
-      href: '/',
-      label: 'الرئيسية',
-      icon: LayoutDashboard,
-      active: pathname === '/' || pathname === '/dashboard',
-    },
-    {
-      href: '/map',
-      label: 'الخريطة التفاعلية',
-      icon: MapPin,
-      active: pathname === '/map',
-      badge: '16 منطقة + خريطة GPS',
-    },
-    {
-      href: '/units',
-      label: 'عروض الوحدات',
-      icon: Building2,
-      active: pathname.startsWith('/units'),
-      badge: activeUnitsCount.toString(),
-    },
-    {
-      href: '/customers',
-      label: 'إدارة العملاء والمتابعات',
-      icon: Users,
-      active: pathname.startsWith('/customers'),
-      badge: followupsToday > 0 ? `${followupsToday} اليوم` : undefined,
-      badgeColor: 'bg-rose-500 text-white',
-    },
-  ];
+  // بناء قائمة الروابط بحسب الدور بدقة متناهية
+  let navLinks: Array<{
+    href: string;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    active: boolean;
+    badge?: string;
+    badgeColor?: string;
+  }> = [];
 
-  const adminLinks = [
-    { href: '/admin/users', label: 'حسابات المستخدمين والوسطاء' },
-    { href: '/admin/services', label: 'كتالوج الخدمات والمعالم' },
-    { href: '/admin/zones', label: 'المناطق واستيراد الأراضي' },
-  ];
-
-  const isAdmin = currentUser.role === 'admin';
-  const visibleNavLinks = isAdmin ? navLinks.filter((l) => l.href !== '/customers') : navLinks;
+  if (isSuperAdmin) {
+    navLinks = [
+      {
+        href: '/super-admin',
+        label: 'لوحة المنصة (إدارة الشركات والمستخدمين والتقارير)',
+        icon: ShieldCheck,
+        active: pathname.startsWith('/super-admin'),
+      },
+    ];
+  } else if (isCompanyAdmin) {
+    navLinks = [
+      {
+        href: '/',
+        label: 'لوحة إدارة الشركة',
+        icon: LayoutDashboard,
+        active: pathname === '/' || pathname === '/dashboard',
+      },
+      {
+        href: '/units',
+        label: 'محفظة وحدات الشركة',
+        icon: Building2,
+        active: pathname.startsWith('/units'),
+        badge: activeUnitsCount.toString(),
+      },
+      {
+        href: '/admin/users',
+        label: 'وسطاء الشركة',
+        icon: Users,
+        active: pathname.startsWith('/admin/users'),
+      },
+      {
+        href: '/map',
+        label: 'الخريطة التفاعلية',
+        icon: MapPin,
+        active: pathname === '/map',
+        badge: '16 منطقة + GPS',
+      },
+    ];
+  } else {
+    // وسيط عقاري Broker
+    navLinks = [
+      {
+        href: '/',
+        label: 'الرئيسية',
+        icon: LayoutDashboard,
+        active: pathname === '/' || pathname === '/dashboard',
+      },
+      {
+        href: '/units',
+        label: 'عروض الوحدات',
+        icon: Building2,
+        active: pathname.startsWith('/units'),
+        badge: activeUnitsCount.toString(),
+      },
+      {
+        href: '/customers',
+        label: 'عملائي ومواعيدي الخاصة',
+        icon: Users,
+        active: pathname.startsWith('/customers'),
+        badge: followupsToday > 0 ? `${followupsToday} اليوم` : undefined,
+        badgeColor: 'bg-rose-500 text-white',
+      },
+      {
+        href: '/map',
+        label: 'الخريطة التفاعلية',
+        icon: MapPin,
+        active: pathname === '/map',
+        badge: '16 منطقة + GPS',
+      },
+    ];
+  }
 
   const handleLogout = () => {
     logout();
     router.replace('/login');
   };
 
+  const roleTitle = isSuperAdmin
+    ? 'مدير المنصة العام (Super Admin)'
+    : isCompanyAdmin
+    ? `مدير شركة ${currentCompany?.name || currentUser.companyName || ''}`
+    : `وسيط عقاري • ${currentCompany?.name || currentUser.companyName || ''}`;
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#e7e2d9] dark:border-[#222c3d] bg-[#fbf9f6]/95 dark:bg-[#0b0f17]/95 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* الشعار واسم التطبيق */}
+          {/* الشعار واسم التطبيق والشركة */}
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-amber-600/30 group-hover:scale-105 transition-transform">
+            <Link href={isSuperAdmin ? '/super-admin' : '/'} className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-amber-600/30 group-hover:scale-105 transition-transform shrink-0">
                 <Building2 className="w-6 h-6" />
               </div>
               <div className="flex flex-col">
-                <span className="font-black text-xl tracking-tight text-[#1c1917] dark:text-[#f5f5f4] flex items-center gap-2">
-                  منظومة الواحة
-                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300/80 dark:border-amber-800">
-                    العقارية
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-lg tracking-tight text-[#1c1917] dark:text-[#f5f5f4]">
+                    منظومة الواحة
                   </span>
-                </span>
-                <span className="text-xs text-stone-500 dark:text-stone-400 font-semibold">
-                  الحي المتميز – مدينة بدر
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300/80 dark:border-amber-800">
+                    {isSuperAdmin
+                      ? 'إدارة المنصة'
+                      : currentCompany?.name || currentUser.companyName || 'العقارية'}
+                  </span>
+                </div>
+                <span className="text-[11px] text-stone-500 dark:text-stone-400 font-semibold truncate max-w-[200px]">
+                  {isSuperAdmin
+                    ? 'التحكم بالشركات والمديرين'
+                    : 'الحي المتميز – مدينة بدر'}
                 </span>
               </div>
             </Link>
 
             {/* روابط التصفح للشاشات الكبيرة */}
             <nav className="hidden md:flex items-center gap-1">
-              {visibleNavLinks.map((link) => {
+              {navLinks.map((link) => {
                 const Icon = link.icon;
                 return (
                   <Link
@@ -139,28 +205,6 @@ export default function Navbar() {
                   </Link>
                 );
               })}
-
-              {/* قائمة الإدارة للمدير */}
-              {isAdmin && (
-                <div className="relative group">
-                  <button className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-amber-800 dark:text-amber-400 hover:bg-amber-100/60 dark:hover:bg-amber-950/40 transition">
-                    <ShieldCheck className="w-4 h-4 text-amber-600" />
-                    <span>لوحة الإدارة</span>
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  </button>
-                  <div className="absolute right-0 mt-1 w-56 bg-white dark:bg-[#131a26] rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 p-1.5 hidden group-hover:block transition-all z-50">
-                    {adminLinks.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className="block px-3 py-2 text-xs font-bold text-stone-700 dark:text-stone-300 hover:bg-amber-50 dark:hover:bg-amber-950/60 hover:text-amber-800 dark:hover:text-amber-300 rounded-xl"
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
             </nav>
           </div>
 
@@ -169,7 +213,7 @@ export default function Navbar() {
             <div className="relative">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2.5 p-1.5 sm:px-3 sm:py-1.5 rounded-2xl border border-amber-200/80 dark:border-amber-900/60 bg-[#fbf9f6] dark:bg-[#131a26] hover:bg-amber-50 dark:hover:bg-[#1a2333] transition"
+                className="flex items-center gap-2.5 p-1.5 sm:px-3 sm:py-1.5 rounded-2xl border border-amber-200/80 dark:border-amber-900/60 bg-[#fbf9f6] dark:bg-[#131a26] hover:bg-amber-50 dark:hover:bg-[#1a2333] transition cursor-pointer"
                 title="الملف الشخصي"
               >
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-700 to-amber-500 text-white font-black text-xs flex items-center justify-center shadow-sm">
@@ -179,9 +223,8 @@ export default function Navbar() {
                   <span className="text-xs font-black text-[#1c1917] dark:text-[#f5f5f4] line-clamp-1">
                     {currentUser.fullName}
                   </span>
-                  <span className="text-[10px] text-amber-700 dark:text-amber-400 font-bold">
-                    {currentUser.role === 'admin' ? 'مدير عام للنظام' : 'وسيط عقاري'}
-                    {' '}• @{currentUser.username}
+                  <span className="text-[10px] text-amber-700 dark:text-amber-400 font-bold truncate max-w-[170px]">
+                    {roleTitle}
                   </span>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-stone-400" />
@@ -194,7 +237,10 @@ export default function Navbar() {
                       {currentUser.fullName}
                     </p>
                     <p className="text-[11px] font-mono text-amber-600 dark:text-amber-400 font-bold">
-                      @{currentUser.username} ({currentUser.role === 'admin' ? 'مدير نظام' : 'وسيط'})
+                      @{currentUser.username}
+                    </p>
+                    <p className="text-[10px] text-stone-500 font-semibold mt-0.5">
+                      {roleTitle}
                     </p>
                     {currentUser.phone && (
                       <p className="text-[10px] text-stone-400 font-mono mt-0.5">
@@ -204,7 +250,29 @@ export default function Navbar() {
                   </div>
 
                   <div className="p-1 space-y-1">
-                    {isAdmin && (
+                    {isSuperAdmin && (
+                      <Link
+                        href="/super-admin"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="w-full flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-right"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>لوحة المنصة (Super Admin)</span>
+                      </Link>
+                    )}
+
+                    {isCompanyAdmin && (
+                      <Link
+                        href="/admin/users"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="w-full flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-right"
+                      >
+                        <Users className="w-3.5 h-3.5" />
+                        <span>إدارة وسطاء الشركة</span>
+                      </Link>
+                    )}
+
+                    {isSuperAdmin && (
                       <button
                         onClick={() => {
                           if (confirm('هل ترغب في إعادة ضبط البيانات الأولية للنظام؟')) {
@@ -213,7 +281,7 @@ export default function Navbar() {
                             router.replace('/login');
                           }
                         }}
-                        className="w-full flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800/60 text-right"
+                        className="w-full flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800/60 text-right cursor-pointer"
                       >
                         <RotateCcw className="w-3.5 h-3.5 text-stone-500" />
                         <span>استعادة البيانات الأولية</span>
@@ -222,7 +290,7 @@ export default function Navbar() {
 
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-right transition"
+                      className="w-full flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-right transition cursor-pointer"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                       <span>تسجيل الخروج من النظام</span>
@@ -235,7 +303,7 @@ export default function Navbar() {
             {/* القائمة المتنقلة للشاشات الصغيرة */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800"
+              className="md:hidden p-2 rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -246,7 +314,7 @@ export default function Navbar() {
       {/* درج الجوال */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-[#131a26] p-4 space-y-2">
-          {visibleNavLinks.map((link) => {
+          {navLinks.map((link) => {
             const Icon = link.icon;
             return (
               <Link

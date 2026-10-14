@@ -1,4 +1,16 @@
-export type AppRole = 'admin' | 'user';
+export type AppRole = 'super_admin' | 'company_admin' | 'user' | 'admin';
+
+export interface Company {
+  id: string;
+  name: string; // اسم الشركة العقارية
+  commercialName?: string; // السجل التجاري أو الاسم التجاري
+  logoUrl?: string; // رابط الشعار
+  phone?: string; // هاتف التواصل
+  email?: string; // البريد الإلكتروني
+  address?: string; // العنوان أو المقر
+  isActive: boolean; // حالة تفعيل الشركة
+  createdAt: string;
+}
 
 export type UnitStatus = 'available' | 'reserved' | 'sold';
 
@@ -30,9 +42,21 @@ export interface UserProfile {
   username: string; // اسم المستخدم (بدلاً من البريد الإلكتروني)
   password?: string; // كلمة المرور
   phone?: string; // رقم الهاتف
-  role: AppRole; // مدير نظام أو وسيط عقاري
+  role: AppRole; // مدير عام المنظومة، أو مدير شركة، أو وسيط عقاري
+  companyId?: string; // الشركة التي يتبع لها المستخدم (فارغة لمدير المنصة Super Admin)
+  companyName?: string; // اسم الشركة المنسوب إليها
   createdAt: string;
 }
+
+export const isSuperAdmin = (user?: UserProfile | null): boolean =>
+  user?.role === 'super_admin';
+
+export const isCompanyAdmin = (user?: UserProfile | null): boolean =>
+  user?.role === 'company_admin' || user?.role === 'admin';
+
+export const isBroker = (user?: UserProfile | null): boolean =>
+  user?.role === 'user';
+
 
 export interface Zone {
   id: number; // 1..16
@@ -46,6 +70,8 @@ export interface Zone {
 
 export interface Building {
   id: number;
+  companyId?: string; // الشركة المالكة أو المطورة
+  companyName?: string;
   zoneId: number;
   plotNo: number;
   landArea?: number;
@@ -58,7 +84,7 @@ export interface Building {
 export interface UnitMedia {
   id: string;
   unitId: string;
-  ownerId: string;
+  ownerId?: string;
   kind: MediaKind;
   storagePath?: string;
   externalUrl?: string;
@@ -70,7 +96,9 @@ export interface UnitMedia {
 
 export interface Unit {
   id: string;
-  ownerId: string;
+  companyId?: string; // معرف الشركة العقارية المسؤولة
+  companyName?: string; // اسم الشركة
+  ownerId?: string; // المشرف أو المدير الذي أضاف الوحدة
   ownerName?: string;
   buildingId: number;
   zoneId: number;
@@ -118,7 +146,8 @@ export interface CustomerActivity {
 
 export interface Customer {
   id: string;
-  ownerId: string;
+  ownerId: string; // الوسيط صاحب العميل (حساب خاص معزول تماماً لا يراه حتى مدير الشركة)
+  companyId?: string;
   ownerName?: string;
   name: string;
   phone: string;

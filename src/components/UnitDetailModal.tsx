@@ -45,7 +45,7 @@ export default function UnitDetailModal({
   onDelete,
   isOwner = true,
 }: UnitDetailModalProps) {
-  const { currentUser } = useApp();
+  const { currentUser, isCompanyAdmin, isSuperAdmin, updateUnitStatus } = useApp();
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -53,6 +53,7 @@ export default function UnitDetailModal({
 
   if (!unit) return null;
 
+  const canManage = isCompanyAdmin || isSuperAdmin;
   const statusInfo = UNIT_STATUS_CONFIG[unit.status];
   const mediaList = unit.media || [];
   const currentMedia = mediaList[activeMediaIndex];
@@ -113,16 +114,16 @@ export default function UnitDetailModal({
           </div>
 
           <div className="flex items-center gap-2">
-            {isOwner && onEdit && (
+            {canManage && onEdit && (
               <button
                 onClick={() => onEdit(unit)}
                 className="p-2 rounded-xl text-stone-500 hover:text-amber-600 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
-                title="تعديل بيانات الوحدة"
+                title="تعديل بيانات ومواصفات الوحدة"
               >
                 <Edit className="w-4 h-4" />
               </button>
             )}
-            {isOwner && onDelete && (
+            {canManage && onDelete && (
               <button
                 onClick={() => {
                   if (confirm('هل أنت متأكد من حذف هذه الوحدة؟')) {
@@ -131,7 +132,7 @@ export default function UnitDetailModal({
                   }
                 }}
                 className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition"
-                title="حذف الوحدة"
+                title="حذف الوحدة من مخزون الشركة"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -147,6 +148,54 @@ export default function UnitDetailModal({
 
         {/* Modal Body */}
         <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-6 max-h-[78vh] overflow-y-auto flex-1">
+          {/* Quick Status Bar for Brokers and Admins */}
+          <div className="p-3 rounded-2xl bg-amber-50/70 dark:bg-stone-900/60 border border-amber-200 dark:border-amber-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+              <span className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                تحديث حالة الوحدة:
+              </span>
+              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${statusInfo.badgeClass}`}>
+                {statusInfo.label}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-stone-200/70 dark:bg-stone-950 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => updateUnitStatus(unit.id, 'available')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  unit.status === 'available'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                }`}
+              >
+                متاح للبيع
+              </button>
+              <button
+                type="button"
+                onClick={() => updateUnitStatus(unit.id, 'reserved')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  unit.status === 'reserved'
+                    ? 'bg-amber-600 text-white shadow-sm'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                }`}
+              >
+                حجز مؤقت
+              </button>
+              <button
+                type="button"
+                onClick={() => updateUnitStatus(unit.id, 'sold')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  unit.status === 'sold'
+                    ? 'bg-rose-600 text-white shadow-sm'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                }`}
+              >
+                تم البيع
+              </button>
+            </div>
+          </div>
           {/* Media Gallery / Lightbox */}
           {mediaList.length > 0 ? (
             <div className="space-y-3">

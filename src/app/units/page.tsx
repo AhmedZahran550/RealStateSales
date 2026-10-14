@@ -11,6 +11,8 @@ import { formatUnitFullDetails, createUnitWhatsAppUrl } from '@/lib/shareUtils';
 export default function UnitsPage() {
   const {
     currentUser,
+    isCompanyAdmin,
+    isSuperAdmin,
     myUnits,
     users,
     zones,
@@ -19,6 +21,7 @@ export default function UnitsPage() {
     addBuilding,
     addUnit,
     updateUnit,
+    updateUnitStatus,
     deleteUnit,
   } = useApp();
 
@@ -27,7 +30,6 @@ export default function UnitsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [zoneFilter, setZoneFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [brokerFilter, setBrokerFilter] = useState<string>('all');
 
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [isUnitFormOpen, setIsUnitFormOpen] = useState(false);
@@ -51,11 +53,6 @@ export default function UnitsPage() {
   // Filtered units
   const filteredUnits = useMemo(() => {
     return myUnits.filter((unit) => {
-      // فلترة بحسب الوسيط (للمدير العام فقط)
-      if (currentUser?.role === 'admin' && brokerFilter !== 'all') {
-        if (unit.ownerId !== brokerFilter) return false;
-      }
-
       // Status
       if (statusFilter !== 'all' && unit.status !== statusFilter) return false;
 
@@ -72,16 +69,13 @@ export default function UnitsPage() {
         const matchZone = `منطقة ${unit.zoneId}`.toLowerCase().includes(q);
         const matchDesc = unit.description?.toLowerCase().includes(q);
         const matchCode = `bd-${unit.zoneId}-${unit.plotNo}`.toLowerCase().includes(q);
-        const ownerUser = users.find((u) => u.id === unit.ownerId);
-        const matchOwner = ownerUser
-          ? ownerUser.username.toLowerCase().includes(q) || ownerUser.fullName.toLowerCase().includes(q)
-          : false;
-        if (!matchPlot && !matchZone && !matchDesc && !matchCode && !matchOwner) return false;
+        const matchCompany = unit.companyName?.toLowerCase().includes(q);
+        if (!matchPlot && !matchZone && !matchDesc && !matchCode && !matchCompany) return false;
       }
 
       return true;
     });
-  }, [myUnits, currentUser, users, brokerFilter, statusFilter, zoneFilter, typeFilter, searchTerm]);
+  }, [myUnits, statusFilter, zoneFilter, typeFilter, searchTerm]);
 
   const copyUnitDetails = (unit: Unit) => {
     const text = formatUnitFullDetails(unit, currentUser);
@@ -124,7 +118,7 @@ export default function UnitsPage() {
             <span className="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span>
             تصدير Excel
           </button>
-          {currentUser?.role !== 'admin' && (
+          {(isCompanyAdmin || isSuperAdmin) && (
             <button
               onClick={() => {
                 setEditingUnit(null);
@@ -290,7 +284,7 @@ export default function UnitsPage() {
         </div>
 
         {/* Filter Inputs Grid */}
-        <div className={`grid grid-cols-1 ${currentUser?.role === 'admin' ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-space-sm`}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-sm">
           {/* Search */}
           <div className="relative">
             <span className="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-slate-400 text-[20px] pointer-events-none">
@@ -344,46 +338,12 @@ export default function UnitsPage() {
               expand_more
             </span>
           </div>
-
-          {/* Broker Filter (For Admin Only) */}
-          {currentUser?.role === 'admin' && (
-            <div className="relative">
-              <select
-                value={brokerFilter}
-                onChange={(e) => setBrokerFilter(e.target.value)}
-                className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] rounded-xl py-2.5 pr-space-md pl-8 font-body-sm text-body-sm text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
-              >
-                <option value="all" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
-                  فلترة بالوسيط (كافة الوسطاء)
-                </option>
-                {users.map((u) => {
-                  const uUnitsCount = myUnits.filter((un) => un.ownerId === u.id).length;
-                  return (
-                    <option key={u.id} value={u.id} className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
-                      {u.fullName} ({uUnitsCount} وحدة)
-                    </option>
-                  );
-                })}
-              </select>
-              <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-slate-400 text-[18px] pointer-events-none">
-                person
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Active Filter Chips */}
-        {(zoneFilter !== 'all' || typeFilter !== 'all' || brokerFilter !== 'all' || searchTerm) && (
+        {(zoneFilter !== 'all' || typeFilter !== 'all' || searchTerm) && (
           <div className="flex items-center flex-wrap gap-space-xs pt-1 border-t border-surface-container-low pt-2">
             <span className="font-label-sm text-label-sm text-outline text-xs">الفلاتر المطبقة:</span>
-            {currentUser?.role === 'admin' && brokerFilter !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface font-label-sm text-label-sm text-xs">
-                الوسيط: {users.find((u) => u.id === brokerFilter)?.fullName || brokerFilter}
-                <button onClick={() => setBrokerFilter('all')} className="hover:text-error cursor-pointer">
-                  ✕
-                </button>
-              </span>
-            )}
             {zoneFilter !== 'all' && (
               <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface font-label-sm text-label-sm text-xs">
                 المنطقة: منطقة {zoneFilter}
@@ -402,7 +362,6 @@ export default function UnitsPage() {
             )}
             <button
               onClick={() => {
-                setBrokerFilter('all');
                 setZoneFilter('all');
                 setTypeFilter('all');
                 setSearchTerm('');
@@ -461,10 +420,10 @@ export default function UnitsPage() {
                         <span className="material-symbols-outlined text-[14px] text-tertiary">schedule</span>
                         {unit.deliveryNote || 'استلام فوري'}
                       </span>
-                      {currentUser?.role === 'admin' && (
+                      {unit.companyName && (
                         <span className="px-2 py-0.5 rounded-lg bg-slate-900/90 text-white font-label-sm text-label-sm font-bold shadow-sm flex items-center gap-1 text-[11px]">
-                          <span className="material-symbols-outlined text-[13px] text-amber-400">person</span>
-                          {users.find((u) => u.id === unit.ownerId)?.fullName || 'غير محدد'}
+                          <span className="material-symbols-outlined text-[13px] text-amber-400">corporate_fare</span>
+                          {unit.companyName}
                         </span>
                       )}
                     </div>
@@ -539,6 +498,37 @@ export default function UnitsPage() {
                       </div>
                     </div>
 
+                    {/* Quick Status Switcher (Brokers & Admins) */}
+                    <div className="flex items-center justify-between gap-1 p-1.5 rounded-xl bg-surface-container-low/80 border border-surface-container-high/40 text-[11px]">
+                      <span className="font-bold text-on-surface-variant flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">tune</span>
+                        الحالة:
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {(['available', 'reserved', 'sold'] as const).map((st) => (
+                          <button
+                            key={st}
+                            type="button"
+                            onClick={() => {
+                              updateUnitStatus(unit.id, st);
+                              showToast(`تم تغيير حالة الوحدة #BD-${unit.zoneId}-${unit.plotNo} إلى ${st === 'available' ? 'متاح للبيع' : st === 'reserved' ? 'حجز مؤقت' : 'تم البيع'}`);
+                            }}
+                            className={`px-2 py-0.5 rounded-lg font-bold transition cursor-pointer text-[10px] ${
+                              unit.status === st
+                                ? st === 'available'
+                                  ? 'bg-emerald-600 text-white shadow-xs'
+                                  : st === 'reserved'
+                                  ? 'bg-amber-600 text-white shadow-xs'
+                                  : 'bg-rose-600 text-white shadow-xs'
+                                : 'text-on-surface-variant hover:bg-surface-container-high'
+                            }`}
+                          >
+                            {st === 'available' ? 'متاح' : st === 'reserved' ? 'حجز' : 'مباع'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* Quick Action Buttons */}
                     <div className="pt-space-sm flex flex-col gap-space-xs border-t border-surface-container-low pt-2">
                       <div className="grid grid-cols-2 gap-space-xs">
@@ -568,7 +558,7 @@ export default function UnitsPage() {
                         className="w-full py-space-xs text-center text-primary hover:text-primary-container font-label-sm text-label-sm font-bold transition-colors text-xs cursor-pointer"
                         type="button"
                       >
-                        {currentUser?.role === 'admin' ? 'عرض كافة تفاصيل ومواصفات الوحدة ←' : 'تفاصيل كاملة وتعديل الوحدة ←'}
+                        {isCompanyAdmin || isSuperAdmin ? 'تفاصيل كاملة وتعديل مواصفات الوحدة ←' : 'عرض كافة تفاصيل ومشاركة الوحدة ←'}
                       </button>
                     </div>
                   </div>
@@ -591,7 +581,7 @@ export default function UnitsPage() {
               <thead className="bg-surface-container-low text-on-surface-variant font-bold border-b border-surface-container-high">
                 <tr>
                   <th className="p-3.5">كود الوحدة</th>
-                  {currentUser?.role === 'admin' && <th className="p-3.5">الوسيط المسؤول</th>}
+                  <th className="p-3.5">الشركة العقارية</th>
                   <th className="p-3.5">المنطقة والقطعة</th>
                   <th className="p-3.5">نوع الوحدة</th>
                   <th className="p-3.5">المساحة</th>
@@ -604,22 +594,33 @@ export default function UnitsPage() {
                 {filteredUnits.map((u) => (
                   <tr key={u.id} className="hover:bg-surface-container-low/50 transition-colors">
                     <td className="p-3.5 font-bold text-primary">#BD-{u.zoneId}-{u.plotNo}</td>
-                    {currentUser?.role === 'admin' && (
-                      <td className="p-3.5 font-bold text-slate-800 dark:text-slate-200">
-                        {users.find((user) => user.id === u.ownerId)?.fullName || 'غير محدد'}
-                      </td>
-                    )}
+                    <td className="p-3.5 font-bold text-slate-800 dark:text-slate-200">
+                      {u.companyName || 'محفظة الشركة'}
+                    </td>
                     <td className="p-3.5">منطقة {u.zoneId} • قطعة {u.plotNo}</td>
                     <td className="p-3.5">{UNIT_KIND_LABELS[u.unitKind] || 'شقة'}</td>
                     <td className="p-3.5 font-bold">{u.area} م²</td>
                     <td className="p-3.5 font-bold text-on-surface">{u.price.toLocaleString()} ج.م</td>
                     <td className="p-3.5">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        u.status === 'available' ? 'bg-primary-fixed text-primary' :
-                        u.status === 'reserved' ? 'bg-tertiary-fixed text-tertiary' : 'bg-secondary-fixed text-secondary'
-                      }`}>
-                        {u.status === 'available' ? 'متاحة' : u.status === 'reserved' ? 'حجز مؤقت' : 'تم البيع'}
-                      </span>
+                      <select
+                        value={u.status}
+                        onChange={(e) => {
+                          const newSt = e.target.value as UnitStatus;
+                          updateUnitStatus(u.id, newSt);
+                          showToast(`تم تغيير حالة الوحدة #BD-${u.zoneId}-${u.plotNo} إلى ${newSt === 'available' ? 'متاح للبيع' : newSt === 'reserved' ? 'حجز مؤقت' : 'تم البيع'}`);
+                        }}
+                        className={`px-2 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer ${
+                          u.status === 'available'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                            : u.status === 'reserved'
+                            ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                            : 'bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800'
+                        }`}
+                      >
+                        <option value="available">متاحة للبيع</option>
+                        <option value="reserved">حجز مؤقت</option>
+                        <option value="sold">تم البيع</option>
+                      </select>
                     </td>
                     <td className="p-3.5 text-center">
                       <div className="flex items-center justify-center gap-1.5">
@@ -658,7 +659,7 @@ export default function UnitsPage() {
 
       {/* Global Modals */}
       <UnitDetailModal
-        unit={selectedUnit}
+        unit={myUnits.find((u) => u.id === selectedUnit?.id) || selectedUnit}
         onClose={() => setSelectedUnit(null)}
         onEdit={(unit) => {
           setEditingUnit(unit);

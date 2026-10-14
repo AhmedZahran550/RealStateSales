@@ -18,10 +18,34 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!currentUser && !isLoginPage) {
       router.replace('/login');
     } else if (currentUser && isLoginPage) {
-      router.replace('/');
-    } else if (currentUser && currentUser.role === 'admin' && (pathname.startsWith('/customers') || pathname === '/matching')) {
-      // دور المدير العام مخصص لإدارة المستخدمين واستعراض الوحدات فقط بدون عملاء أو مواعيد
-      router.replace('/units');
+      if (currentUser.role === 'super_admin') {
+        router.replace('/super-admin');
+      } else {
+        router.replace('/');
+      }
+    } else if (currentUser) {
+      const isSuper = currentUser.role === 'super_admin';
+      const isCompAdmin = currentUser.role === 'company_admin' || currentUser.role === 'admin';
+      const isBrok = currentUser.role === 'user';
+
+      // 1. مدير المنصة Super Admin: ممنوع من قسم العملاء والمطابقة
+      if (isSuper && (pathname.startsWith('/customers') || pathname === '/matching')) {
+        router.replace('/super-admin');
+      }
+      // 2. مدير الشركة Company Admin: ممنوع من صفحات السوبر أدمن ومن قسم العملاء الخاص بالوسطاء
+      else if (isCompAdmin) {
+        if (pathname.startsWith('/super-admin')) {
+          router.replace('/');
+        } else if (pathname.startsWith('/customers') || pathname === '/matching') {
+          router.replace('/');
+        }
+      }
+      // 3. الوسيط العقاري Broker: ممنوع من لوحة السوبر أدمن ومن صفحات الإدارة المركزية
+      else if (isBrok) {
+        if (pathname.startsWith('/super-admin') || pathname.startsWith('/admin')) {
+          router.replace('/');
+        }
+      }
     }
   }, [currentUser, isInitialized, isLoginPage, pathname, router]);
 

@@ -14,7 +14,9 @@ import { createUnitWhatsAppUrl } from '@/lib/shareUtils';
 export default function DashboardPage() {
   const {
     currentUser,
+    currentCompany,
     users,
+    companyUsers,
     myUnits,
     myCustomers,
     zones,
@@ -39,6 +41,14 @@ export default function DashboardPage() {
 
   if (!currentUser) return null;
 
+  // توجيه مدير المنصة Super Admin تلقائياً للوحته المركزية
+  if (currentUser.role === 'super_admin') {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/super-admin';
+    }
+    return null;
+  }
+
   // Formatted date in Arabic
   const todayArabic = new Intl.DateTimeFormat('ar-EG', {
     weekday: 'long',
@@ -48,14 +58,15 @@ export default function DashboardPage() {
   }).format(new Date());
 
   // ========================================================
-  // لوحة تحكم مخصصة للمدير العام (Admin Dashboard)
-  // بدون عملاء وبدون مواعيد متابعات - فقط إدارة المستخدمين والوحدات
+  // لوحة تحكم مخصصة لمدير الشركة (Company Admin Dashboard)
+  // إدارة مخزون وحدات ومباني ووسطاء الشركة - بدون عملاء أو مواعيد خاصة
   // ========================================================
-  if (currentUser.role === 'admin') {
+  if (currentUser.role === 'company_admin' || currentUser.role === 'admin') {
     const availableUnits = myUnits.filter((u) => u.status === 'available');
     const totalInventoryValue = availableUnits.reduce((acc, u) => acc + (u.price || 0), 0);
     const totalReservedUnits = myUnits.filter((u) => u.status === 'reserved').length;
     const totalSoldUnits = myUnits.filter((u) => u.status === 'sold').length;
+    const companyBrokers = companyUsers.filter((u) => u.role === 'user');
 
     return (
       <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
@@ -69,7 +80,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-space-sm">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 font-label-sm text-label-sm font-bold text-xs">
                   <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse" />
-                  لوحة الإدارة والرقابة المركزية
+                  لوحة إدارة شركة {currentCompany?.name || currentUser.companyName || 'العقارية'}
                 </span>
                 <span className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 text-xs">
                   <span className="material-symbols-outlined text-[16px]">calendar_today</span>
@@ -78,21 +89,29 @@ export default function DashboardPage() {
               </div>
               <h1 className="font-headline-lg text-headline-lg text-on-surface font-extrabold tracking-tight text-xl sm:text-2xl lg:text-3xl">
                 مرحباً {currentUser.fullName}، لديك{' '}
-                <span className="text-amber-600 font-black">{users.length} مستخدمين</span> مسجلين في المنظومة و{' '}
-                <span className="text-primary font-black">{myUnits.length} وحدة</span> عقارية
+                <span className="text-amber-600 font-black">{companyBrokers.length} وسطاء</span> بشركتك و{' '}
+                <span className="text-primary font-black">{myUnits.length} وحدة</span> عقارية مسجلة
               </h1>
               <p className="font-body-md text-body-md text-on-surface-variant text-xs sm:text-sm">
-                إدارة حسابات الوسطاء، تحديث بياناتهم وكلمات المرور، واستعراض كافة وحدات المحفظة العقارية وتصفيتها بحسب الوسيط.
+                أنت المسؤول عن إضافة وحذف وتعديل وحدات ومباني شركتك، وإدارة حسابات وسطاء وفريق مبيعات الشركة.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-space-sm w-full sm:w-auto shrink-0">
+              <button
+                onClick={() => setIsUnitFormOpen(true)}
+                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white font-label-md text-label-md font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[20px]">add_home_work</span>
+                <span>+ إضافة وحدة عقارية للشركة</span>
+              </button>
               <Link
                 href="/admin/users"
                 className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-label-md text-label-md font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
               >
                 <span className="material-symbols-outlined text-[20px]">manage_accounts</span>
-                <span>إدارة حسابات الوسطاء</span>
+                <span>إدارة وسطاء الشركة</span>
               </Link>
               <Link
                 href="/units"
@@ -114,23 +133,23 @@ export default function DashboardPage() {
                 <span className="material-symbols-outlined text-[26px]">manage_accounts</span>
               </div>
               <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-label-sm text-label-sm font-bold text-xs">
-                المستخدمين
+                وسطاء الشركة
               </span>
             </div>
             <div>
               <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
-                إجمالي الوسطاء والمديرين
+                فريق الوسطاء المسجلين
               </span>
               <div className="flex items-baseline gap-space-xs">
                 <span className="font-headline-xl text-headline-xl text-on-surface font-extrabold tracking-tight text-3xl">
-                  {users.length}
+                  {companyBrokers.length}
                 </span>
-                <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">مستخدم</span>
+                <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">وسيط</span>
               </div>
             </div>
             <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2">
               <Link href="/admin/users" className="text-amber-600 font-bold hover:underline text-xs flex items-center gap-1">
-                <span>تعديل وإدارة الصلاحيات</span>
+                <span>إدارة وإضافة وسطاء</span>
                 <span className="material-symbols-outlined text-sm">arrow_back</span>
               </Link>
             </div>
@@ -224,10 +243,10 @@ export default function DashboardPage() {
             <div>
               <h2 className="font-headline-md text-headline-md text-on-surface font-bold text-xl flex items-center gap-2">
                 <span className="material-symbols-outlined text-amber-600">group</span>
-                <span>حسابات الوسطاء المسجلين ({users.length})</span>
+                <span>وسطاء وفريق عمل الشركة ({companyBrokers.length})</span>
               </h2>
               <p className="font-body-sm text-body-sm text-on-surface-variant text-xs mt-0.5">
-                نظرة سريعة على محفظة كل وسيط مع إمكانية تعديل بياناته والتصفية
+                فريق وسطاء شركة {currentCompany?.name || currentUser.companyName || ''} المصرح لهم بعرض ومشاركة وحدات محفظة الشركة وتحديث حالتها
               </p>
             </div>
             <Link
@@ -239,62 +258,94 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
-            {users.map((u) => {
-              const uUnits = myUnits.filter((unit) => unit.ownerId === u.id);
-              const uAvailable = uUnits.filter((unit) => unit.status === 'available');
+          {companyBrokers.length === 0 ? (
+            <div className="p-8 text-center rounded-2xl bg-surface-container-low border border-dashed border-surface-container-high">
+              <span className="material-symbols-outlined text-4xl text-amber-600 mb-2">person_add</span>
+              <h3 className="font-bold text-sm text-on-surface mb-1">لا يوجد وسطاء مسجلين تحت شركتك بعد</h3>
+              <p className="text-xs text-on-surface-variant mb-4">
+                أضف وسطاء مبيعات لتمكينهم من الاطلاع على وحدات الشركة ومشاركتها مع عملائهم
+              </p>
+              <Link
+                href="/admin/users"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition"
+              >
+                <span className="material-symbols-outlined text-[18px]">add</span>
+                <span>+ إضافة وسيط جديد للشركة</span>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+              {companyBrokers.map((u) => {
+                const cleanPhone = (u.phone || '').replace(/\D/g, '');
+                const whatsappUrl = cleanPhone
+                  ? `https://wa.me/${cleanPhone.startsWith('2') ? cleanPhone : '2' + cleanPhone}`
+                  : null;
 
-              return (
-                <div
-                  key={u.id}
-                  className="p-4 rounded-xl bg-surface-container-low border border-surface-container-high/50 hover:border-amber-500/50 transition-all flex flex-col justify-between gap-3 shadow-xs"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-amber-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
-                        {u.fullName.charAt(0)}
+                return (
+                  <div
+                    key={u.id}
+                    className="p-4 rounded-xl bg-surface-container-low border border-surface-container-high/50 hover:border-amber-500/50 transition-all flex flex-col justify-between gap-3 shadow-xs"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-amber-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                          {u.fullName.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-sm text-on-surface">{u.fullName}</h3>
+                          <p className="text-xs text-amber-700 dark:text-amber-400 font-mono font-semibold">@{u.username}</p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300">
+                        وسيط معتمد
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-surface-container-high/40">
+                      <div>
+                        <span className="text-[11px] text-on-surface-variant block">رقم الهاتف:</span>
+                        <span className="font-bold font-mono text-on-surface" dir="ltr">
+                          {u.phone || 'غير مسجل'}
+                        </span>
                       </div>
                       <div>
-                        <h3 className="font-bold text-sm text-on-surface">{u.fullName}</h3>
-                        <p className="text-xs text-amber-700 dark:text-amber-400 font-mono font-semibold">@{u.username}</p>
+                        <span className="text-[11px] text-on-surface-variant block">حالة الحساب:</span>
+                        <span className="font-bold text-emerald-600 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                          نشط بالمنظومة
+                        </span>
                       </div>
                     </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      u.role === 'admin' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-slate-200 text-slate-800'
-                    }`}>
-                      {u.role === 'admin' ? 'مدير عام' : 'وسيط معتمد'}
-                    </span>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-surface-container-high/40">
-                    <div>
-                      <span className="text-[11px] text-on-surface-variant block">رقم الهاتف:</span>
-                      <span className="font-bold font-mono text-on-surface" dir="ltr">{u.phone || 'غير مسجل'}</span>
-                    </div>
-                    <div>
-                      <span className="text-[11px] text-on-surface-variant block">الوحدات:</span>
-                      <span className="font-bold text-primary">{uUnits.length} وحدة ({uAvailable.length} متاح)</span>
+                    <div className="flex items-center gap-2 pt-2 border-t border-surface-container-high/40">
+                      <Link
+                        href="/admin/users"
+                        className="flex-1 py-1.5 px-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200 text-center text-xs font-bold transition flex items-center justify-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">manage_accounts</span>
+                        <span>إدارة وتعديل</span>
+                      </Link>
+                      {whatsappUrl ? (
+                        <a
+                          href={whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-200 text-center text-xs font-bold transition flex items-center justify-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">chat</span>
+                          <span>مراسلة واتساب</span>
+                        </a>
+                      ) : (
+                        <span className="flex-1 py-1.5 px-2 rounded-lg bg-surface-container text-on-surface-variant text-center text-[11px]">
+                          بدون هاتف
+                        </span>
+                      )}
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2 pt-2 border-t border-surface-container-high/40">
-                    <Link
-                      href="/admin/users"
-                      className="flex-1 py-1.5 px-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200 text-center text-xs font-bold transition"
-                    >
-                      تعديل البيانات
-                    </Link>
-                    <Link
-                      href="/units"
-                      className="flex-1 py-1.5 px-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-center text-xs font-bold transition"
-                    >
-                      استعراض وحداته
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* 4. Latest Units Overview */}
@@ -303,28 +354,34 @@ export default function DashboardPage() {
             <div>
               <h2 className="font-headline-md text-headline-md text-on-surface font-bold text-xl flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">apartment</span>
-                <span>أحدث الوحدات المسجلة في المنظومة</span>
+                <span>أحدث وحدات محفظة الشركة</span>
               </h2>
               <p className="font-body-sm text-body-sm text-on-surface-variant text-xs mt-0.5">
-                استعراض سريع لأحدث الوحدات في الحي المتميز والوسطاء المسئولين عنها
+                استعراض سريع للوحدات المتاحة والمعروضة تحت إدارة الشركة
               </p>
             </div>
             <Link
               href="/units"
               className="text-xs font-bold text-primary hover:underline flex items-center gap-1 self-start sm:self-auto"
             >
-              <span>عرض جميع الوحدات وتصفيتها بالوسيط ({myUnits.length})</span>
+              <span>عرض كافة وحدات ومباني الشركة ({myUnits.length})</span>
               <span className="material-symbols-outlined text-sm">arrow_back</span>
             </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
             {myUnits.slice(0, 6).map((unit) => {
-              const broker = users.find((u) => u.id === unit.ownerId);
               const img =
                 unit.media?.[0]?.externalUrl ||
                 unit.media?.[0]?.storagePath ||
                 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+
+              const statusBadge =
+                unit.status === 'available'
+                  ? { text: 'متاح للبيع', bg: 'bg-emerald-600 text-white' }
+                  : unit.status === 'reserved'
+                  ? { text: 'حجز مؤقت', bg: 'bg-amber-600 text-white' }
+                  : { text: 'تم البيع', bg: 'bg-rose-600 text-white' };
 
               return (
                 <div
@@ -338,14 +395,11 @@ export default function DashboardPage() {
                         منطقة {unit.zoneId} • قطعة {unit.plotNo}
                       </span>
                     </div>
-                    {broker && (
-                      <div className="absolute top-2 left-2">
-                        <span className="px-2 py-0.5 rounded-lg bg-slate-900/90 text-white font-bold text-[11px] shadow-xs flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[13px] text-amber-400">person</span>
-                          {broker.fullName}
-                        </span>
-                      </div>
-                    )}
+                    <div className="absolute top-2 left-2">
+                      <span className={`px-2 py-0.5 rounded-lg font-bold text-[11px] shadow-xs ${statusBadge.bg}`}>
+                        {statusBadge.text}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="p-3.5 flex flex-col gap-2">
@@ -463,14 +517,13 @@ export default function DashboardPage() {
               <span className="material-symbols-outlined text-[20px]">person_add</span>
               <span>+ تسجيل عميل جديد</span>
             </button>
-            <button
-              onClick={() => setIsUnitFormOpen(true)}
+            <Link
+              href="/units"
               className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-secondary-container hover:bg-secondary text-on-secondary font-label-md text-label-md font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
-              type="button"
             >
-              <span className="material-symbols-outlined text-[20px]">add_home_work</span>
-              <span>+ إضافة وحدة</span>
-            </button>
+              <span className="material-symbols-outlined text-[20px]">apartment</span>
+              <span>استعراض ومشاركة الوحدات</span>
+            </Link>
           </div>
         </div>
       </div>

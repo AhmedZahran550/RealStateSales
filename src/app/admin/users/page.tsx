@@ -32,7 +32,6 @@ export default function AdminUsersPage() {
     deleteUser,
     updateUserProfile,
     updateUserPassword,
-    setCurrentUser,
   } = useApp();
 
   // Search State (lowercased)
@@ -186,18 +185,21 @@ export default function AdminUsersPage() {
     }
   };
 
+  const isSuper = currentUser?.role === 'super_admin';
+  const isCompAdmin = currentUser?.role === 'company_admin' || currentUser?.role === 'admin';
+
   // حظر الوصول المباشر للوسطاء غير المدراء
-  if (currentUser && currentUser.role !== 'admin') {
+  if (!currentUser || (!isSuper && !isCompAdmin)) {
     return (
       <div className="p-8 max-w-2xl mx-auto my-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-center shadow-sm">
         <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 flex items-center justify-center mx-auto mb-4">
           <Shield className="w-8 h-8" />
         </div>
         <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-          قسم مخصص لإدارة النظام فقط (Admin)
+          قسم مخصص لإدارة الشركة والنظام فقط
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
-          إدارة حسابات الوسطاء والمستخدمين وتعيين الصلاحيات مخصصة حصرياً للمدير العام. يمكنك متابعة وحداتك وعملائك من خلال الأقسام المخصصة لك.
+          إدارة حسابات الوسطاء والمستخدمين وتعيين الصلاحيات مخصصة حصرياً لمدير الشركة أو مدير المنصة. يمكنك متابعة وحداتك وعملائك من خلال الأقسام المخصصة لك.
         </p>
         <div className="flex items-center justify-center gap-3">
           <Link
@@ -217,8 +219,13 @@ export default function AdminUsersPage() {
     );
   }
 
-  // تصفية المستخدمين بحسب البحث مع حماية تامة من القيم الفارغة أو غير المعرفة
-  const filteredUsers = (users || []).filter((u) => {
+  // تصفية المستخدمين بحسب الشركة والصلاحية
+  const scopedUsers = isSuper
+    ? users
+    : users.filter((u) => u.companyId === currentUser.companyId);
+
+  // تصفية المستخدمين بحسب البحث
+  const filteredUsers = (scopedUsers || []).filter((u) => {
     if (!u) return false;
     if (!searchQuery.trim()) return true;
     const q = searchQuery.trim().toLowerCase();
@@ -245,21 +252,31 @@ export default function AdminUsersPage() {
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-              إدارة المستخدمين وحسابات الوسطاء
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                {isSuper ? 'إدارة كافة المستخدمين والوسطاء' : `إدارة وسطاء ومبيعات ${currentUser.companyName || 'الشركة'}`}
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-xs font-bold">
+                {filteredUsers.length} وسيط مسجل
+              </span>
+            </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              تعديل بيانات الوسطاء، أرقام الهواتف، كلمات المرور، وإدارة الصلاحيات
+              {isSuper
+                ? 'إدارة الحسابات وكلمات المرور والصلاحيات على مستوى كافة الشركات'
+                : 'إضافة حسابات جديدة لوسطاء شركتك، تعيين كلمات المرور، وتحديث بيانات التواصل'}
             </p>
           </div>
         </div>
 
         <button
-          onClick={() => setIsAddModalOpen(true)}
+          onClick={() => {
+            setRole('user');
+            setIsAddModalOpen(true);
+          }}
           className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs shadow-md shadow-amber-600/20 transition self-start sm:self-auto cursor-pointer"
         >
           <UserPlus className="w-4 h-4" />
-          <span>إضافة مستخدم جديد</span>
+          <span>+ إضافة وسيط جديد</span>
         </button>
       </div>
 
@@ -279,7 +296,7 @@ export default function AdminUsersPage() {
         <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-              قائمة المستخدمين المعتمدين ({users.length})
+              قائمة وسطاء الشركة المعتمدين ({scopedUsers.length})
             </h3>
             {searchQuery && (
               <span className="text-[11px] bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full font-bold">
@@ -325,7 +342,7 @@ export default function AdminUsersPage() {
                 <th className="py-3.5 px-4">الاسم بالكامل</th>
                 <th className="py-3.5 px-4">اسم المستخدم</th>
                 <th className="py-3.5 px-4">رقم الهاتف (واتساب)</th>
-                <th className="py-3.5 px-4">الوحدات المسجلة</th>
+                <th className="py-3.5 px-4">حالة الحساب</th>
                 <th className="py-3.5 px-4">نوع الصلاحية</th>
                 <th className="py-3.5 px-4">تاريخ الإنشاء</th>
                 <th className="py-3.5 px-4 text-center">إجراءات الحساب</th>
@@ -343,7 +360,6 @@ export default function AdminUsersPage() {
               ) : (
                 filteredUsers.map((u) => {
                   const isCurrent = currentUser ? u.id === currentUser.id : false;
-                  const userUnitsCount = (units || []).filter((unit) => unit.ownerId === u.id).length;
                   const displayName = u.fullName || u.username || 'مستخدم بدون اسم';
                   const avatarLetter = (u.fullName || u.username || 'م').slice(0, 1);
 
@@ -386,9 +402,9 @@ export default function AdminUsersPage() {
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <span className="inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                          <Building className="w-3 h-3 text-slate-400" />
-                          <span>{userUnitsCount} وحدة</span>
+                        <span className="inline-flex items-center gap-1.5 font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[11px] border border-emerald-200 dark:border-emerald-800">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                          <span>نشط بالمنظومة</span>
                         </span>
                       </td>
 
@@ -400,7 +416,7 @@ export default function AdminUsersPage() {
                               : 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300'
                           }`}
                         >
-                          {u.role === 'admin' ? 'مدير عام للنظام' : 'وسيط عقاري معتمد'}
+                          {u.role === 'admin' ? 'مدير شركة' : 'وسيط عقاري معتمد'}
                         </span>
                       </td>
 
@@ -422,15 +438,7 @@ export default function AdminUsersPage() {
                             <span>تعديل</span>
                           </button>
 
-                          {!isCurrent && (
-                            <button
-                              onClick={() => setCurrentUser(u)}
-                              className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 transition cursor-pointer"
-                              title="التبديل إلى هذا الحساب فوراً"
-                            >
-                              دخول كـ
-                            </button>
-                          )}
+
 
                           {users.length > 1 && !isCurrent && (
                             <button
@@ -560,10 +568,10 @@ export default function AdminUsersPage() {
                   className="w-full p-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs cursor-pointer"
                 >
                   <option value="user" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
-                    وسيط عقاري (متاح له إضافة ومتابعة وحداته وعملائه)
+                    وسيط عقاري (عرض ومشاركة وحدات محفظة الشركة وإدارة عملائه الخاصة)
                   </option>
                   <option value="admin" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
-                    مدير عام للنظام (إدارة المستخدمين والاطلاع على كافة الوحدات)
+                    مدير شركة (المسؤول عن إدارة وحدات ومباني ووسطاء الشركة)
                   </option>
                 </select>
               </div>
@@ -677,8 +685,14 @@ export default function AdminUsersPage() {
                   onChange={(e) => setRole(e.target.value as AppRole)}
                   className="w-full p-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs cursor-pointer"
                 >
-                  <option value="user" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">وسيط عقاري (متاح له إضافة ومتابعة وحداته وعملائه)</option>
-                  <option value="admin" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">مدير عام للنظام (صلاحية كاملة لجميع الأقسام والمستخدمين)</option>
+                  <option value="user" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
+                    وسيط عقاري (عرض ومشاركة وحدات محفظة الشركة وإدارة عملائه الخاصة)
+                  </option>
+                  {isSuper && (
+                    <option value="admin" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
+                      مدير شركة (المسؤول عن إدارة وحدات ومباني ووسطاء الشركة)
+                    </option>
+                  )}
                 </select>
               </div>
 

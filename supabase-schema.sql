@@ -1,36 +1,95 @@
 -- ==========================================================
--- مشروع الواحة (El Waha) - الحي المتميز بمدينة بدر
+-- مشروع الواحة (El Waha) - التطبيق متعدد الشركات (Multi-Tenant Architecture)
 -- Supabase Postgres Schema & Row Level Security (RLS)
+-- الأدوار: مدير المنصة (super_admin) | مدير الشركة (company_admin) | الوسيط العقاري (user)
 -- ==========================================================
 
 -- 1. الأنواع والتصنيفات (Enums)
-create type app_role as enum ('admin', 'user');
-create type unit_status as enum ('available', 'reserved', 'sold');
-create type unit_kind as enum ('duplex', 'ground_garden', 'floor_1', 'floor_2', 'floor_3', 'roof', 'other');
-create type media_kind as enum ('image', 'video', 'link');
-create type customer_stage as enum ('lead', 'asking', 'viewed', 'negotiating', 'reserved', 'closed', 'lost');
-create type activity_type as enum ('call', 'whatsapp', 'visit', 'note', 'stage_change');
+DO $$ BEGIN
+  CREATE TYPE app_role AS ENUM ('super_admin', 'company_admin', 'user', 'admin');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
--- 2. جدول المستخدمين والوسطاء (باسم المستخدم وكلمة المرور والاسم بالكامل)
-create table profiles (
+DO $$ BEGIN
+  CREATE TYPE unit_status AS ENUM ('available', 'reserved', 'sold');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE unit_kind AS ENUM ('duplex', 'ground_garden', 'floor_1', 'floor_2', 'floor_3', 'roof', 'other');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE media_kind AS ENUM ('image', 'video', 'link');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE customer_stage AS ENUM ('lead', 'asking', 'viewed', 'negotiating', 'reserved', 'closed', 'lost');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE activity_type AS ENUM ('call', 'whatsapp', 'visit', 'note', 'stage_change');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+-- 2. جدول الشركات العقارية (Companies / Tenants)
+create table if not exists companies (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,                  -- اسم الشركة
+  commercial_name text,                -- السجل التجاري أو الاسم التجاري
+  logo_url text,                       -- رابط شعار الشركة
+  phone text,                          -- هاتف التواصل
+  email text,                          -- البريد الإلكتروني للشركة
+  address text,                        -- المقر الرئيسي
+  is_active boolean not null default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 3. جدول المستخدمين والملفات الشخصية (Profiles)
+create table if not exists profiles (
   id uuid primary key references auth.users on delete cascade,
+  company_id uuid references companies(id) on delete cascade, -- null لمدير المنصة Super Admin
   full_name text not null,        -- الاسم بالكامل
   username text not null unique,  -- اسم المستخدم
-  phone text,                     -- رقم الهاتف المحمول
+  password text,                  -- كلمة المرور المحفوظة للتسجيل السريع
+  phone text,                     -- رقم الهاتف المحمول (فريد لكل مستخدم)
   role app_role not null default 'user',
   created_at timestamptz default now()
 );
 
--- دالة التحقق من صلاحية مدير النظام
-create or replace function is_admin()
+-- دوال الصلاحيات والأمان (Helper Security Definer Functions)
+create or replace function is_super_admin()
 returns boolean language sql security definer as $$
   select exists (
-    select 1 from profiles where id = auth.uid() and role = 'admin'
+    select 1 from profiles where id = auth.uid() and role = 'super_admin'
   );
 $$;
 
--- 3. جدول مناطق الحي المتميز (1..16)
-create table zones (
+create or replace function get_auth_company_id()
+returns uuid language sql security definer as $$
+  select company_id from profiles where id = auth.uid();
+$$;
+
+create or replace function is_company_admin()
+returns boolean language sql security definer as $$
+  select exists (
+    select 1 from profiles 
+    where id = auth.uid() and (role = 'company_admin' or role = 'admin' or role = 'super_admin')
+  );
+$$;
+
+-- 4. جدول مناطق الحي المتميز (1..16)
+create table if not exists zones (
   id smallint primary key, -- 1..16
   name text not null,
   direction text, -- بحري / قبلي / شرقي / غربي / وسط
@@ -39,43 +98,44 @@ create table zones (
   notes text
 );
 
--- 4. جدول المباني والقطع
-create table buildings (
+-- 5. جدول المباني والقطع (تابعة لكل شركة)
+create table if not exists buildings (
   id bigint generated always as identity primary key,
+  company_id uuid references companies(id) on delete cascade,
   zone_id smallint not null references zones(id) on delete cascade,
   plot_no int not null,
   land_area numeric,
   map_x numeric,
   map_y numeric,
-  notes text,
-  unique (zone_id, plot_no)
+  notes text
 );
 
--- 5. دليل الخدمات والمولات
-create table services (
+-- 6. دليل الخدمات والمولات
+create table if not exists services (
   id bigint generated always as identity primary key,
   name text not null unique,
   category text, -- mall, club, road, school, hospital...
   notes text
 );
 
-create table zone_services (
+create table if not exists zone_services (
   zone_id smallint references zones(id) on delete cascade,
   service_id bigint references services(id) on delete cascade,
   primary key (zone_id, service_id)
 );
 
-create table building_services (
+create table if not exists building_services (
   building_id bigint references buildings(id) on delete cascade,
   service_id bigint references services(id) on delete cascade,
   primary key (building_id, service_id)
 );
 
--- 6. جدول الوحدات العقارية الخاصة بالوسيط
-create table units (
+-- 7. جدول الوحدات العقارية (المسؤول عنها مدير الشركة وتستعرضها وسطاء الشركة)
+create table if not exists units (
   id uuid primary key default gen_random_uuid(),
-  owner_id uuid not null references profiles(id) on delete cascade,
-  building_id bigint not null references buildings(id),
+  company_id uuid references companies(id) on delete cascade,
+  owner_id uuid references profiles(id) on delete set null, -- المسؤول الذي أنشأ الوحدة
+  building_id bigint not null references buildings(id) on delete cascade,
   unit_kind unit_kind not null,
   floor smallint,
   side text,
@@ -87,15 +147,18 @@ create table units (
   payment_terms text,
   description text,
   status unit_status default 'available',
+  services text[],
+  lat numeric,
+  lng numeric,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 
--- 7. معرض صور وفيديوهات الوحدات
-create table unit_media (
+-- 8. معرض صور وفيديوهات الوحدات
+create table if not exists unit_media (
   id uuid primary key default gen_random_uuid(),
   unit_id uuid not null references units(id) on delete cascade,
-  owner_id uuid not null references profiles(id) on delete cascade,
+  owner_id uuid references profiles(id) on delete set null,
   kind media_kind not null,
   storage_path text,
   external_url text,
@@ -105,10 +168,11 @@ create table unit_media (
   created_at timestamptz default now()
 );
 
--- 8. إدارة العملاء (CRM)
-create table customers (
+-- 9. إدارة العملاء والمتابعات الخاصة بكل وسيط (CRM - عزل صارم 100%)
+create table if not exists customers (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references profiles(id) on delete cascade,
+  company_id uuid references companies(id) on delete cascade,
   name text not null,
   phone text not null,
   whatsapp text,
@@ -122,13 +186,13 @@ create table customers (
   updated_at timestamptz default now()
 );
 
-create table customer_units (
+create table if not exists customer_units (
   customer_id uuid references customers(id) on delete cascade,
   unit_id uuid references units(id) on delete cascade,
   primary key (customer_id, unit_id)
 );
 
-create table customer_activities (
+create table if not exists customer_activities (
   id uuid primary key default gen_random_uuid(),
   customer_id uuid not null references customers(id) on delete cascade,
   type activity_type not null,
@@ -136,7 +200,8 @@ create table customer_activities (
   created_at timestamptz default now()
 );
 
--- 9. سياسات الأمان والحماية (RLS)
+-- 10. تفعيل الحماية والأمان على مستوى الصفوف (Row Level Security - RLS)
+alter table companies enable row level security;
 alter table profiles enable row level security;
 alter table zones enable row level security;
 alter table buildings enable row level security;
@@ -149,46 +214,115 @@ alter table customers enable row level security;
 alter table customer_units enable row level security;
 alter table customer_activities enable row level security;
 
--- سياسات المستخدمين
-create policy "Users can view own profile" on profiles for select using (auth.uid() = id);
-create policy "Admins can manage profiles" on profiles for all using (is_admin());
+-- ==========================================================
+-- سياسات الشركات (Companies)
+-- ==========================================================
+-- مدير المنصة العام هو الوحيد الذي يضيف ويعدل الشركات، والأعضاء يقرأون شركتهم فقط
+create policy "Super admin manages companies" on companies
+  for all using (is_super_admin());
 
--- سياسات المناطق والخدمات
+create policy "Users can view their own company" on companies
+  for select using (id = get_auth_company_id() or is_super_admin());
+
+-- ==========================================================
+-- سياسات المستخدمين (Profiles)
+-- ==========================================================
+create policy "Users can view members of their company" on profiles
+  for select using (
+    id = auth.uid() 
+    or (company_id is not null and company_id = get_auth_company_id()) 
+    or is_super_admin()
+  );
+
+create policy "Company admin manages company users" on profiles
+  for all using (
+    is_super_admin() 
+    or (is_company_admin() and company_id = get_auth_company_id())
+  );
+
+-- ==========================================================
+-- سياسات المباني والوحدات العقارية (Buildings & Units)
+-- ==========================================================
+-- المباني:
+create policy "Company members view buildings" on buildings
+  for select using (
+    company_id is null 
+    or company_id = get_auth_company_id() 
+    or is_super_admin()
+  );
+
+create policy "Company admin manages buildings" on buildings
+  for all using (
+    is_super_admin() 
+    or (is_company_admin() and (company_id is null or company_id = get_auth_company_id()))
+  );
+
+-- الوحدات العقارية:
+-- 1. القراءة: جميع أعضاء الشركة (المدير والوسطاء) يمكنهم استعراض كل وحدات شركتهم
+create policy "Company members view company units" on units
+  for select using (
+    company_id is null 
+    or company_id = get_auth_company_id() 
+    or is_super_admin()
+  );
+
+-- 2. الإضافة والحذف والتعديل الشامل: لمدير الشركة ومدير المنصة فقط
+create policy "Company admin manage units" on units
+  for all using (
+    is_super_admin() 
+    or (is_company_admin() and (company_id is null or company_id = get_auth_company_id()))
+  );
+
+-- 3. الوسطاء: تعديل حالة الوحدة فقط (متاح / محجوز / مباع)
+create policy "Brokers update unit status" on units
+  for update using (
+    company_id = get_auth_company_id()
+  )
+  with check (
+    company_id = get_auth_company_id()
+  );
+
+-- سياسات وسائط الوحدات (Media)
+create policy "Company members view unit media" on unit_media
+  for select using (true);
+
+create policy "Company admin manage unit media" on unit_media
+  for all using (
+    is_super_admin() or is_company_admin()
+  );
+
+-- ==========================================================
+-- سياسات العملاء والمتابعات (CRM - عزل صارم 100% للوسيط فقط)
+-- ==========================================================
+-- لا يرى العميل ولا يديره إلا الوسيط صاحب الحساب فقط (حتى مدير الشركة لا يرى عملاء الوسيط)
+create policy "Brokers strictly manage their own customers" on customers
+  for all using (
+    owner_id = auth.uid()
+  )
+  with check (
+    owner_id = auth.uid()
+  );
+
+create policy "Brokers strictly manage their customer units" on customer_units
+  for all using (
+    exists (select 1 from customers c where c.id = customer_id and c.owner_id = auth.uid())
+  );
+
+create policy "Brokers strictly manage their customer activities" on customer_activities
+  for all using (
+    exists (select 1 from customers c where c.id = customer_id and c.owner_id = auth.uid())
+  );
+
+-- سياسات المناطق والخدمات (عامة لجميع المشتركين)
 create policy "Authenticated users read zones" on zones for select to authenticated using (true);
-create policy "Admin manage zones" on zones for all using (is_admin());
-
-create policy "Authenticated users read buildings" on buildings for select to authenticated using (true);
-create policy "Users can insert missing buildings" on buildings for insert to authenticated with check (true);
-create policy "Admin update buildings" on buildings for update using (is_admin());
-create policy "Admin delete buildings" on buildings for delete using (is_admin());
-
+create policy "Super admin manage zones" on zones for all using (is_super_admin());
 create policy "Authenticated read services" on services for select to authenticated using (true);
-create policy "Admin manage services" on services for all using (is_admin());
+create policy "Super admin manage services" on services for all using (is_super_admin());
 
-create policy "Authenticated read zone_services" on zone_services for select to authenticated using (true);
-create policy "Admin manage zone_services" on zone_services for all using (is_admin());
-
-create policy "Authenticated read building_services" on building_services for select to authenticated using (true);
-create policy "Admin manage building_services" on building_services for all using (is_admin());
-
--- سياسات الوحدات الخاصة بكل وسيط
-create policy "Users manage own units" on units for all using (auth.uid() = owner_id or is_admin());
-create policy "Users manage own media" on unit_media for all using (auth.uid() = owner_id or is_admin());
-
--- سياسات العملاء والمتابعات الخاصة بكل وسيط
-create policy "Users manage own customers" on customers for all using (
-  (auth.uid() = owner_id or is_admin()) and deleted_at is null
-);
-create policy "Users manage customer units" on customer_units for all using (
-  exists (select 1 from customers c where c.id = customer_id and (c.owner_id = auth.uid() or is_admin()))
-);
-create policy "Users manage customer activities" on customer_activities for all using (
-  exists (select 1 from customers c where c.id = customer_id and (c.owner_id = auth.uid() or is_admin()))
-);
-
--- 10. فهارس السرعة والأداء
-create index idx_units_owner on units(owner_id, building_id);
-create index idx_units_status on units(status);
-create index idx_customers_owner_stage on customers(owner_id, stage);
-create index idx_customers_followup on customers(next_followup_at);
-create index idx_customer_activities on customer_activities(customer_id, created_at desc);
+-- 11. الفهارس لتسريع الاستعلامات والأداء العالي
+create index if not exists idx_profiles_company on profiles(company_id, role);
+create index if not exists idx_units_company on units(company_id, status);
+create index if not exists idx_units_building on units(building_id);
+create index if not exists idx_customers_owner on customers(owner_id, stage);
+create index if not exists idx_customers_followup on customers(next_followup_at);
+create index if not exists idx_customer_activities on customer_activities(customer_id, created_at desc);
