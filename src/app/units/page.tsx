@@ -677,7 +677,6 @@ export default function UnitsPage() {
         initialUnit={editingUnit || undefined}
         zones={zones}
         buildings={buildings}
-        services={services}
         onAddBuilding={addBuilding}
         onClose={() => {
           setIsUnitFormOpen(false);

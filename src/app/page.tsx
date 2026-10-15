@@ -1023,7 +1023,6 @@ export default function DashboardPage() {
         isOpen={isUnitFormOpen}
         zones={zones}
         buildings={buildings}
-        services={services}
         onAddBuilding={addBuilding}
         onClose={() => setIsUnitFormOpen(false)}
         onSubmit={(unitData) => {

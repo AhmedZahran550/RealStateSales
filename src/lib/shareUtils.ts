@@ -43,8 +43,8 @@ export function formatUnitFullDetails(unit: Unit, consultant?: ConsultantInfo | 
     : '';
 
   const servicesText =
-    unit.services && unit.services.length > 0
-      ? `\nالمعالم والخدمات المحيطة: ${unit.services.join('، ')}`
+    unit.features && unit.features.length > 0
+      ? `\nالمميزات والمواصفات: ${unit.features.join('، ')}`
       : '';
 
   const googleMapsUrl =
@@ -97,8 +97,8 @@ export function formatCustomerProposalMessage(
     : 'بمدينة بدر';
 
   const locationFeatures =
-    unit.services && unit.services.length > 0
-      ? `قريب من: ${unit.services.join('، ')}`
+    unit.features && unit.features.length > 0
+      ? `المميزات: ${unit.features.join('، ')}`
       : unit.description || 'الحي المتميز بمدينة بدر';
 
   const googleMapsUrl =

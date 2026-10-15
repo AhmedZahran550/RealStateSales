@@ -27,6 +27,7 @@ import {
   INITIAL_CUSTOMERS,
 } from '@/lib/mock-data';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { unitService } from '@/services/unitService';
 
 interface AppContextType {
   currentUser: UserProfile | null;
@@ -53,6 +54,7 @@ interface AppContextType {
   addUnit: (unit: Omit<Unit, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateUnit: (id: string, unit: Partial<Unit>) => void;
   updateUnitStatus: (id: string, status: UnitStatus) => Promise<void>;
+  fetchUnitHistory: (unitId: string) => Promise<import('@/lib/types').UnitHistory[]>;
   deleteUnit: (id: string) => void;
   addCustomer: (customer: Omit<Customer, 'id' | 'createdAt' | 'updatedAt' | 'activities'>) => void;
   updateCustomer: (id: string, customer: Partial<Customer>) => void;
@@ -166,7 +168,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const mappedCustomers: Customer[] = dbCustomers.map((c: any) => ({
             id: c.id,
             ownerId: c.owner_id,
-            companyId: c.company_id || undefined,
             ownerName: c.profiles?.full_name || 'البروكر',
             name: c.name,
             phone: c.phone,
@@ -200,7 +201,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // 2. جلب الوحدات العقارية:
       // لـ Super Admin: جلب خفيف للإحصائيات والتقارير فقط (id, company_id, status, price) بدون صور أو ملفات ثقيلة
-      // لـ Company Admin والوسطاء: جلب وحدات الشركة فقط
+      // لـ Company Admin والوسطاء: جلب وحدات الشركة فقط (الوحدات ملكية الشركة ككل)
       if (isSuper) {
         const { data: dbUnitsSummary, error: unitSummaryError } = await supabase
           .from('units')
@@ -213,7 +214,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               id: u.id,
               companyId: u.company_id || undefined,
               companyName: comp?.name || undefined,
-              ownerId: '',
               buildingId: 1,
               zoneId: 1,
               plotNo: 1,
@@ -225,6 +225,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               deliveryNote: '',
               paymentTerms: '',
               media: [],
+              features: [],
               createdAt: '',
               updatedAt: '',
             };
@@ -237,8 +238,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           .from('units')
           .select(`
             *,
-            buildings (zone_id, plot_no),
-            profiles:owner_id (full_name),
+            buildings (zone_id, plot_no, features),
             unit_media (*)
           `);
 
@@ -255,8 +255,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               id: u.id,
               companyId: u.company_id || undefined,
               companyName: comp?.name || undefined,
-              ownerId: u.owner_id,
-              ownerName: u.profiles?.full_name || 'المسؤول',
               buildingId: Number(u.building_id),
               zoneId: u.buildings?.zone_id || 1,
               plotNo: u.buildings?.plot_no || 1,
@@ -282,7 +280,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 caption: m.caption || '',
                 createdAt: m.created_at,
               })),
-              services: u.services || [],
+              features: u.features || [],
               createdAt: u.created_at,
               updatedAt: u.updated_at,
             };
@@ -310,6 +308,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               zoneId: Number(b.zone_id),
               plotNo: Number(b.plot_no),
               landArea: b.land_area ? Number(b.land_area) : undefined,
+              features: b.features || [],
               mapX: b.map_x ? Number(b.map_x) : undefined,
               mapY: b.map_y ? Number(b.map_y) : undefined,
               notes: b.notes || undefined,
@@ -656,22 +655,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // ==========================================
   // دوال إدارة الوحدات العقارية مع قاعدة البيانات
   // ==========================================
-  const updateUnitStatus = async (id: string, status: UnitStatus) => {
-    setUnits((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, status, updatedAt: new Date().toISOString() } : u))
-    );
-
-    if (isSupabaseConfigured && supabase) {
-      try {
-        await supabase
-          .from('units')
-          .update({ status, updated_at: new Date().toISOString() })
-          .eq('id', id);
-      } catch (err) {
-        console.error('فشل تحديث حالة الوحدة في قاعدة البيانات:', err);
-      }
-    }
-  };
 
   const addUnit = async (unitData: Omit<Unit, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!currentUser) return;
@@ -690,8 +673,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: newUnitId,
       companyId: targetCompId,
       companyName: targetComp?.name || unitData.companyName,
-      ownerId: currentUser.id,
-      ownerName: currentUser.fullName,
+      features: unitData.features || [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -704,7 +686,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         await supabase.from('units').insert({
           id: newUnitId,
           company_id: targetCompId || null,
-          owner_id: currentUser.id,
           building_id: unitData.buildingId,
           unit_kind: unitData.unitKind,
           floor: unitData.floor !== undefined ? unitData.floor : null,
@@ -719,7 +700,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           status: unitData.status || 'available',
           lat: unitData.lat || null,
           lng: unitData.lng || null,
-          services: unitData.services || [],
+          features: unitData.features || [],
         });
 
         if (unitData.media && unitData.media.length > 0) {
@@ -733,13 +714,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }));
           await supabase.from('unit_media').insert(mediaRows);
         }
+
+        // تسجيل في سجل التعديلات unit_history
+        await unitService.recordUnitChange({
+          unitId: newUnitId,
+          changedBy: currentUser.id,
+          changeType: 'created',
+          newStatus: unitData.status || 'available',
+          details: `تمت إضافة الوحدة إلى محفظة الشركة بواسطة ${currentUser.fullName}`,
+        });
       } catch (err) {
         console.error('فشل حفظ الوحدة في قاعدة البيانات:', err);
       }
     }
   };
 
+  const updateUnitStatus = async (id: string, status: UnitStatus) => {
+    const currentUnit = units.find((u) => u.id === id);
+    const oldStatus = currentUnit?.status;
+
+    setUnits((prev) =>
+      prev.map((u) =>
+        u.id === id ? { ...u, status, updatedAt: new Date().toISOString() } : u
+      )
+    );
+
+    await unitService.updateUnitStatus(id, status, currentUser || undefined, oldStatus);
+  };
+
   const updateUnit = async (id: string, updatedFields: Partial<Unit>) => {
+    const currentUnit = units.find((u) => u.id === id);
+
     // إذا كان المستخدم وسيطاً، يسمح له بتحديث الحالة فقط
     if (!isCompanyAdmin && !isSuperAdmin) {
       if (updatedFields.status !== undefined) {
@@ -755,42 +760,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       )
     );
 
-    if (isSupabaseConfigured && supabase) {
-      try {
-        const dbUpdate: any = { updated_at: new Date().toISOString() };
-        if (updatedFields.status !== undefined) dbUpdate.status = updatedFields.status;
-        if (updatedFields.price !== undefined) dbUpdate.price = updatedFields.price;
-        if (updatedFields.area !== undefined) dbUpdate.area = updatedFields.area;
-        if (updatedFields.floor !== undefined) dbUpdate.floor = updatedFields.floor;
-        if (updatedFields.side !== undefined) dbUpdate.side = updatedFields.side;
-        if (updatedFields.gardenArea !== undefined) dbUpdate.garden_area = updatedFields.gardenArea;
-        if (updatedFields.negotiable !== undefined) dbUpdate.negotiable = updatedFields.negotiable;
-        if (updatedFields.deliveryNote !== undefined) dbUpdate.delivery_note = updatedFields.deliveryNote;
-        if (updatedFields.paymentTerms !== undefined) dbUpdate.payment_terms = updatedFields.paymentTerms;
-        if (updatedFields.description !== undefined) dbUpdate.description = updatedFields.description;
-        if (updatedFields.lat !== undefined) dbUpdate.lat = updatedFields.lat;
-        if (updatedFields.lng !== undefined) dbUpdate.lng = updatedFields.lng;
-        if (updatedFields.services !== undefined) dbUpdate.services = updatedFields.services;
-
-        await supabase.from('units').update(dbUpdate).eq('id', id);
-
-        if (updatedFields.media !== undefined) {
-          await supabase.from('unit_media').delete().eq('unit_id', id);
-          if (updatedFields.media.length > 0) {
-            const mediaRows = updatedFields.media.map((m) => ({
-              id: generateUUID(),
-              unit_id: id,
-              owner_id: currentUser?.id,
-              kind: m.kind || 'image',
-              external_url: m.externalUrl,
-              caption: m.caption || '',
-            }));
-            await supabase.from('unit_media').insert(mediaRows);
-          }
-        }
-      } catch (err) {
-        console.error('فشل تحديث الوحدة في قاعدة البيانات:', err);
-      }
+    if (currentUser) {
+      await unitService.updateUnit(id, updatedFields, currentUser, currentUnit);
     }
   };
 
@@ -1036,6 +1007,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: newId,
       companyId: compId,
       companyName: comp?.name || bData.companyName,
+      features: bData.features || [],
     };
     setBuildings((prev) => [...prev, newBuilding]);
 
@@ -1046,6 +1018,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         zone_id: bData.zoneId,
         plot_no: bData.plotNo,
         land_area: bData.landArea || null,
+        features: bData.features || [],
         map_x: bData.mapX || null,
         map_y: bData.mapY || null,
         notes: bData.notes || null,
@@ -1414,6 +1387,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addUnit,
         updateUnit,
         updateUnitStatus,
+        fetchUnitHistory: unitService.fetchUnitHistory,
         deleteUnit,
         addCustomer,
         updateCustomer,

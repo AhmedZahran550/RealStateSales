@@ -98,43 +98,23 @@ create table if not exists zones (
   notes text
 );
 
--- 5. جدول المباني والقطع (تابعة لكل شركة)
+-- 5. جدول المباني والقطع (تابعة لكل شركة مع مميزات المبنى)
 create table if not exists buildings (
   id bigint generated always as identity primary key,
   company_id uuid references companies(id) on delete cascade,
   zone_id smallint not null references zones(id) on delete cascade,
   plot_no int not null,
   land_area numeric,
+  features text[] default '{}', -- مميزات المبنى (أسانسير، مدخل رخام، واجهة فاخرة، جراج...)
   map_x numeric,
   map_y numeric,
   notes text
 );
 
--- 6. دليل الخدمات والمولات
-create table if not exists services (
-  id bigint generated always as identity primary key,
-  name text not null unique,
-  category text, -- mall, club, road, school, hospital...
-  notes text
-);
-
-create table if not exists zone_services (
-  zone_id smallint references zones(id) on delete cascade,
-  service_id bigint references services(id) on delete cascade,
-  primary key (zone_id, service_id)
-);
-
-create table if not exists building_services (
-  building_id bigint references buildings(id) on delete cascade,
-  service_id bigint references services(id) on delete cascade,
-  primary key (building_id, service_id)
-);
-
--- 7. جدول الوحدات العقارية (المسؤول عنها مدير الشركة وتستعرضها وسطاء الشركة)
+-- 6. جدول الوحدات العقارية (المسؤول عنها الشركة ومملوكة للشركة حصراً)
 create table if not exists units (
   id uuid primary key default gen_random_uuid(),
-  company_id uuid references companies(id) on delete cascade,
-  owner_id uuid references profiles(id) on delete set null, -- المسؤول الذي أنشأ الوحدة
+  company_id uuid not null references companies(id) on delete cascade, -- الوحدة ملك للشركة فقط
   building_id bigint not null references buildings(id) on delete cascade,
   unit_kind unit_kind not null,
   floor smallint,
@@ -147,11 +127,24 @@ create table if not exists units (
   payment_terms text,
   description text,
   status unit_status default 'available',
-  services text[],
+  features text[] default '{}', -- مميزات خاصة بالوحدة (ترث من المبنى إذا كانت فارغة)
   lat numeric,
   lng numeric,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
+);
+
+-- 7. جدول سجل تغييرات وحالات الوحدة (Unit History & Audit Log)
+create table if not exists unit_history (
+  id uuid primary key default gen_random_uuid(),
+  unit_id uuid not null references units(id) on delete cascade,
+  changed_by uuid references profiles(id) on delete set null, -- المستخدم الذي أجرى التعديل
+  change_type text not null, -- 'status_change', 'price_change', 'details_update', 'created'
+  old_status unit_status,
+  new_status unit_status,
+  details text, -- ملخص التغيير بالعربية
+  changes jsonb, -- تفاصيل الحقول المعدلة إن وجدت
+  created_at timestamptz default now()
 );
 
 -- 8. معرض صور وفيديوهات الوحدات
@@ -168,11 +161,10 @@ create table if not exists unit_media (
   created_at timestamptz default now()
 );
 
--- 9. إدارة العملاء والمتابعات الخاصة بكل وسيط (CRM - عزل صارم 100%)
+-- 9. إدارة العملاء والمتابعات الخاصة بكل وسيط (CRM - ملك للوسيط فقط 100%)
 create table if not exists customers (
   id uuid primary key default gen_random_uuid(),
-  owner_id uuid not null references profiles(id) on delete cascade,
-  company_id uuid references companies(id) on delete cascade,
+  owner_id uuid not null references profiles(id) on delete cascade, -- الوسيط صاحب العميل حصراً
   name text not null,
   phone text not null,
   whatsapp text,
@@ -205,10 +197,8 @@ alter table companies enable row level security;
 alter table profiles enable row level security;
 alter table zones enable row level security;
 alter table buildings enable row level security;
-alter table services enable row level security;
-alter table zone_services enable row level security;
-alter table building_services enable row level security;
 alter table units enable row level security;
+alter table unit_history enable row level security;
 alter table unit_media enable row level security;
 alter table customers enable row level security;
 alter table customer_units enable row level security;
@@ -217,7 +207,6 @@ alter table customer_activities enable row level security;
 -- ==========================================================
 -- سياسات الشركات (Companies)
 -- ==========================================================
--- مدير المنصة العام هو الوحيد الذي يضيف ويعدل الشركات، والأعضاء يقرأون شركتهم فقط
 create policy "Super admin manages companies" on companies
   for all using (is_super_admin());
 
@@ -257,20 +246,19 @@ create policy "Company admin manages buildings" on buildings
     or (is_company_admin() and (company_id is null or company_id = get_auth_company_id()))
   );
 
--- الوحدات العقارية:
+-- الوحدات العقارية (مملوكة للشركة):
 -- 1. القراءة: جميع أعضاء الشركة (المدير والوسطاء) يمكنهم استعراض كل وحدات شركتهم
 create policy "Company members view company units" on units
   for select using (
-    company_id is null 
-    or company_id = get_auth_company_id() 
+    company_id = get_auth_company_id() 
     or is_super_admin()
   );
 
--- 2. الإضافة والحذف والتعديل الشامل: لمدير الشركة ومدير المنصة فقط
+-- 2. الإضافة والحذف والتعديل الشامل: لمدير الشركة ومدير المنصة
 create policy "Company admin manage units" on units
   for all using (
     is_super_admin() 
-    or (is_company_admin() and (company_id is null or company_id = get_auth_company_id()))
+    or (is_company_admin() and company_id = get_auth_company_id())
   );
 
 -- 3. الوسطاء: تعديل حالة الوحدة فقط (متاح / محجوز / مباع)
@@ -280,6 +268,27 @@ create policy "Brokers update unit status" on units
   )
   with check (
     company_id = get_auth_company_id()
+  );
+
+-- ==========================================================
+-- سياسات سجل تعديلات الوحدات (Unit History)
+-- ==========================================================
+create policy "Company members view unit history" on unit_history
+  for select using (
+    exists (
+      select 1 from units u 
+      where u.id = unit_history.unit_id 
+      and (u.company_id = get_auth_company_id() or is_super_admin())
+    )
+  );
+
+create policy "Authorized users insert unit history" on unit_history
+  for insert with check (
+    exists (
+      select 1 from units u 
+      where u.id = unit_history.unit_id 
+      and (u.company_id = get_auth_company_id() or is_super_admin())
+    )
   );
 
 -- سياسات وسائط الوحدات (Media)
@@ -294,7 +303,7 @@ create policy "Company admin manage unit media" on unit_media
 -- ==========================================================
 -- سياسات العملاء والمتابعات (CRM - عزل صارم 100% للوسيط فقط)
 -- ==========================================================
--- لا يرى العميل ولا يديره إلا الوسيط صاحب الحساب فقط (حتى مدير الشركة لا يرى عملاء الوسيط)
+-- لا يرى العميل ولا يديره إلا الوسيط صاحب الحساب فقط (الحسابات غير مرتبطة بالشركات)
 create policy "Brokers strictly manage their own customers" on customers
   for all using (
     owner_id = auth.uid()
@@ -313,16 +322,15 @@ create policy "Brokers strictly manage their customer activities" on customer_ac
     exists (select 1 from customers c where c.id = customer_id and c.owner_id = auth.uid())
   );
 
--- سياسات المناطق والخدمات (عامة لجميع المشتركين)
+-- سياسات المناطق (عامة لجميع المشتركين)
 create policy "Authenticated users read zones" on zones for select to authenticated using (true);
 create policy "Super admin manage zones" on zones for all using (is_super_admin());
-create policy "Authenticated read services" on services for select to authenticated using (true);
-create policy "Super admin manage services" on services for all using (is_super_admin());
 
 -- 11. الفهارس لتسريع الاستعلامات والأداء العالي
 create index if not exists idx_profiles_company on profiles(company_id, role);
 create index if not exists idx_units_company on units(company_id, status);
 create index if not exists idx_units_building on units(building_id);
+create index if not exists idx_unit_history_unit on unit_history(unit_id, created_at desc);
 create index if not exists idx_customers_owner on customers(owner_id, stage);
 create index if not exists idx_customers_followup on customers(next_followup_at);
 create index if not exists idx_customer_activities on customer_activities(customer_id, created_at desc);

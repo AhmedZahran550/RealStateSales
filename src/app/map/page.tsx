@@ -188,7 +188,6 @@ export default function MapPage() {
         defaultZoneId={unitFormPresetZone}
         zones={zones}
         buildings={buildings}
-        services={services}
         onAddBuilding={addBuilding}
         onClose={() => {
           setIsUnitFormOpen(false);

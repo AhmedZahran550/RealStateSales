@@ -75,10 +75,10 @@ export interface Building {
   zoneId: number;
   plotNo: number;
   landArea?: number;
+  features?: string[]; // مميزات المبنى (أسانسير، مدخل رخام، واجهة فاخرة...)
   mapX?: number;
   mapY?: number;
   notes?: string;
-  serviceIds?: number[];
 }
 
 export interface UnitMedia {
@@ -94,12 +94,23 @@ export interface UnitMedia {
   createdAt: string;
 }
 
+export interface UnitHistory {
+  id: string;
+  unitId: string;
+  changedBy?: string; // معرف المستخدم الذي قام بالتعديل
+  changedByName?: string; // اسم المستخدم
+  changeType: 'status_change' | 'price_change' | 'details_update' | 'created';
+  oldStatus?: UnitStatus;
+  newStatus?: UnitStatus;
+  details?: string;
+  changes?: Record<string, any>;
+  createdAt: string;
+}
+
 export interface Unit {
   id: string;
-  companyId?: string; // معرف الشركة العقارية المسؤولة
+  companyId?: string; // معرف الشركة العقارية المسؤولة (الوحدة تتبع للشركة ككل وليس لوسيط)
   companyName?: string; // اسم الشركة
-  ownerId?: string; // المشرف أو المدير الذي أضاف الوحدة
-  ownerName?: string;
   buildingId: number;
   zoneId: number;
   plotNo: number;
@@ -115,7 +126,7 @@ export interface Unit {
   description?: string;
   status: UnitStatus;
   media: UnitMedia[];
-  services?: string[];
+  features?: string[]; // مميزات خاصة بالوحدة (ترث من المبنى إذا كانت فارغة)
   lat?: number;
   lng?: number;
   createdAt: string;
@@ -146,8 +157,7 @@ export interface CustomerActivity {
 
 export interface Customer {
   id: string;
-  ownerId: string; // الوسيط صاحب العميل (حساب خاص معزول تماماً لا يراه حتى مدير الشركة)
-  companyId?: string;
+  ownerId: string; // الوسيط صاحب العميل حصراً (حساب خاص معزول تماماً لا يتبع للشركة)
   ownerName?: string;
   name: string;
   phone: string;
