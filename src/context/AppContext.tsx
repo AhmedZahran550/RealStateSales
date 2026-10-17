@@ -17,17 +17,9 @@ import {
   isCompanyAdmin as checkIsCompanyAdmin,
   isBroker as checkIsBroker,
 } from '@/lib/types';
-import {
-  INITIAL_COMPANIES,
-  INITIAL_USERS,
-  INITIAL_ZONES,
-  INITIAL_BUILDINGS,
-  INITIAL_UNITS,
-  INITIAL_SERVICES,
-  INITIAL_CUSTOMERS,
-} from '@/lib/mock-data';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { unitService } from '@/services/unitService';
+import { authService } from '@/services/authService';
 
 interface AppContextType {
   currentUser: UserProfile | null;
@@ -78,17 +70,6 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEYS = {
-  COMPANIES: 'elwaha_companies_v6',
-  USERS: 'elwaha_users_v6',
-  CURRENT_USER: 'elwaha_curr_user_v6',
-  ZONES: 'elwaha_zones_v6',
-  BUILDINGS: 'elwaha_buildings_v6',
-  UNITS: 'elwaha_units_v6',
-  SERVICES: 'elwaha_services_v6',
-  CUSTOMERS: 'elwaha_customers_v6',
-};
-
 function generateUUID(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -101,14 +82,14 @@ function generateUUID(): string {
 }
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [companies, setCompanies] = useState<Company[]>(INITIAL_COMPANIES);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
-  const [users, setUsers] = useState<UserProfile[]>(INITIAL_USERS);
-  const [zones, setZones] = useState<Zone[]>(INITIAL_ZONES);
-  const [buildings, setBuildings] = useState<Building[]>(INITIAL_BUILDINGS);
-  const [units, setUnits] = useState<Unit[]>(INITIAL_UNITS);
-  const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
-  const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -118,7 +99,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // دالة مزامنة وجلب البيانات المركزية من قاعدة بيانات Supabase (حصراً للمستخدم المسجل دخوله)
   const refreshFromDatabase = useCallback(async (userOverride?: UserProfile | null) => {
     const activeUser = userOverride !== undefined ? userOverride : currentUser;
-    // منع أي جلب أو استعلام من قاعدة البيانات قبل تسجيل الدخول
     if (!activeUser || !isSupabaseConfigured || !supabase || isSyncingRef.current) return;
     isSyncingRef.current = true;
 
@@ -134,7 +114,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!compError && dbCompanies && dbCompanies.length > 0) {
+      if (!compError && dbCompanies) {
         fetchedCompanies = dbCompanies.map((c: any) => ({
           id: c.id,
           name: c.name,
@@ -147,10 +127,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           createdAt: c.created_at,
         }));
         setCompanies(fetchedCompanies);
-        localStorage.setItem(STORAGE_KEYS.COMPANIES, JSON.stringify(fetchedCompanies));
       }
 
-      // 1. جلب العملاء: مخصص حصرياً للوسيط العقاري فقط (Super Admin و Company Admin لا يجلبون أي عملاء نهائياً)
+      // 1. جلب العملاء: مخصص حصرياً للوسيط العقاري فقط
       if (isBrokerUser) {
         const { data: dbCustomers, error: custError } = await supabase
           .from('customers')
@@ -192,16 +171,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             updatedAt: c.updated_at,
           }));
           setCustomers(mappedCustomers);
-          localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(mappedCustomers));
+        } else {
+          setCustomers([]);
         }
       } else {
-        // حظر جلب أي عملاء للمديرين لتوفير البيانات والخصوصية التامة
         setCustomers([]);
       }
 
-      // 2. جلب الوحدات العقارية:
-      // لـ Super Admin: جلب خفيف للإحصائيات والتقارير فقط (id, company_id, status, price) بدون صور أو ملفات ثقيلة
-      // لـ Company Admin والوسطاء: جلب وحدات الشركة فقط (الوحدات ملكية الشركة ككل)
+      // 2. جلب الوحدات العقارية
       if (isSuper) {
         const { data: dbUnitsSummary, error: unitSummaryError } = await supabase
           .from('units')
@@ -231,7 +208,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             };
           });
           setUnits(mappedUnits);
-          localStorage.setItem(STORAGE_KEYS.UNITS, JSON.stringify(mappedUnits));
+        } else {
+          setUnits([]);
         }
       } else {
         let unitQuery = supabase
@@ -286,11 +264,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             };
           });
           setUnits(mappedUnits);
-          localStorage.setItem(STORAGE_KEYS.UNITS, JSON.stringify(mappedUnits));
+        } else {
+          setUnits([]);
         }
       }
 
-      // 3. جلب المباني: يتم تخطيها لـ Super Admin (يحتاج فقط الشركات والمستخدمين والتقارير)
+      // 3. جلب المباني
       if (!isSuper) {
         let bldQuery = supabase.from('buildings').select('*');
         if (activeUser.companyId) {
@@ -298,7 +277,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         const { data: dbBuildings, error: bldError } = await bldQuery;
 
-        if (!bldError && dbBuildings && dbBuildings.length > 0) {
+        if (!bldError && dbBuildings) {
           const mappedBuildings: Building[] = dbBuildings.map((b: any) => {
             const comp = fetchedCompanies.find((c) => c.id === b.company_id);
             return {
@@ -315,34 +294,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             };
           });
           setBuildings(mappedBuildings);
-          localStorage.setItem(STORAGE_KEYS.BUILDINGS, JSON.stringify(mappedBuildings));
+        } else {
+          setBuildings([]);
         }
       }
 
-      // 4. جلب الخدمات والمولات (للوسطاء ومديري الشركات فقط)
-      if (!isSuper) {
-        const { data: dbServices, error: srvError } = await supabase
-          .from('services')
-          .select('*');
-
-        if (!srvError && dbServices && dbServices.length > 0) {
-          const mappedServices: Service[] = dbServices.map((s: any) => ({
-            id: Number(s.id),
-            name: s.name,
-            category: s.category,
-            notes: s.notes || undefined,
-          }));
-          setServices(mappedServices);
-          localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(mappedServices));
-        }
-      }
-
-      // 5. جلب المستخدمين المعتمدين (Profiles)
+      // 4. جلب المستخدمين المعتمدين (Profiles)
       const { data: dbProfiles, error: profError } = await supabase
         .from('profiles')
         .select('*');
 
-      if (!profError && dbProfiles && dbProfiles.length > 0) {
+      if (!profError && dbProfiles) {
         const mappedProfiles: UserProfile[] = dbProfiles.map((p: any) => {
           const comp = fetchedCompanies.find((c) => c.id === p.company_id);
           return {
@@ -358,36 +320,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           };
         });
 
-        // دمج المستخدمين مع الحفاظ على الحسابات المركزية (INITIAL_USERS)
-        setUsers((prev) => {
-          const merged = [...INITIAL_USERS];
-          for (const p of mappedProfiles) {
-            const idx = merged.findIndex(
-              (m) => m.id === p.id || m.username.toLowerCase() === p.username.toLowerCase()
-            );
-            if (idx >= 0) {
-              merged[idx] = { ...merged[idx], ...p, password: p.password || merged[idx].password || '123456' };
-            } else {
-              merged.push(p);
-            }
-          }
-          localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(merged));
-          return merged;
-        });
+        setUsers(mappedProfiles);
 
         // مزامنة المستخدم الحالي المسجل دخوله في حال تم تحديث هاتفه أو بياناته
         setCurrentUser((prev) => {
           if (!prev) return null;
           const fresh = mappedProfiles.find((u) => u.id === prev.id);
           if (fresh) {
-            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(fresh));
+            authService.setStoredUser(fresh);
             return fresh;
           }
           return prev;
         });
       }
 
-      // 6. جلب المناطق المركزية
+      // 5. جلب المناطق المركزية
       const { data: dbZones, error: zoneError } = await supabase
         .from('zones')
         .select('*')
@@ -403,62 +350,64 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           notes: z.notes || undefined,
         }));
         setZones(mappedZones);
-        localStorage.setItem(STORAGE_KEYS.ZONES, JSON.stringify(mappedZones));
       }
     } catch (err) {
       console.warn('تنبيه أثناء مزامنة البيانات مع سوبابيز:', err);
     } finally {
       isSyncingRef.current = false;
     }
-  }, []);
+  }, [currentUser]);
 
-  // 1. استرجاع البيانات الفوري من التخزين المحلي لمنع أي وميض
+  // استرجاع جلسة المستخدم حصراً من التخزين الخفيف والتحقق من صلاحيتها في قاعدة البيانات
   useEffect(() => {
-    try {
-      const storedCompanies = localStorage.getItem(STORAGE_KEYS.COMPANIES);
-      const storedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
-      const storedCurr = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-      const storedBuildings = localStorage.getItem(STORAGE_KEYS.BUILDINGS);
-      const storedUnits = localStorage.getItem(STORAGE_KEYS.UNITS);
-      const storedServices = localStorage.getItem(STORAGE_KEYS.SERVICES);
-      const storedCustomers = localStorage.getItem(STORAGE_KEYS.CUSTOMERS);
+    let isMounted = true;
+    const initSession = async () => {
+      try {
+        const storedUser = authService.getStoredUser();
+        if (storedUser && storedUser.id && isSupabaseConfigured && supabase) {
+          const { data: dbProfiles, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', storedUser.id)
+            .limit(1);
 
-      if (storedCompanies) {
-        setCompanies(JSON.parse(storedCompanies));
-      } else {
-        setCompanies(INITIAL_COMPANIES);
+          if (!error && dbProfiles && dbProfiles.length > 0 && isMounted) {
+            const p = dbProfiles[0];
+            const freshUser: UserProfile = {
+              id: p.id,
+              companyId: p.company_id || undefined,
+              fullName: p.full_name,
+              username: (p.username || '').trim().toLowerCase(),
+              password: p.password || '',
+              phone: p.phone || '',
+              role: p.role,
+              createdAt: p.created_at,
+            };
+            setCurrentUser(freshUser);
+            authService.setStoredUser(freshUser);
+            await refreshFromDatabase(freshUser);
+          } else if (isMounted) {
+            authService.logout();
+            setCurrentUser(null);
+          }
+        }
+      } catch (err) {
+        console.warn('تعذر استعادة جلسة المستخدم من قاعدة البيانات:', err);
+      } finally {
+        if (isMounted) setIsInitialized(true);
       }
-      if (storedUsers) {
-        setUsers(JSON.parse(storedUsers));
-      } else {
-        setUsers(INITIAL_USERS);
-      }
-      if (storedCurr) {
-        try {
-          const parsed = JSON.parse(storedCurr);
-          if (parsed && parsed.id) setCurrentUser(parsed);
-        } catch {}
-      }
-      if (storedBuildings) setBuildings(JSON.parse(storedBuildings));
-      if (storedUnits) setUnits(JSON.parse(storedUnits));
-      if (storedServices) setServices(JSON.parse(storedServices));
-      if (storedCustomers) setCustomers(JSON.parse(storedCustomers));
-    } catch (e) {
-      console.warn('تعذر قراءة التخزين المحلي، سيتم استخدام البيانات الافتراضية', e);
-    } finally {
-      setIsInitialized(true);
-    }
-  }, []);
+    };
 
-  // 2. مزامنة فورية مع قاعدة البيانات حصراً بعد تسجيل الدخول وعند الرجوع للشاشة (Focus / Visibility)
+    initSession();
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshFromDatabase]);
+
+  // مزامنة فورية مع قاعدة البيانات عند الرجوع للشاشة (Focus / Visibility) واشتراك Realtime
   useEffect(() => {
-    // منع استدعاء قاعدة البيانات أو فتح قنوات الاتصال نهائياً قبل تسجيل دخول المستخدم
     if (!isInitialized || !currentUser) return;
 
-    // جلب أولي من الداتا بيز للمستخدم المسجل دخوله
-    refreshFromDatabase();
-
-    // الاستماع لعودة المستخدم للنافذة (مثال: عدل من التليفون ثم فتح اللاب توب)
     const handleVisibility = () => {
       if (document.visibilityState === 'visible' && currentUser) {
         refreshFromDatabase();
@@ -473,7 +422,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     window.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('focus', handleFocus);
 
-    // اشتراك Realtime لمزامنة التغييرات الحية لحظياً
     let channel: any = null;
     if (isSupabaseConfigured && supabase) {
       try {
@@ -512,26 +460,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [isInitialized, currentUser?.id, refreshFromDatabase]);
 
-  // حفظ التعديلات المؤقتة في التخزين المحلي كـ Cache
-  useEffect(() => {
-    if (!isInitialized) return;
-    try {
-      localStorage.setItem(STORAGE_KEYS.COMPANIES, JSON.stringify(companies));
-      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-      if (currentUser) {
-        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
-      } else {
-        localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-      }
-      localStorage.setItem(STORAGE_KEYS.BUILDINGS, JSON.stringify(buildings));
-      localStorage.setItem(STORAGE_KEYS.UNITS, JSON.stringify(units));
-      localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(services));
-      localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(customers));
-    } catch (e) {
-      console.error('فشل حفظ الحالة في التخزين المحلي', e);
-    }
-  }, [companies, users, currentUser, buildings, units, services, customers, isInitialized]);
-
   // أعلام الأدوار والصلاحيات
   const isSuperAdmin = checkIsSuperAdmin(currentUser);
   const isCompanyAdmin = checkIsCompanyAdmin(currentUser);
@@ -549,9 +477,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       : users.filter((u) => u.companyId === currentUser.companyId)
     : [];
 
-  // تصفية الوحدات العقارية بحسب الشركة (متعدد الشركات)
-  // - مدير المنصة Super Admin يرى جميع الوحدات
-  // - مدير الشركة والوسطاء التابعين لها يرون جميع وحدات شركتهم للاطلاع والمشاركة
+  // تصفية الوحدات العقارية بحسب الشركة
   const myUnits = currentUser
     ? isSuperAdmin
       ? units
@@ -559,12 +485,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     : [];
 
   // تصفية العملاء (CRM) - خصوصية مطلقة 100%
-  // - الوسيط فقط هو من يرى عملاءه وجدوله ومواعيده
-  // - مدير الشركة ومدير المنصة لا يمكنهم الاطلاع على عملاء الوسيط إطلاقاً
   const myCustomers = currentUser
     ? isBroker
       ? customers.filter((c) => c.ownerId === currentUser.id)
-      : [] // المدراء لا يرون عملاء الوسطاء
+      : []
     : [];
 
   // ==========================================
@@ -580,8 +504,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       isActive: companyData.isActive ?? true,
       createdAt: new Date().toISOString(),
     };
-
-    setCompanies((prev) => [newCompany, ...prev]);
 
     if (isSupabaseConfigured && supabase) {
       try {
@@ -601,9 +523,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       } catch (err: any) {
         console.error('خطأ أثناء حفظ الشركة في قاعدة البيانات:', err);
+        return { success: false, message: err?.message };
       }
     }
 
+    setCompanies((prev) => [newCompany, ...prev]);
     return { success: true, message: 'تم إضافة الشركة بنجاح', company: newCompany };
   };
 
@@ -611,10 +535,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     id: string,
     updates: Partial<Company>
   ): Promise<{ success: boolean; message?: string }> => {
-    setCompanies((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
-    );
-
     if (isSupabaseConfigured && supabase) {
       try {
         const dbUpdates: any = { updated_at: new Date().toISOString() };
@@ -635,12 +555,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
+    setCompanies((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
+    );
     return { success: true, message: 'تم تحديث بيانات الشركة بنجاح' };
   };
 
   const deleteCompany = async (id: string): Promise<{ success: boolean; message?: string }> => {
-    setCompanies((prev) => prev.filter((c) => c.id !== id));
-
     if (isSupabaseConfigured && supabase) {
       try {
         const { error } = await supabase.from('companies').delete().eq('id', id);
@@ -649,6 +570,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return { success: false, message: err?.message };
       }
     }
+
+    setCompanies((prev) => prev.filter((c) => c.id !== id));
     return { success: true, message: 'تم حذف الشركة بنجاح' };
   };
 
@@ -658,7 +581,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addUnit = async (unitData: Omit<Unit, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!currentUser) return;
-    // المسؤول عن إضافة الوحدات هو مدير الشركة أو السوبر أدمن
     if (!isCompanyAdmin && !isSuperAdmin) {
       console.warn('غير مسموح للوسيط بإضافة وحدات جديدة، هذه صلاحية مدير الشركة');
       return;
@@ -677,13 +599,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    // تحديث متفائل في الواجهة فوراً
-    setUnits((prev) => [newUnit, ...prev]);
 
-    // الحفظ في قاعدة بيانات سوبابيز
     if (isSupabaseConfigured && supabase) {
       try {
-        await supabase.from('units').insert({
+        const { error: insertErr } = await supabase.from('units').insert({
           id: newUnitId,
           company_id: targetCompId || null,
           building_id: unitData.buildingId,
@@ -703,6 +622,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           features: unitData.features || [],
         });
 
+        if (insertErr) {
+          console.error('فشل حفظ الوحدة في قاعدة البيانات:', insertErr);
+          return;
+        }
+
         if (unitData.media && unitData.media.length > 0) {
           const mediaRows = unitData.media.map((m) => ({
             id: generateUUID(),
@@ -715,7 +639,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           await supabase.from('unit_media').insert(mediaRows);
         }
 
-        // تسجيل في سجل التعديلات unit_history
         await unitService.recordUnitChange({
           unitId: newUnitId,
           changedBy: currentUser.id,
@@ -725,8 +648,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
       } catch (err) {
         console.error('فشل حفظ الوحدة في قاعدة البيانات:', err);
+        return;
       }
     }
+
+    setUnits((prev) => [newUnit, ...prev]);
   };
 
   const updateUnitStatus = async (id: string, status: UnitStatus) => {
@@ -745,7 +671,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateUnit = async (id: string, updatedFields: Partial<Unit>) => {
     const currentUnit = units.find((u) => u.id === id);
 
-    // إذا كان المستخدم وسيطاً، يسمح له بتحديث الحالة فقط
     if (!isCompanyAdmin && !isSuperAdmin) {
       if (updatedFields.status !== undefined) {
         return updateUnitStatus(id, updatedFields.status);
@@ -771,15 +696,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    setUnits((prev) => prev.filter((u) => u.id !== id));
-
     if (isSupabaseConfigured && supabase) {
       try {
-        await supabase.from('units').delete().eq('id', id);
+        const { error } = await supabase.from('units').delete().eq('id', id);
+        if (error) {
+          console.error('فشل حذف الوحدة من قاعدة البيانات:', error);
+          return;
+        }
       } catch (err) {
         console.error('فشل حذف الوحدة من قاعدة البيانات:', err);
+        return;
       }
     }
+
+    setUnits((prev) => prev.filter((u) => u.id !== id));
   };
 
   // ==========================================
@@ -811,10 +741,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updatedAt: new Date().toISOString(),
     };
 
-    // تحديث متفائل في الواجهة فوراً
-    setCustomers((prev) => [newCustomer, ...prev]);
-
-    // الحفظ في قاعدة بيانات سوبابيز
     if (isSupabaseConfigured && supabase) {
       try {
         const { error: insertCustErr } = await supabase.from('customers').insert({
@@ -830,37 +756,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           notes: customerData.notes || null,
         });
 
-        if (!insertCustErr) {
-          // تسجيل النشاط الأولي
-          await supabase.from('customer_activities').insert({
-            id: initialActId,
-            customer_id: newCustomerId,
-            type: 'note',
-            note: initialAct.note,
-          });
+        if (insertCustErr) {
+          console.error('فشل حفظ العميل في قاعدة البيانات:', insertCustErr);
+          return;
+        }
 
-          // ربط الوحدات المهتم بها إن وجدت
-          if (customerData.interestedUnitIds && customerData.interestedUnitIds.length > 0) {
-            const unitRows = customerData.interestedUnitIds.map((uId) => ({
-              customer_id: newCustomerId,
-              unit_id: uId,
-            }));
-            await supabase.from('customer_units').insert(unitRows);
-          }
+        await supabase.from('customer_activities').insert({
+          id: initialActId,
+          customer_id: newCustomerId,
+          type: 'note',
+          note: initialAct.note,
+        });
+
+        if (customerData.interestedUnitIds && customerData.interestedUnitIds.length > 0) {
+          const unitRows = customerData.interestedUnitIds.map((uId) => ({
+            customer_id: newCustomerId,
+            unit_id: uId,
+          }));
+          await supabase.from('customer_units').insert(unitRows);
         }
       } catch (err) {
         console.error('فشل حفظ العميل في قاعدة البيانات:', err);
+        return;
       }
     }
+
+    setCustomers((prev) => [newCustomer, ...prev]);
   };
 
   const updateCustomer = async (id: string, updatedFields: Partial<Customer>) => {
-    setCustomers((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, ...updatedFields, updatedAt: new Date().toISOString() } : c
-      )
-    );
-
     if (isSupabaseConfigured && supabase) {
       try {
         const dbUpdate: any = { updated_at: new Date().toISOString() };
@@ -877,7 +801,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         await supabase.from('customers').update(dbUpdate).eq('id', id);
 
-        // تحديث الوحدات المهتم بها إن وردت
         if (updatedFields.interestedUnitIds !== undefined) {
           await supabase.from('customer_units').delete().eq('customer_id', id);
           if (updatedFields.interestedUnitIds.length > 0) {
@@ -892,6 +815,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('فشل تحديث العميل في قاعدة البيانات:', err);
       }
     }
+
+    setCustomers((prev) =>
+      prev.map((c) =>
+        c.id === id ? { ...c, ...updatedFields, updatedAt: new Date().toISOString() } : c
+      )
+    );
   };
 
   const updateCustomerStage = async (id: string, stage: CustomerStage, note?: string) => {
@@ -904,18 +833,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: new Date().toISOString(),
       authorName: currentUser ? currentUser.fullName : 'البروكر',
     };
-
-    setCustomers((prev) =>
-      prev.map((c) => {
-        if (c.id !== id) return c;
-        return {
-          ...c,
-          stage,
-          activities: [newAct, ...c.activities],
-          updatedAt: new Date().toISOString(),
-        };
-      })
-    );
 
     if (isSupabaseConfigured && supabase) {
       try {
@@ -934,6 +851,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('فشل تحديث مرحلة العميل في قاعدة البيانات:', err);
       }
     }
+
+    setCustomers((prev) =>
+      prev.map((c) => {
+        if (c.id !== id) return c;
+        return {
+          ...c,
+          stage,
+          activities: [newAct, ...c.activities],
+          updatedAt: new Date().toISOString(),
+        };
+      })
+    );
   };
 
   const addCustomerActivity = async (customerId: string, type: ActivityType, note: string) => {
@@ -946,17 +875,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: new Date().toISOString(),
       authorName: currentUser ? currentUser.fullName : 'البروكر',
     };
-
-    setCustomers((prev) =>
-      prev.map((c) => {
-        if (c.id !== customerId) return c;
-        return {
-          ...c,
-          activities: [newAct, ...c.activities],
-          updatedAt: new Date().toISOString(),
-        };
-      })
-    );
 
     if (isSupabaseConfigured && supabase) {
       try {
@@ -975,11 +893,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('فشل إضافة نشاط العميل في قاعدة البيانات:', err);
       }
     }
+
+    setCustomers((prev) =>
+      prev.map((c) => {
+        if (c.id !== customerId) return c;
+        return {
+          ...c,
+          activities: [newAct, ...c.activities],
+          updatedAt: new Date().toISOString(),
+        };
+      })
+    );
   };
 
   const deleteCustomer = async (id: string) => {
-    setCustomers((prev) => prev.filter((c) => c.id !== id));
-
     if (isSupabaseConfigured && supabase) {
       try {
         await supabase.from('customers').delete().eq('id', id);
@@ -987,6 +914,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('فشل حذف العميل من قاعدة البيانات:', err);
       }
     }
+
+    setCustomers((prev) => prev.filter((c) => c.id !== id));
   };
 
   // ==========================================
@@ -1059,35 +988,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const cleanUsername = userData.username.trim().toLowerCase();
     const cleanPhone = (userData.phone || '').trim();
 
-    // تحديد الشركة والدور:
-    // إذا كان المستخدم الحالي مدير شركة، فيتم إلزام المستخدم الجديد بالشركة وبدور 'user' (وسيط)
     let assignedCompanyId = userData.companyId;
     let assignedRole = userData.role;
 
     if (isCompanyAdmin) {
       assignedCompanyId = currentUser?.companyId;
-      assignedRole = 'user'; // مدير الشركة يضيف وسطاء فقط تحت شركته
+      assignedRole = 'user';
     }
     const assignedCompany = companies.find((c) => c.id === assignedCompanyId);
 
-    // 1. التحقق من فرادة اسم المستخدم محلياً
-    const existingUser = users.find((u) => u.username.toLowerCase() === cleanUsername);
-    if (existingUser) {
-      return { success: false, message: 'اسم المستخدم هذا مسجل مسبقاً، يرجى اختيار اسم مستخدم آخر.' };
-    }
-
-    // 2. التحقق من فرادة رقم الهاتف محلياً
-    if (cleanPhone) {
-      const existingPhone = users.find((u) => u.phone && u.phone.trim() === cleanPhone);
-      if (existingPhone) {
-        return {
-          success: false,
-          message: `رقم الهاتف (${cleanPhone}) مسجل مسبقاً للمستخدم "${existingPhone.fullName}"، يجب أن يكون رقم الهاتف فريداً لكل حساب.`,
-        };
-      }
-    }
-
-    // 3. الحفظ في قاعدة بيانات سوبابيز أولاً للتحقق من القيود الصارمة
+    // التحقق المباشر من قاعدة البيانات
     if (isSupabaseConfigured && supabase) {
       try {
         const { error } = await supabase.from('profiles').insert({
@@ -1131,8 +1041,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteUser = async (id: string) => {
-    setUsers((prev) => prev.filter((u) => u.id !== id));
-
     if (isSupabaseConfigured && supabase) {
       try {
         await supabase.from('profiles').delete().eq('id', id);
@@ -1140,14 +1048,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('فشل حذف المستخدم من قاعدة البيانات:', err);
       }
     }
+    setUsers((prev) => prev.filter((u) => u.id !== id));
   };
 
   const updateUserPassword = async (
     id: string,
     newPass: string
   ): Promise<{ success: boolean; message?: string }> => {
-    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, password: newPass } : u)));
-
     if (isSupabaseConfigured && supabase) {
       try {
         const { error } = await supabase.from('profiles').update({ password: newPass }).eq('id', id);
@@ -1159,6 +1066,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return { success: false, message: err?.message || 'فشل تحديث كلمة المرور' };
       }
     }
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, password: newPass } : u)));
     return { success: true };
   };
 
@@ -1174,30 +1082,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       cleanUpdates.phone = cleanUpdates.phone.trim();
     }
 
-    // 1. التحقق من فرادة اسم المستخدم محلياً
-    if (cleanUpdates.username) {
-      const dupUser = users.find(
-        (u) => u.id !== id && u.username.toLowerCase() === cleanUpdates.username
-      );
-      if (dupUser) {
-        return { success: false, message: 'اسم المستخدم مسجل مسبقاً لحساب آخر، يرجى اختيار اسم مستخدم آخر.' };
-      }
-    }
-
-    // 2. التحقق من فرادة رقم الهاتف محلياً
-    if (cleanUpdates.phone) {
-      const dupPhone = users.find(
-        (u) => u.id !== id && u.phone && u.phone.trim() === cleanUpdates.phone
-      );
-      if (dupPhone) {
-        return {
-          success: false,
-          message: `رقم الهاتف (${cleanUpdates.phone}) مسجل مسبقاً لحساب "${dupPhone.fullName}"، يجب أن يكون رقم الهاتف فريداً لكل مستخدم.`,
-        };
-      }
-    }
-
-    // 3. المزامنة مع سوبابيز أولاً للتحقق من قيود قاعدة البيانات
     if (isSupabaseConfigured && supabase) {
       try {
         const dbUpdates: any = {};
@@ -1224,27 +1108,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
-    // 4. تحديث قائمة المستخدمين محلياً
     setUsers((prev) => {
-      const nextUsers = prev.map((u) => {
+      return prev.map((u) => {
         if (u.id === id) {
           return { ...u, ...cleanUpdates };
         }
         return u;
       });
-      try {
-        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(nextUsers));
-      } catch {}
-      return nextUsers;
     });
 
-    // 5. تحديث المستخدم الحالي إن كان هو نفسه وتحديث localStorage
     setCurrentUser((prev) => {
       if (prev && prev.id === id) {
         const updated = { ...prev, ...cleanUpdates };
-        try {
-          localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(updated));
-        } catch {}
+        authService.setStoredUser(updated);
         return updated;
       }
       return prev;
@@ -1254,110 +1130,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const loginWithUsername = async (identifier: string, password?: string) => {
-    const trimmed = identifier.trim();
-    if (!trimmed) {
-      return { success: false, message: 'يرجى إدخال اسم المستخدم أو رقم الهاتف' };
+    const res = await authService.login(identifier, password, users, companies);
+    if (!res.success || !res.data) {
+      return { success: false, message: res.message || 'فشل تسجيل الدخول' };
     }
 
-    const cleanInputDigits = trimmed.replace(/[^0-9]/g, '');
-    const lowerIdentifier = trimmed.toLowerCase();
-
-    const matchUser = (u: UserProfile) => {
-      // 1. مطابقة اسم المستخدم بالأحرف الصغيرة دائماً
-      if (u.username && u.username.trim().toLowerCase() === lowerIdentifier) return true;
-
-      // 2. مطابقة رقم الهاتف (تطابق تام أو مجرد بالأرقام)
-      if (u.phone) {
-        const uPhoneDigits = u.phone.replace(/[^0-9]/g, '');
-        if (u.phone === trimmed || (cleanInputDigits && uPhoneDigits === cleanInputDigits)) return true;
-        // مطابقة بكود الدولة أو بدونه
-        if (cleanInputDigits.length >= 8 && uPhoneDigits.length >= 8) {
-          if (cleanInputDigits.endsWith(uPhoneDigits) || uPhoneDigits.endsWith(cleanInputDigits)) {
-            return true;
-          }
-        }
-      }
-      return false;
-    };
-
-    // نبحث أولاً في المستخدمين المحملين أو المستخدمين الافتراضيين
-    let user = users.find(matchUser) || INITIAL_USERS.find(matchUser);
-
-    // إن لم يكن متوفراً بالذاكرة بعد، نبحث حصراً عن هذا المستخدم في سوبابيز دون تحميل باقي البيانات
-    if (!user && isSupabaseConfigured && supabase) {
-      try {
-        const { data: dbProfiles, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .or(`username.ilike.${lowerIdentifier},phone.eq.${trimmed}`)
-          .limit(1);
-
-        if (!error && dbProfiles && dbProfiles.length > 0) {
-          const matchedDb = dbProfiles[0];
-          const comp = companies.find((c) => c.id === matchedDb.company_id);
-          user = {
-            id: matchedDb.id,
-            companyId: matchedDb.company_id || undefined,
-            companyName: comp?.name || undefined,
-            fullName: matchedDb.full_name,
-            username: (matchedDb.username || '').trim().toLowerCase(),
-            password: matchedDb.password || '123456',
-            phone: matchedDb.phone || '',
-            role: matchedDb.role,
-            createdAt: matchedDb.created_at,
-          };
-          setUsers((prev) => {
-            if (prev.some((x) => x.id === user!.id)) {
-              return prev.map((x) => (x.id === user!.id ? user! : x));
-            }
-            return [...prev, user!];
-          });
-        }
-      } catch (err) {
-        console.warn('تعذر البحث عن المستخدم في سوبابيز:', err);
-      }
-    }
-
-    if (!user) {
-      return { success: false, message: 'اسم المستخدم أو رقم الهاتف غير مسجل في النظام' };
-    }
-
-    const trimmedPass = (password || '').trim();
-
-    // فحص كلمة المرور: يقبل كلمة المرور المسجلة أو كلمات المرور الشائعة للمنظومة (123456 أو Admin@1234 أو Test@1234)
-    const isPasswordCorrect =
-      !user.password ||
-      user.password === trimmedPass ||
-      trimmedPass === '123456' ||
-      trimmedPass === 'Admin@1234' ||
-      trimmedPass === 'Test@1234';
-
-    if (!isPasswordCorrect) {
-      return { success: false, message: 'كلمة المرور غير صحيحة' };
-    }
-
+    const user = res.data;
     setCurrentUser(user);
-    try {
-      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
-    } catch {}
-
-    // جلب بيانات المنظومة لهذا المستخدم فور نجاح تسجيل الدخول
-    refreshFromDatabase(user);
+    await refreshFromDatabase(user);
 
     return { success: true, message: `مرحباً بك ${user.fullName}` };
   };
 
   const logout = () => {
+    authService.logout();
     setCurrentUser(null);
-    try {
-      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-    } catch {}
+    setCompanies([]);
+    setUsers([]);
+    setZones([]);
+    setBuildings([]);
+    setUnits([]);
+    setServices([]);
+    setCustomers([]);
   };
 
   const resetAllData = async () => {
-    try {
-      localStorage.clear();
-    } catch {}
+    authService.logout();
+    setCurrentUser(null);
+    setCompanies([]);
+    setUsers([]);
+    setZones([]);
+    setBuildings([]);
+    setUnits([]);
+    setServices([]);
+    setCustomers([]);
     await refreshFromDatabase();
   };
 
