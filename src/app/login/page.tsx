@@ -248,61 +248,6 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* أزرار التجربة السريعة للأدوار الثلاثية */}
-            <div className="pt-3 mt-3 border-t border-surface-container-high/60">
-              <span className="font-label-sm text-label-sm text-on-surface-variant font-bold block mb-2 text-xs">
-                حسابات تجريبية سريعة لفحص الأدوار:
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsername('superadmin');
-                    setPassword('!123456');
-                  }}
-                  className="p-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-900 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-right cursor-pointer transition text-xs flex flex-col gap-0.5"
-                >
-                  <span className="font-bold flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-purple-600" />
-                    Super Admin
-                  </span>
-                  <span className="text-[10px] text-purple-700 dark:text-purple-400">مدير المنصة العام</span>
-                  <span className="text-[10px] font-mono text-purple-900 dark:text-purple-300 font-bold mt-1">superadmin • !123456</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsername('admin');
-                    setPassword('!123456');
-                  }}
-                  className="p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-right cursor-pointer transition text-xs flex flex-col gap-0.5"
-                >
-                  <span className="font-bold flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-amber-600" />
-                    مدير شركة
-                  </span>
-                  <span className="text-[10px] text-amber-700 dark:text-amber-400">شركة Elwaha العقارية</span>
-                  <span className="text-[10px] font-mono text-amber-900 dark:text-amber-300 font-bold mt-1">admin • !123456</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsername('ahmed');
-                    setPassword('!123456');
-                  }}
-                  className="p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-right cursor-pointer transition text-xs flex flex-col gap-0.5"
-                >
-                  <span className="font-bold flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                    وسيط عقاري
-                  </span>
-                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400">أحمد زهران (Elwaha)</span>
-                  <span className="text-[10px] font-mono text-emerald-900 dark:text-emerald-300 font-bold mt-1">ahmed • !123456</span>
-                </button>
-              </div>
-            </div>
 
             {/* الدعم الفني وتذييل البطاقة */}
             <div className="pt-6 mt-6 bg-surface-container-low/50 -mx-5 -mb-5 sm:-mx-8 sm:-mb-8 lg:-mx-14 lg:-mb-14 p-4 sm:p-6 rounded-b-2xl flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-surface-container-high">

@@ -17,14 +17,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const cleanInputDigits = identifier.replace(/[^0-9]/g, '');
-    const lowerIdentifier = identifier.toLowerCase();
+    const sanitized = identifier.replace(/['"(),]/g, '');
+    const lowerIdentifier = sanitized.toLowerCase();
 
     // استعلام مباشر عن المستخدم في قاعدة بيانات سوبابيز
     const { data: dbProfiles, error } = await serverSupabase
       .from('profiles')
       .select('*, companies(name)')
-      .or(`username.ilike.${lowerIdentifier},phone.eq.${identifier}`)
+      .or(`username.ilike.${lowerIdentifier},phone.eq.${sanitized}`)
       .limit(1);
 
     if (error || !dbProfiles || dbProfiles.length === 0) {

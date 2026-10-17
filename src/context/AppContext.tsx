@@ -70,7 +70,7 @@ interface AppContextType {
   resetAllData: () => Promise<void>;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  refreshFromDatabase: () => Promise<void>;
+  refreshFromDatabase: (userOverride?: UserProfile | null, force?: boolean) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -88,12 +88,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isInitialized, setIsInitialized] = useState(false);
 
   const isSyncingRef = useRef(false);
+  const lastSyncTimeRef = useRef<number>(0);
+  const currentUserRef = useRef<UserProfile | null>(currentUser);
+  currentUserRef.current = currentUser;
 
   // دالة مزامنة وجلب البيانات عبر الـ REST API المنفصل
-  const refreshFromDatabase = useCallback(async (userOverride?: UserProfile | null) => {
-    const activeUser = userOverride !== undefined ? userOverride : currentUser;
+  const refreshFromDatabase = useCallback(async (userOverride?: UserProfile | null, force: boolean = false) => {
+    const activeUser = userOverride !== undefined ? userOverride : currentUserRef.current;
     if (!activeUser || isSyncingRef.current) return;
+
+    // حماية من التكرار العشوائي: حد أدنى 3 ثوانٍ بين الاستدعاءات التلقائية ما لم يتم طلب المزامنة القسرية
+    const now = Date.now();
+    if (!force && now - lastSyncTimeRef.current < 3000) {
+      return;
+    }
+
     isSyncingRef.current = true;
+    lastSyncTimeRef.current = now;
 
     try {
       // 1. جلب الشركات
@@ -132,19 +143,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } finally {
       isSyncingRef.current = false;
     }
-  }, [currentUser]);
+  }, []);
 
-  // استرجاع جلسة المستخدم بالتحقق من الـ API والـ JWT Cookie عند تحميل الصفحة
+  // استرجاع جلسة المستخدم بالتحقق من الـ API والـ JWT Cookie عند تحميل الصفحة (مرة واحدة فقط)
   useEffect(() => {
     let isMounted = true;
 
     const initAuth = async () => {
       try {
         const user = await authService.getCurrentUser();
-        if (user && isMounted) {
+        if (!isMounted) return;
+
+        if (user) {
           setCurrentUser(user);
-          await refreshFromDatabase(user);
-        } else if (isMounted) {
+          await refreshFromDatabase(user, true);
+        } else {
           setCurrentUser(null);
         }
       } catch (err) {
@@ -160,29 +173,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [refreshFromDatabase]);
 
-  // مزامنة فورية عند الرجوع للنافذة واشتراك Realtime
+  // مزامنة Realtime فقط عند وجود اشتراك سوبابيز نشط
   useEffect(() => {
-    if (!isInitialized || !currentUser) return;
-
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible' && currentUser) {
-        refreshFromDatabase();
-      }
-    };
-    const handleFocus = () => {
-      if (currentUser) {
-        refreshFromDatabase();
-      }
-    };
-
-    window.addEventListener('visibilitychange', handleVisibility);
-    window.addEventListener('focus', handleFocus);
+    if (!isInitialized || !currentUser?.id) return;
 
     let channel: any = null;
     if (isSupabaseConfigured && supabase) {
       try {
         channel = supabase
-          .channel('elwaha-realtime-api-sync')
+          .channel(`elwaha-realtime-${currentUser.id}`)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => refreshFromDatabase())
           .on('postgres_changes', { event: '*', schema: 'public', table: 'customers' }, () => refreshFromDatabase())
           .on('postgres_changes', { event: '*', schema: 'public', table: 'customer_activities' }, () => refreshFromDatabase())
@@ -196,8 +195,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     return () => {
-      window.removeEventListener('visibilitychange', handleVisibility);
-      window.removeEventListener('focus', handleFocus);
       if (channel && supabase) {
         supabase.removeChannel(channel);
       }
