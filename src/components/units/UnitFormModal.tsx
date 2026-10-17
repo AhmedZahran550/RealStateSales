@@ -14,6 +14,7 @@ export interface UnitFormModalProps {
   initialUnit?: Unit | null;
   defaultZoneId?: number;
   defaultPlotNo?: number;
+  defaultBuildingId?: number;
   zones?: Zone[];
   buildings?: Building[];
   services?: any;
@@ -40,6 +41,7 @@ export default function UnitFormModal({
   initialUnit,
   defaultZoneId,
   defaultPlotNo,
+  defaultBuildingId,
   zones: propsZones,
   buildings: propsBuildings,
   onAddBuilding: propsOnAddBuilding,
@@ -80,8 +82,13 @@ export default function UnitFormModal({
   );
   const [newFeatureText, setNewFeatureText] = useState('');
 
+  const [selectedBuildingId, setSelectedBuildingId] = useState<number | ''>(
+    defaultBuildingId || initialUnit?.buildingId || ''
+  );
+
   useEffect(() => {
     if (initialUnit) {
+      setSelectedBuildingId(initialUnit.buildingId);
       setZoneId(initialUnit.zoneId);
       setPlotNo(initialUnit.plotNo);
       setUnitKind(initialUnit.unitKind);
@@ -100,8 +107,18 @@ export default function UnitFormModal({
       setUnitMedia(initialUnit.media || []);
       setUnitFeatures(initialUnit.features || []);
     } else {
-      setZoneId(defaultZoneId || 1);
-      setPlotNo(defaultPlotNo || 1);
+      const bId = defaultBuildingId || '';
+      setSelectedBuildingId(bId);
+      if (bId) {
+        const b = buildings.find((x) => x.id === bId);
+        if (b) {
+          setZoneId(b.zoneId);
+          setPlotNo(b.plotNo);
+        }
+      } else {
+        setZoneId(defaultZoneId || 1);
+        setPlotNo(defaultPlotNo || 1);
+      }
       setUnitKind('floor_1');
       setFloor(1);
       setSide('');
@@ -118,7 +135,7 @@ export default function UnitFormModal({
       setUnitMedia([]);
       setUnitFeatures([]);
     }
-  }, [initialUnit, defaultZoneId, defaultPlotNo]);
+  }, [initialUnit, defaultZoneId, defaultPlotNo, defaultBuildingId, buildings]);
 
   if (!isOpen) return null;
 
@@ -149,7 +166,10 @@ export default function UnitFormModal({
     e.preventDefault();
 
     // التأكد من وجود المبنى أو إنشاؤه عند الحاجة
-    let building = currentBuilding;
+    let building = selectedBuildingId
+      ? buildings.find((b) => b.id === Number(selectedBuildingId))
+      : currentBuilding;
+
     if (!building) {
       building = onAddBuilding({
         zoneId,
@@ -212,6 +232,35 @@ export default function UnitFormModal({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1 text-xs">
+          {/* Building Selector */}
+          <div>
+            <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
+              العمارة / المبنى التابعة لها الوحدة
+            </label>
+            <select
+              value={selectedBuildingId}
+              onChange={(e) => {
+                const val = e.target.value ? Number(e.target.value) : '';
+                setSelectedBuildingId(val);
+                if (val) {
+                  const b = buildings.find((x) => x.id === val);
+                  if (b) {
+                    setZoneId(b.zoneId);
+                    setPlotNo(b.plotNo);
+                  }
+                }
+              }}
+              className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-bold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 focus:outline-none transition-all shadow-xs"
+            >
+              <option value="">-- إدخال قطعة وعمارة جديدة يدوياً --</option>
+              {buildings.map((b) => (
+                <option key={b.id} value={b.id}>
+                  المنطقة {b.zoneId} — القطعة {b.plotNo} {b.landArea ? `(أرض: ${b.landArea}م²)` : ''} {b.companyName ? `• ${b.companyName}` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Location & Plot */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

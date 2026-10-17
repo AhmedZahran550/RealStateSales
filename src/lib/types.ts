@@ -82,6 +82,15 @@ export interface Building {
   notes?: string;
 }
 
+export interface BuildingWithStats extends Building {
+  units: Unit[];
+  unitsCount: number;
+  availableCount: number;
+  reservedCount: number;
+  soldCount: number;
+  totalValue: number;
+}
+
 export interface UnitMedia {
   id: string;
   unitId: string;

@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Unit, UnitKind, UnitStatus, UNIT_KIND_LABELS } from '@/lib/types';
 import UnitDetailModal from '@/components/UnitDetailModal';
 import UnitFormModal from '@/components/UnitFormModal';
+import BuildingCard from '@/components/buildings/BuildingCard';
+import AddBuildingWithUnitsModal from '@/components/buildings/AddBuildingWithUnitsModal';
+import { Building2, Home, Plus } from 'lucide-react';
 import { exportUnitsToExcel } from '@/lib/excel';
 import { formatUnitFullDetails, createUnitWhatsAppUrl } from '@/lib/shareUtils';
 
@@ -19,12 +22,14 @@ export default function UnitsPage() {
     buildings,
     services,
     addBuilding,
+    addBuildingWithUnits,
     addUnit,
     updateUnit,
     updateUnitStatus,
     deleteUnit,
   } = useApp();
 
+  const [inventoryView, setInventoryView] = useState<'units' | 'buildings'>('units');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'available' | 'reserved' | 'sold'>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,8 +38,26 @@ export default function UnitsPage() {
 
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [isUnitFormOpen, setIsUnitFormOpen] = useState(false);
+  const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
+  const [targetBuildingIdForUnit, setTargetBuildingIdForUnit] = useState<number | undefined>(undefined);
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('brokers_inventory_view_mode');
+      if (saved === 'buildings' || saved === 'units') {
+        setInventoryView(saved);
+      }
+    } catch {}
+  }, []);
+
+  const handleToggleInventoryView = (mode: 'units' | 'buildings') => {
+    setInventoryView(mode);
+    try {
+      localStorage.setItem('brokers_inventory_view_mode', mode);
+    } catch {}
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -76,6 +99,56 @@ export default function UnitsPage() {
       return true;
     });
   }, [myUnits, statusFilter, zoneFilter, typeFilter, searchTerm]);
+
+  // حساب بيانات المباني وإحصائيات وحداتها
+  const buildingsWithStats = useMemo(() => {
+    const userBuildings = isSuperAdmin
+      ? buildings
+      : buildings.filter((b) => !b.companyId || b.companyId === currentUser?.companyId);
+
+    return userBuildings.map((b) => {
+      const bUnits = myUnits.filter(
+        (u) => u.buildingId === b.id || (u.zoneId === b.zoneId && u.plotNo === b.plotNo)
+      );
+      const availableCount = bUnits.filter((u) => u.status === 'available').length;
+      const reservedCount = bUnits.filter((u) => u.status === 'reserved').length;
+      const soldCount = bUnits.filter((u) => u.status === 'sold').length;
+      const totalValue = bUnits
+        .filter((u) => u.status === 'available')
+        .reduce((acc, u) => acc + (u.price || 0), 0);
+
+      return {
+        ...b,
+        units: bUnits,
+        unitsCount: bUnits.length,
+        availableCount,
+        reservedCount,
+        soldCount,
+        totalValue,
+      };
+    });
+  }, [buildings, myUnits, isSuperAdmin, currentUser?.companyId]);
+
+  // تصفية المباني بناءً على معايير البحث والمنطقة والحالة
+  const filteredBuildings = useMemo(() => {
+    return buildingsWithStats.filter((b) => {
+      if (zoneFilter !== 'all' && b.zoneId.toString() !== zoneFilter) return false;
+      if (statusFilter === 'available' && b.availableCount === 0) return false;
+      if (statusFilter === 'reserved' && b.reservedCount === 0) return false;
+      if (statusFilter === 'sold' && b.soldCount === 0) return false;
+
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase();
+        const matchPlot = b.plotNo.toString().includes(q);
+        const matchZone = `منطقة ${b.zoneId}`.toLowerCase().includes(q);
+        const matchNotes = b.notes?.toLowerCase().includes(q);
+        const matchCompany = b.companyName?.toLowerCase().includes(q);
+        const matchFeat = b.features?.some((f) => f.toLowerCase().includes(q));
+        if (!matchPlot && !matchZone && !matchNotes && !matchCompany && !matchFeat) return false;
+      }
+      return true;
+    });
+  }, [buildingsWithStats, zoneFilter, statusFilter, searchTerm]);
 
   const copyUnitDetails = (unit: Unit) => {
     const text = formatUnitFullDetails(unit, currentUser);
@@ -119,17 +192,29 @@ export default function UnitsPage() {
             تصدير Excel
           </button>
           {(isCompanyAdmin || isSuperAdmin) && (
-            <button
-              onClick={() => {
-                setEditingUnit(null);
-                setIsUnitFormOpen(true);
-              }}
-              className="flex items-center justify-center gap-space-xs px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary transition-all shadow-md font-label-lg text-label-lg font-bold text-sm cursor-pointer min-h-[42px]"
-              type="button"
-            >
-              <span className="material-symbols-outlined text-[20px]">add_home_work</span>
-              + إضافة وحدة عقارية جديدة
-            </button>
+            <>
+              <button
+                onClick={() => setIsBuildingModalOpen(true)}
+                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface transition-all shadow-xs font-label-md text-label-md font-bold text-xs border border-surface-container-high cursor-pointer min-h-[42px]"
+                type="button"
+              >
+                <Building2 className="w-4 h-4 text-primary" />
+                <span>+ إضافة عمارة وقطع</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setEditingUnit(null);
+                  setTargetBuildingIdForUnit(undefined);
+                  setIsUnitFormOpen(true);
+                }}
+                className="flex items-center justify-center gap-space-xs px-space-md sm:px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary transition-all shadow-md font-label-lg text-label-lg font-bold text-xs sm:text-sm cursor-pointer min-h-[42px]"
+                type="button"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ إضافة وحدة عقارية</span>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -255,31 +340,65 @@ export default function UnitsPage() {
             </button>
           </div>
 
-          <div className="flex items-center gap-space-xs self-end md:self-auto bg-surface-container-low p-1 rounded-xl">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-label-sm text-label-sm font-bold transition-all text-xs cursor-pointer ${
-                viewMode === 'grid'
-                  ? 'bg-surface-container-lowest text-primary shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-              type="button"
-            >
-              <span className="material-symbols-outlined text-[18px]">grid_view</span>
-              شبكة
-            </button>
-            <button
-              onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-label-sm text-label-sm font-bold transition-all text-xs cursor-pointer ${
-                viewMode === 'table'
-                  ? 'bg-surface-container-lowest text-primary shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-              type="button"
-            >
-              <span className="material-symbols-outlined text-[18px]">table_rows</span>
-              جدول
-            </button>
+          <div className="flex items-center flex-wrap gap-2 self-end md:self-auto">
+            {/* التبديل بين عرض الوحدات وعرض المباني */}
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-container border border-surface-container-high">
+              <button
+                type="button"
+                onClick={() => handleToggleInventoryView('units')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  inventoryView === 'units'
+                    ? 'bg-surface-container-lowest text-primary shadow-xs'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                <Home className="w-3.5 h-3.5" />
+                <span>عرض الوحدات ({filteredUnits.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleToggleInventoryView('buildings')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  inventoryView === 'buildings'
+                    ? 'bg-surface-container-lowest text-primary shadow-xs'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>عرض المباني ({filteredBuildings.length})</span>
+              </button>
+            </div>
+
+            {/* عرض شبكة / جدول (خاص بنمط الوحدات فقط) */}
+            {inventoryView === 'units' && (
+              <div className="flex items-center gap-space-xs bg-surface-container-low p-1 rounded-xl">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-label-sm text-label-sm font-bold transition-all text-xs cursor-pointer ${
+                    viewMode === 'grid'
+                      ? 'bg-surface-container-lowest text-primary shadow-sm'
+                      : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[18px]">grid_view</span>
+                  شبكة
+                </button>
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-label-sm text-label-sm font-bold transition-all text-xs cursor-pointer ${
+                    viewMode === 'table'
+                      ? 'bg-surface-container-lowest text-primary shadow-sm'
+                      : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[18px]">table_rows</span>
+                  جدول
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -375,8 +494,58 @@ export default function UnitsPage() {
         )}
       </div>
 
-      {/* 4. Units Showcase (Grid or Table) */}
-      {viewMode === 'grid' ? (
+      {/* 4. Inventory Showcase (Buildings View OR Units View) */}
+      {inventoryView === 'buildings' ? (
+        <div className="space-y-4">
+          {filteredBuildings.length > 0 ? (
+            filteredBuildings.map((building) => {
+              const zone = zones.find((z) => z.id === building.zoneId);
+              return (
+                <BuildingCard
+                  key={building.id}
+                  building={building}
+                  units={building.units}
+                  zoneName={zone ? `${zone.name} - ${zone.direction}` : undefined}
+                  canManage={isCompanyAdmin || isSuperAdmin}
+                  onAddUnit={(buildingId) => {
+                    setTargetBuildingIdForUnit(buildingId);
+                    setEditingUnit(null);
+                    setIsUnitFormOpen(true);
+                  }}
+                  onSelectUnit={(unit) => setSelectedUnit(unit)}
+                  onEditUnit={(unit) => {
+                    setEditingUnit(unit);
+                    setIsUnitFormOpen(true);
+                  }}
+                  onStatusChange={(unitId, newStatus) => updateUnitStatus(unitId, newStatus)}
+                  onCopyUnit={copyUnitDetails}
+                  defaultExpanded={filteredBuildings.length <= 4}
+                />
+              );
+            })
+          ) : (
+            <div className="p-12 text-center rounded-2xl bg-surface-container-lowest border border-surface-container-high/60 shadow-xs">
+              <Building2 className="w-12 h-12 text-on-surface-variant/40 mx-auto mb-3" />
+              <h3 className="font-headline-sm text-headline-sm font-bold text-on-surface text-base">
+                لا توجد مباني أو قطع مطابقة
+              </h3>
+              <p className="text-xs text-on-surface-variant mt-1 max-w-sm mx-auto">
+                لم يتم العثور على أي عمارة تطابق معايير البحث الحالية. يمكنك إعادة تعيين الفلاتر أو إضافة عمارة جديدة.
+              </p>
+              {(isCompanyAdmin || isSuperAdmin) && (
+                <button
+                  onClick={() => setIsBuildingModalOpen(true)}
+                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs shadow-sm hover:bg-primary-container transition cursor-pointer"
+                  type="button"
+                >
+                  <Plus className="w-4 h-4" />
+                  + إضافة عمارة وقطع جديدة الآن
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
           {filteredUnits.length > 0 ? (
             filteredUnits.map((unit) => {
@@ -675,12 +844,14 @@ export default function UnitsPage() {
       <UnitFormModal
         isOpen={isUnitFormOpen}
         initialUnit={editingUnit || undefined}
+        defaultBuildingId={targetBuildingIdForUnit}
         zones={zones}
         buildings={buildings}
         onAddBuilding={addBuilding}
         onClose={() => {
           setIsUnitFormOpen(false);
           setEditingUnit(null);
+          setTargetBuildingIdForUnit(undefined);
         }}
         onSubmit={(unitData) => {
           if (editingUnit) {
@@ -690,6 +861,28 @@ export default function UnitsPage() {
           }
           setIsUnitFormOpen(false);
           setEditingUnit(null);
+          setTargetBuildingIdForUnit(undefined);
+        }}
+      />
+
+      <AddBuildingWithUnitsModal
+        isOpen={isBuildingModalOpen}
+        onClose={() => setIsBuildingModalOpen(false)}
+        zones={zones}
+        buildings={buildings}
+        onAddBuildingWithUnits={async (bData, unitsList) => {
+          const res = await addBuildingWithUnits(bData, unitsList);
+          if (res.success) {
+            showToast(res.message || 'تم حفظ المبنى والوحدات بنجاح!');
+          }
+          return res;
+        }}
+        onAddUnitToExisting={async (unitData) => {
+          const res = await addUnit(unitData);
+          if (res.success) {
+            showToast('تمت إضافة الوحدة للعمارة بنجاح!');
+          }
+          return res;
         }}
       />
     </div>

@@ -59,6 +59,11 @@ interface AppContextType {
   addCustomerActivity: (customerId: string, type: ActivityType, note: string) => Promise<{ success: boolean; message?: string }>;
   deleteCustomer: (id: string) => Promise<{ success: boolean; message?: string }>;
   addBuilding: (building: Omit<Building, 'id'>) => Building;
+  addBuildingAsync: (building: Omit<Building, 'id'>) => Promise<Building>;
+  addBuildingWithUnits: (
+    bData: Omit<Building, 'id'>,
+    unitsList: Array<Omit<Unit, 'id' | 'createdAt' | 'updatedAt' | 'buildingId' | 'zoneId' | 'plotNo'>>
+  ) => Promise<{ success: boolean; message?: string; building?: Building }>;
   updateBuildingCoords: (id: number, mapX: number, mapY: number) => void;
   addService: (service: Omit<Service, 'id'>) => void;
   addUser: (user: Omit<UserProfile, 'id' | 'createdAt'>) => Promise<{ success: boolean; message?: string }>;
@@ -408,6 +413,65 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return newBuilding;
   };
 
+  const addBuildingAsync = async (bData: Omit<Building, 'id'>): Promise<Building> => {
+    const compId = bData.companyId || currentUser?.companyId || undefined;
+    const comp = companies.find((c) => c.id === compId) || currentCompany;
+
+    const existing = buildings.find(
+      (b) => b.zoneId === bData.zoneId && b.plotNo === bData.plotNo && (!compId || b.companyId === compId)
+    );
+    if (existing) return existing;
+
+    const res = await buildingService.createBuilding({
+      ...bData,
+      companyId: compId,
+    });
+    if (res.success && res.data) {
+      setBuildings((prev) => [...prev, res.data!]);
+      return res.data;
+    }
+
+    const newId = Date.now();
+    const newBuilding: Building = {
+      ...bData,
+      id: newId,
+      companyId: compId,
+      companyName: comp?.name || bData.companyName,
+      features: bData.features || [],
+    };
+    setBuildings((prev) => [...prev, newBuilding]);
+    return newBuilding;
+  };
+
+  const addBuildingWithUnits = async (
+    bData: Omit<Building, 'id'>,
+    unitsList: Array<Omit<Unit, 'id' | 'createdAt' | 'updatedAt' | 'buildingId' | 'zoneId' | 'plotNo'>>
+  ): Promise<{ success: boolean; message?: string; building?: Building }> => {
+    const building = await addBuildingAsync(bData);
+    if (!building) {
+      return { success: false, message: 'فشل حفظ بيانات المبنى' };
+    }
+
+    if (unitsList && unitsList.length > 0) {
+      for (const u of unitsList) {
+        await unitService.createUnit({
+          ...u,
+          buildingId: building.id,
+          zoneId: building.zoneId,
+          plotNo: building.plotNo,
+          companyId: building.companyId || currentUser?.companyId,
+        });
+      }
+      await refreshFromDatabase(undefined, true);
+    }
+
+    return {
+      success: true,
+      message: `تم حفظ المبنى بنجاح مع ${unitsList.length} وحدة`,
+      building,
+    };
+  };
+
   const updateBuildingCoords = (id: number, mapX: number, mapY: number) => {
     setBuildings((prev) =>
       prev.map((b) => (b.id === id ? { ...b, mapX, mapY } : b))
@@ -534,6 +598,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addCustomerActivity,
         deleteCustomer,
         addBuilding,
+        addBuildingAsync,
+        addBuildingWithUnits,
         updateBuildingCoords,
         addService,
         addUser,
