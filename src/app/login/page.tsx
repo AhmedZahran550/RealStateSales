@@ -258,7 +258,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => {
                     setUsername('superadmin');
-                    setPassword('123456');
+                    setPassword('!123456');
                   }}
                   className="p-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-900 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-right cursor-pointer transition text-xs flex flex-col gap-0.5"
                 >
@@ -267,14 +267,14 @@ export default function LoginPage() {
                     Super Admin
                   </span>
                   <span className="text-[10px] text-purple-700 dark:text-purple-400">مدير المنصة العام</span>
-                  <span className="text-[10px] font-mono text-purple-900 dark:text-purple-300 font-bold mt-1">superadmin • 123456</span>
+                  <span className="text-[10px] font-mono text-purple-900 dark:text-purple-300 font-bold mt-1">superadmin • !123456</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => {
                     setUsername('admin');
-                    setPassword('123456');
+                    setPassword('!123456');
                   }}
                   className="p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-right cursor-pointer transition text-xs flex flex-col gap-0.5"
                 >
@@ -282,15 +282,15 @@ export default function LoginPage() {
                     <span className="w-2 h-2 rounded-full bg-amber-600" />
                     مدير شركة
                   </span>
-                  <span className="text-[10px] text-amber-700 dark:text-amber-400">شركة الواحة العقارية</span>
-                  <span className="text-[10px] font-mono text-amber-900 dark:text-amber-300 font-bold mt-1">admin • 123456</span>
+                  <span className="text-[10px] text-amber-700 dark:text-amber-400">شركة Elwaha العقارية</span>
+                  <span className="text-[10px] font-mono text-amber-900 dark:text-amber-300 font-bold mt-1">admin • !123456</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => {
-                    setUsername('ahmedzahran');
-                    setPassword('123456');
+                    setUsername('ahmed');
+                    setPassword('!123456');
                   }}
                   className="p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-right cursor-pointer transition text-xs flex flex-col gap-0.5"
                 >
@@ -298,8 +298,8 @@ export default function LoginPage() {
                     <span className="w-2 h-2 rounded-full bg-emerald-600" />
                     وسيط عقاري
                   </span>
-                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400">أحمد زهران (الواحة)</span>
-                  <span className="text-[10px] font-mono text-emerald-900 dark:text-emerald-300 font-bold mt-1">ahmedzahran • 123456</span>
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400">أحمد زهران (Elwaha)</span>
+                  <span className="text-[10px] font-mono text-emerald-900 dark:text-emerald-300 font-bold mt-1">ahmed • !123456</span>
                 </button>
               </div>
             </div>
