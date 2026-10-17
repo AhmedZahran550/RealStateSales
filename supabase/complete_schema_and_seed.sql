@@ -200,7 +200,7 @@ VALUES (
 );
 
 -- ------------------------------------------------------------------------------
--- 5. إدراج المستخدمين الأساسيين (All passwords: !123456)
+-- 5. إدراج المستخدمين الأساسيين (All passwords: !123456 hashed with bcrypt)
 -- ------------------------------------------------------------------------------
 -- 1. مدير المنصة العام (superadmin)
 INSERT INTO profiles (id, company_id, full_name, username, password, phone, role)
@@ -209,7 +209,7 @@ VALUES (
   NULL,
   'مدير المنصة (Super Admin)',
   'superadmin',
-  '!123456',
+  '$2b$10$RZoZL.CrhyBrC7OcNllntOGsVbk6I0TCHC1GnIWlOm2zRshZEvpoa',
   '01000000000',
   'super_admin'
 );
@@ -221,7 +221,7 @@ VALUES (
   'c0000000-0000-0000-0000-000000000001',
   'مدير شركة الواحة (Admin)',
   'admin',
-  '!123456',
+  '$2b$10$RZoZL.CrhyBrC7OcNllntOGsVbk6I0TCHC1GnIWlOm2zRshZEvpoa',
   '01011112222',
   'company_admin'
 );
@@ -233,7 +233,7 @@ VALUES (
   'c0000000-0000-0000-0000-000000000001',
   'أحمد زهران (Broker)',
   'ahmed',
-  '!123456',
+  '$2b$10$RZoZL.CrhyBrC7OcNllntOGsVbk6I0TCHC1GnIWlOm2zRshZEvpoa',
   '01122334455',
   'user'
 );

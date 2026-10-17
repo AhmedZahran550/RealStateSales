@@ -1,4 +1,5 @@
 export type AppRole = 'super_admin' | 'company_admin' | 'user' | 'admin';
+export type UserRole = AppRole;
 
 export interface Company {
   id: string;
