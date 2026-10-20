@@ -265,7 +265,7 @@ export default function UnitFormModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-bold text-on-surface mb-1">
-                المنطقة (من 1 إلى 16)
+                المنطقة
               </label>
               <select
                 value={zoneId}

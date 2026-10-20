@@ -70,10 +70,12 @@ export const publicPageService = {
    * إضافة عنصر جديد لمعرض أعمال سابقة (مدير الشركة)
    */
   async addGalleryItem(payload: {
+    buildingId?: string; // الأعمال السابقة = مبانٍ
     title?: string;
     description?: string;
     price?: number;
     images: string[];
+    companyId?: string; // لسوبر أدمن فقط
   }): Promise<ServiceResult<GalleryItem>> {
     return apiClient.post<GalleryItem>('/company-gallery', payload);
   },

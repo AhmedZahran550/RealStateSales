@@ -425,10 +425,10 @@ export default function UnitsPage() {
               onChange={(e) => setZoneFilter(e.target.value)}
               className="w-full border border-outline-variant bg-white rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
             >
-              <option value="all" className="bg-white text-on-surface ">كافة مناطق الحي المتميز (1-16)</option>
-              {Array.from({ length: 16 }, (_, i) => i + 1).map((z) => (
-                <option key={z} value={z.toString()} className="bg-white text-on-surface ">
-                  منطقة {z}
+              <option value="all" className="bg-white text-on-surface ">كافة المناطق</option>
+              {zones.map((z) => (
+                <option key={z.id} value={z.id.toString()} className="bg-white text-on-surface ">
+                  منطقة {z.name}
                 </option>
               ))}
             </select>

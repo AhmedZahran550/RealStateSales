@@ -110,6 +110,7 @@ export async function getPublicPageData(
   const gallery: GalleryItem[] = (galleryRes.data || []).map((g: any) => ({
     id: g.id,
     companyId: g.company_id,
+    buildingId: g.building_id || undefined,
     unitId: g.unit_id || undefined,
     title: g.title || undefined,
     description: g.description || undefined,

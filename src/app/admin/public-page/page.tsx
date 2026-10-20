@@ -34,7 +34,7 @@ const FIELD_TOGGLES: Array<{
 ];
 
 export default function PublicPageAdminPage() {
-  const { currentUser } = useApp();
+  const { currentUser, buildings, zones } = useApp();
   const [settings, setSettings] = useState<CompanyPublicSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -44,6 +44,7 @@ export default function PublicPageAdminPage() {
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(true);
   const [addingItem, setAddingItem] = useState(false);
+  const [itemBuildingId, setItemBuildingId] = useState('');
   const [itemTitle, setItemTitle] = useState('');
   const [itemDescription, setItemDescription] = useState('');
   const [itemPrice, setItemPrice] = useState('');
@@ -141,6 +142,7 @@ export default function PublicPageAdminPage() {
     setAddingItem(true);
     setMessage(null);
     const res = await publicPageService.addGalleryItem({
+      buildingId: itemBuildingId || undefined,
       title: itemTitle.trim() || undefined,
       description: itemDescription.trim() || undefined,
       price: itemPrice ? Number(itemPrice) : undefined,
@@ -149,6 +151,7 @@ export default function PublicPageAdminPage() {
     setAddingItem(false);
     if (res.success) {
       setMessage({ type: 'success', text: 'تم إضافة العنصر إلى معرض أعمال سابقة بنجاح' });
+      setItemBuildingId('');
       setItemTitle('');
       setItemDescription('');
       setItemPrice('');
@@ -385,6 +388,30 @@ export default function PublicPageAdminPage() {
             <Plus className="w-3.5 h-3.5 text-primary" />
             إضافة عمل سابق جديد
           </h4>
+
+          {/* ربط المبنى (القطعة) — الأعمال السابقة = مبانٍ */}
+          <select
+            value={itemBuildingId}
+            onChange={(e) => setItemBuildingId(e.target.value)}
+            className="input-base text-xs"
+          >
+            <option value="">بدون ربط مبنى (اختياري)</option>
+            {(buildings || [])
+              .filter((b) => !b.companyId || !currentUser?.companyId || b.companyId === currentUser.companyId)
+              .map((b) => {
+                const zoneName = zones?.find((z) => z.id === b.zoneId)?.name;
+                return (
+                  <option key={b.id} value={b.id}>
+                    قطعة {b.plotNo}
+                    {zoneName ? ' - ' + zoneName : ''}
+                    {b.landArea ? ' (' + b.landArea + 'م²)' : ''}
+                  </option>
+                );
+              })}
+          </select>
+          <p className="text-[11px] text-on-surface-variant">
+            سابقة الأعمال تُعرض كمباني (قطع) — اختر القطعة ليُربط العنصر بمبنى الشركة
+          </p>
 
           <div className="grid sm:grid-cols-2 gap-3">
             <input

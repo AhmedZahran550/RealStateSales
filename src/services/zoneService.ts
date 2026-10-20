@@ -3,14 +3,46 @@ import { apiClient, ServiceResult } from './apiClient';
 
 export const zoneService = {
   /**
-   * جلب المناطق المركزية عبر الـ API
+   * جلب مناطق الشركة الحالية عبر الـ API (كل شركة ترى مناطقها فقط)
    */
-  async fetchZones(): Promise<Zone[]> {
-    const res = await apiClient.get<Zone[]>('/zones');
+  async fetchZones(companyId?: string): Promise<Zone[]> {
+    const query = companyId ? `?companyId=${encodeURIComponent(companyId)}` : '';
+    const res = await apiClient.get<Zone[]>(`/zones${query}`);
     if (res.success && res.data) {
       return res.data;
     }
     return [];
+  },
+
+  /**
+   * إضافة منطقة جديدة خاصة بالشركة
+   */
+  async createZone(payload: {
+    name: string;
+    direction?: string;
+    mapX?: number;
+    mapY?: number;
+    notes?: string;
+    companyId?: string; // لسوبر أدمن فقط
+  }): Promise<ServiceResult<Zone>> {
+    return apiClient.post<Zone>('/zones', payload);
+  },
+
+  /**
+   * تعديل منطقة (اسم/اتجاه/ملاحظات)
+   */
+  async updateZone(
+    id: number,
+    payload: { name?: string; direction?: string; notes?: string }
+  ): Promise<ServiceResult> {
+    return apiClient.patch(`/zones/${id}`, payload);
+  },
+
+  /**
+   * حذف منطقة — الخادم يمنع الحذف إن وُجدت مبانٍ/وحدات تابعة
+   */
+  async deleteZone(id: number): Promise<ServiceResult> {
+    return apiClient.delete(`/zones/${id}`);
   },
 
   /**

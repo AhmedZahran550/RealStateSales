@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
     const items: GalleryItem[] = (data || []).map((g: any) => ({
       id: g.id,
       companyId: g.company_id,
+      buildingId: g.building_id || undefined,
       unitId: g.unit_id || undefined,
       title: g.title || undefined,
       description: g.description || undefined,
@@ -69,10 +70,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const targetCompanyId =
+      authUser.role === 'super_admin' ? body.companyId || null : authUser.companyId;
+
+    if (!targetCompanyId) {
+      return NextResponse.json(
+        { success: false, error: 'حدد الشركة المالكة للعنصر' },
+        { status: 400 }
+      );
+    }
+
+    // ربط سابقة الأعمال بمبنى (قطعة) تابع لنفس الشركة
+    let buildingId: string | null = null;
+    if (body.buildingId) {
+      const { data: building } = await serverSupabase
+        .from('buildings')
+        .select('id, company_id, plot_no')
+        .eq('id', body.buildingId)
+        .maybeSingle();
+      if (!building || building.company_id !== targetCompanyId) {
+        return NextResponse.json(
+          { success: false, error: 'المبنى المحدد غير موجود في هذه الشركة' },
+          { status: 400 }
+        );
+      }
+      buildingId = building.id;
+    }
+
     const { data, error } = await serverSupabase
       .from('company_gallery_items')
       .insert({
-        company_id: authUser.companyId,
+        company_id: targetCompanyId,
+        building_id: buildingId,
         title: body.title ? String(body.title).trim() : null,
         description: body.description ? String(body.description).trim() : null,
         price: body.price ? Number(body.price) : null,
@@ -95,6 +124,7 @@ export async function POST(request: NextRequest) {
       data: {
         id: data.id,
         companyId: data.company_id,
+        buildingId: data.building_id || undefined,
         unitId: data.unit_id || undefined,
         title: data.title || undefined,
         description: data.description || undefined,

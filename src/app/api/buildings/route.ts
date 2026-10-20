@@ -45,6 +45,24 @@ export async function POST(request: NextRequest) {
 
     const targetCompanyId = body.companyId || authUser.companyId;
 
+    // المناطق مملوكة لكل شركة — تحقق أن المنطقة تابعة لنفس الشركة
+    if (targetCompanyId && body.zoneId != null) {
+      const { data: zone } = await serverSupabase
+        .from('zones')
+        .select('id, company_id')
+        .eq('id', body.zoneId)
+        .maybeSingle();
+      if (!zone) {
+        return NextResponse.json({ success: false, error: 'المنطقة غير موجودة' }, { status: 400 });
+      }
+      if (zone.company_id !== targetCompanyId) {
+        return NextResponse.json(
+          { success: false, error: 'المنطقة لا تنتمي إلى هذه الشركة — أضف منطقة جديدة للشركة أولاً' },
+          { status: 403 }
+        );
+      }
+    }
+
     const upsertData: any = {
       id: body.id || Date.now(),
       company_id: targetCompanyId || null,

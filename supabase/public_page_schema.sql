@@ -56,6 +56,7 @@ create table if not exists company_public_settings (
 create table if not exists company_gallery_items (
   id uuid primary key default gen_random_uuid(),
   company_id uuid not null references companies(id) on delete cascade,
+  building_id bigint references buildings(id) on delete set null,  -- المبنى (القطعة) — سابقة الأعمال = مبانٍ
   unit_id uuid references units(id) on delete set null,  -- مرتبط بوحدة تم بيعها (اختياري)
   title text,                                            -- عنوان العنصر في المعرض
   description text,

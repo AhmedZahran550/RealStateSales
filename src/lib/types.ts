@@ -60,7 +60,10 @@ export const isBroker = (user?: UserProfile | null): boolean =>
 
 
 export interface Zone {
-  id: number; // 1..16
+  /** معرف قاعدي لكل شركة (سلسلة تلقائية؛ القيم القديمة 1..16 من البيانات الأولية) */
+  id: number;
+  /** الشركة المالكة للمنطقة — كل شركة تدير مناطقها الخاصة */
+  companyId?: string;
   name: string;
   direction: 'بحري' | 'قبلي' | 'شرقي' | 'غربي' | 'وسط' | string;
   mapX: number; // نسبة مئوية 0-100
@@ -269,12 +272,13 @@ export interface CompanyPublicSettings {
 export interface GalleryItem {
   id: string;
   companyId: string;
-  unitId?: string; // مرتبط بوحدة تم بيعها (اختياري)
+  buildingId?: string; // المبنى (القطعة) المرتبط بسابقة الأعمال — الأعمال السابقة = مبانٍ
+  unitId?: string; // وحدة مرتبطة (للبيانات القديمة من التدفق التلقائي السابق)
   title?: string;
   description?: string;
   price?: number;
   images: string[];
-  source: GalleryItemSource; // 'manual' (يدوي) | 'auto_sold' (تلقائي عند البيع)
+  source: GalleryItemSource; // 'manual' (يدوي) | 'auto_sold' (تلقائي عند اكتمال بيع القطعة)
   createdAt: string;
 }
 
