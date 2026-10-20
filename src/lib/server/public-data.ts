@@ -70,7 +70,7 @@ export async function getPublicPageData(
   const [unitsRes, zonesRes, buildingsRes, galleryRes] = await Promise.all([
     serverSupabase
       .from('units')
-      .select('*, unit_media(*)')
+      .select('*, unit_media(*), buildings (plot_no)')
       .eq('company_id', companyId)
       .order('created_at', { ascending: false }),
     serverSupabase.from('zones').select('id, name'),
@@ -103,7 +103,8 @@ export async function getPublicPageData(
   const units: PublicUnit[] = (unitsRes.data || []).map((u: any) => ({
     id: u.id,
     unitKind: u.unit_kind as UnitKind,
-    plotNo: u.plot_no,
+    // plot_no يأتي من المبنى المرتبط عبر building_id (الوحدة لا تحمل رقم قطعة بنفسها)
+    plotNo: Number(u.buildings?.plot_no ?? 1),
     zoneName: zoneNames.get(buildingZones.get(u.building_id) || '') || undefined,
     floor: u.floor ?? undefined,
     side: u.side || undefined,

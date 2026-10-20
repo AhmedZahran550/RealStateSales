@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       .select(
         `
         *,
-        units (id, plot_no, area, unit_kind),
+        units (id, area, unit_kind, buildings (plot_no)),
         claimer:claimed_by (full_name),
         claimed_customer:claimed_customer_id (id, stage)
       `
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       companyId: r.company_id,
       unitId: r.unit_id,
       unitLabel: r.units
-        ? `وحدة ${r.units.unit_kind} - قطعة ${r.units.plot_no}`
+        ? `وحدة ${r.units.unit_kind} - قطعة ${r.units.buildings?.plot_no ?? '-'}`
         : undefined,
       unitArea: r.units?.area ? Number(r.units.area) : undefined,
       customerName: r.customer_name,
