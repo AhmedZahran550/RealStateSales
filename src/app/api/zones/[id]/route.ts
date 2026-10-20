@@ -4,7 +4,7 @@ import { serverSupabase } from '@/lib/server/supabase';
 
 // تعديل/حذف منطقة — الشركة تدير مناطقها فقط، وسوبر أدمن يدير أي شركة
 async function loadOwnedZone(id: number, authUser: { role: string; companyId?: string | null }) {
-  const { data: zone } = await serverSupabase.from('zones').select('*').eq('id', id).single();
+  const { data: zone } = await serverSupabase.from('zones').select('*').eq('id', id).maybeSingle();
   if (!zone) return { zone: null, error: 'المنطقة غير موجودة' } as const;
   if (authUser.role !== 'super_admin' && zone.company_id !== authUser.companyId) {
     return { zone: null, error: 'ليس لديك صلاحية على هذه المنطقة' } as const;
@@ -85,7 +85,25 @@ export async function DELETE(
       return NextResponse.json({ success: false, error: loadErr }, { status: 404 });
     }
 
-    // لا يمكن حذف منطقة بها مبانٍ/وحدات — الوحدات ترث المنطقة عبر المبنى، لذا يكمن فحص المباني
+    // لا يمكن حذف منطقة رئيسية بها مناطق فرعية — تُحذف الفرعيات أولًا
+    if (zone.parent_id == null) {
+      const { count: subCount } = await serverSupabase
+        .from('zones')
+        .select('id', { count: 'exact', head: true })
+        .eq('parent_id', zoneId);
+
+      if (subCount && subCount > 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `لا يمكن حذف المنطقة الرئيسية لوجود ${subCount} منطقة فرعية فيها — احذف المناطق الفرعية أولاً`,
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    // لا يمكن حذف منطقة بها مبانٍ/وحدات — الوحدات ترث المنطقة عبر المبنى، لذا يكفي فحص المباني
     const { count } = await serverSupabase
       .from('buildings')
       .select('id', { count: 'exact', head: true })

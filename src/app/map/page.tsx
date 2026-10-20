@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Zone, Unit } from '@/lib/types';
 import MapViewer from '@/components/MapViewer';
@@ -28,6 +28,14 @@ export default function MapPage() {
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [unitFormPresetZone, setUnitFormPresetZone] = useState<number | undefined>(undefined);
   const [mapMode, setMapMode] = useState<'blueprint' | 'live_gps'>('blueprint');
+
+  // فتح مخطط منطقة معينة عند القدوم برابط مثل ‎/map?zoneId=3‎ (زر «معاينة على الخريطة»)
+  useEffect(() => {
+    const zoneIdParam = new URLSearchParams(window.location.search).get('zoneId');
+    if (!zoneIdParam || zones.length === 0) return;
+    const target = zones.find((z) => z.id === Number(zoneIdParam));
+    if (target) setSelectedZone(target);
+  }, [zones]);
 
   const handleAddUnitInZone = (zoneId: number) => {
     setUnitFormPresetZone(zoneId);

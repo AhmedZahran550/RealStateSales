@@ -81,8 +81,14 @@ BEGIN
   END IF;
 END $$;
 
--- A.6 فهرس: أسماء المناطق فريدة داخل كل شركة
+-- A.6 فهرس: أسماء المناطق فريدة داخل كل شركة (رئيسية وفرعية)
 CREATE UNIQUE INDEX IF NOT EXISTS zones_company_name_idx ON zones (company_id, name);
+
+-- A.7 المناطق الفرعية: منطقة رئيسية (parent_id NULL) ومناطق فرعية تحت الإدارة (مستويان فقط)
+-- حذف المنطقة الرئيسية يحذف مناطقها الفرعية على مستوى قاعدة البيانات؛
+-- الـ API يمنع حذف رئيسية بها مناطق فرعية أو مبانٍ مع رسالة عربية
+ALTER TABLE zones ADD COLUMN IF NOT EXISTS parent_id bigint REFERENCES zones(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS zones_parent_idx ON zones (parent_id);
 
 -- ------------------------------------------------------------------------------
 -- PART B — سابقة الأعمال مرتبطة بالمباني

@@ -15,7 +15,7 @@ export const zoneService = {
   },
 
   /**
-   * إضافة منطقة جديدة خاصة بالشركة
+   * إضافة منطقة (رئيسية) أو منطقة فرعية تحت منطقة رئيسية
    */
   async createZone(payload: {
     name: string;
@@ -23,6 +23,8 @@ export const zoneService = {
     mapX?: number;
     mapY?: number;
     notes?: string;
+    /** معرف المنطقة الرئيسية عند إضافة منطقة فرعية */
+    parentId?: number | null;
     companyId?: string; // لسوبر أدمن فقط
   }): Promise<ServiceResult<Zone>> {
     return apiClient.post<Zone>('/zones', payload);

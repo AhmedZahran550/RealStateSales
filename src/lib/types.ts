@@ -64,6 +64,8 @@ export interface Zone {
   id: number;
   /** الشركة المالكة للمنطقة — كل شركة تدير مناطقها الخاصة */
   companyId?: string;
+  /** المنطقة الرئيسية عند كونها منطقة فرعية (null = منطقة رئيسية) — مستويان فقط */
+  parentId?: number | null;
   name: string;
   direction: 'بحري' | 'قبلي' | 'شرقي' | 'غربي' | 'وسط' | string;
   mapX: number; // نسبة مئوية 0-100

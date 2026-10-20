@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
     const zones: Zone[] = (dbZones || []).map((z: any) => ({
       id: Number(z.id),
       companyId: z.company_id || undefined,
+      parentId: z.parent_id != null ? Number(z.parent_id) : null,
       name: z.name,
       direction: z.direction || '',
       mapX: z.map_x ? Number(z.map_x) : 50,
@@ -62,6 +63,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'اسم المنطقة مطلوب' }, { status: 400 });
     }
 
+    // منطقة فرعية؟ يجب أن يكون الأب منطقة رئيسية بنفس الشركة
+    let parentId: number | null = null;
+    if (body.parentId != null && body.parentId !== '') {
+      const { data: parent } = await serverSupabase
+        .from('zones')
+        .select('id, company_id, parent_id')
+        .eq('id', body.parentId)
+        .maybeSingle();
+
+      if (!parent) {
+        return NextResponse.json({ success: false, error: 'المنطقة الرئيسية غير موجودة' }, { status: 400 });
+      }
+      if (parent.company_id !== targetCompanyId) {
+        return NextResponse.json(
+          { success: false, error: 'المنطقة الرئيسية تابعة لشركة أخرى' },
+          { status: 403 }
+        );
+      }
+      if (parent.parent_id != null) {
+        return NextResponse.json(
+          { success: false, error: 'لا يمكن إضافة منطقة فرعية تحت منطقة فرعية (مستويان فقط)' },
+          { status: 400 }
+        );
+      }
+      parentId = Number(parent.id);
+    }
+
     const { data: existing } = await serverSupabase
       .from('zones')
       .select('id')
@@ -78,6 +106,7 @@ export async function POST(request: NextRequest) {
 
     const insertData: Record<string, unknown> = {
       company_id: targetCompanyId,
+      parent_id: parentId,
       name,
       direction: body.direction ? String(body.direction).trim() : 'وسط',
       map_x: body.mapX != null ? Number(body.mapX) : 50,
@@ -97,6 +126,7 @@ export async function POST(request: NextRequest) {
     const zone: Zone = {
       id: Number(data.id),
       companyId: data.company_id,
+      parentId: data.parent_id != null ? Number(data.parent_id) : null,
       name: data.name,
       direction: data.direction || 'وسط',
       mapX: data.map_x ? Number(data.map_x) : 50,

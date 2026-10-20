@@ -3,7 +3,7 @@ import { apiClient, ServiceResult } from './apiClient';
 
 export const buildingService = {
   /**
-   * جلب المباني عبر الـ API
+   * جلب مباني الشركة عبر الـ API
    */
   async fetchBuildings(): Promise<Building[]> {
     const res = await apiClient.get<Building[]>('/buildings');
@@ -14,7 +14,7 @@ export const buildingService = {
   },
 
   /**
-   * إضافة أو تحديث مبنى
+   * إضافة مبنى جديد
    */
   async createBuilding(
     bData: Omit<Building, 'id'>
@@ -28,7 +28,30 @@ export const buildingService = {
   },
 
   /**
-   * تحديث إحداثيات موقع المبنى على الخريطة
+   * تعديل مبنى (نقله لمنطقة أخرى / رقم القطعة / مساحة الأرض / المميزات / الملاحظات)
+   */
+  async updateBuilding(
+    id: number,
+    payload: {
+      zoneId?: number;
+      plotNo?: number;
+      landArea?: number;
+      features?: string[];
+      notes?: string;
+    }
+  ): Promise<ServiceResult> {
+    return apiClient.patch(`/buildings/${id}`, payload);
+  },
+
+  /**
+   * حذف مبنى — الخادم يمنع الحذف إن وُجدت وحدات تابعة
+   */
+  async deleteBuilding(id: number): Promise<ServiceResult> {
+    return apiClient.delete(`/buildings/${id}`);
+  },
+
+  /**
+   * تحديث إحداثيات المبنى على الخريطة
    */
   async updateBuildingCoords(id: number, mapX: number, mapY: number): Promise<ServiceResult> {
     const res = await apiClient.patch(`/buildings/${id}/coords`, { mapX, mapY });

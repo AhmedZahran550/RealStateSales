@@ -152,6 +152,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         icon: 'map',
         active: pathname === '/map',
       },
+      {
+        href: '/admin/zones',
+        label: 'المناطق والمناطق الفرعية',
+        icon: 'explore',
+        active: pathname.startsWith('/admin/zones'),
+      },
+      {
+        href: '/admin/buildings',
+        label: 'المباني والقطع',
+        icon: 'domain',
+        active: pathname.startsWith('/admin/buildings'),
+      },
     ];
   } else {
     // 3. Broker Nav Links: Views units, shares via WhatsApp, updates status only, manages private CRM
