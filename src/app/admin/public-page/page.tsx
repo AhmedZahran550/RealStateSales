@@ -260,6 +260,15 @@ export default function PublicPageAdminPage() {
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? 'تم النسخ' : 'نسخ'}
             </button>
+            <a
+              href={shareUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="btn-tonal inline-flex items-center gap-1.5 px-4 py-2.5 text-xs shrink-0"
+            >
+              <Globe className="w-4 h-4" />
+              فتح الصفحة
+            </a>
           </div>
         </div>
       </div>

@@ -6,18 +6,31 @@ import { PublicUnit, UnitMedia, GalleryItem, CompanyPublicSettings, UnitKind } f
  * جلب بيانات الصفحة العامة للشركة (مشترك بين الصفحة العامة والـ API العام)
  * يعيد الخطأ المناسب إذا لم تكن الشركة موجودة أو الصفحة غير مفعلة
  */
+export type PublicPageFailure = {
+  status: number;
+  error?: string;
+  /** سبب عدم التوفر: 'not_found' الشركة غير موجودة | 'disabled' الصفحة غير مفعلة */
+  reason?: 'not_found' | 'disabled';
+  /** معلومات مختصرة عن الشركة لعرضها في حالة «الصفحة غير مفعلة» */
+  company?: { name: string; commercialName?: string; logoUrl?: string };
+};
+
 export async function getPublicPageData(
   companyId: string
-): Promise<{ data?: PublicPageData; status: number; error?: string }> {
+): Promise<{ data?: PublicPageData } & PublicPageFailure> {
   // 1. جلب الشركة والتحقق من تفعيلها
   const { data: company, error: companyErr } = await serverSupabase
     .from('companies')
     .select('id, name, commercial_name, logo_url, phone, email, address, is_active')
     .eq('id', companyId)
-    .single();
+    .maybeSingle();
 
   if (companyErr || !company || !company.is_active) {
-    return { status: 404, error: 'هذه الصفحة غير متاحة حالياً' };
+    return {
+      status: 404,
+      error: 'هذه الصفحة غير متاحة حالياً',
+      reason: 'not_found',
+    };
   }
 
   // 2. جلب الإعدادات والتحقق من تفعيل الصفحة العامة
@@ -25,10 +38,19 @@ export async function getPublicPageData(
     .from('company_public_settings')
     .select('*')
     .eq('company_id', companyId)
-    .single();
+    .maybeSingle();
 
   if (!dbSettings || !dbSettings.is_enabled) {
-    return { status: 404, error: 'هذه الصفحة غير متاحة حالياً' };
+    return {
+      status: 404,
+      error: 'هذه الصفحة غير متاحة حالياً',
+      reason: 'disabled',
+      company: {
+        name: company.name,
+        commercialName: company.commercial_name || undefined,
+        logoUrl: company.logo_url || undefined,
+      },
+    };
   }
 
   const settings: CompanyPublicSettings = {

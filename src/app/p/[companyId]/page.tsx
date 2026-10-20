@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getPublicPageData } from '@/lib/server/public-data';
 import PublicClient from '@/components/public/PublicClient';
+import PublicUnavailable from '@/components/public/PublicUnavailable';
 
 export async function generateMetadata({
   params,
@@ -11,7 +12,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { companyId } = await params;
   const result = await getPublicPageData(companyId);
-  const name = result.data?.company.name;
+  const name = result.data?.company.name ?? result.company?.commercialName ?? result.company?.name;
   return {
     title: name ? `${name} | الوحدات المتاحة للعرض` : 'الصفحة غير متاحة',
     description: name
@@ -45,6 +46,10 @@ async function PublicPageContent({ companyId }: { companyId: string }) {
   const result = await getPublicPageData(companyId);
 
   if (!result.data) {
+    // الشركة موجودة لكن الصفحة العامة غير مفعلة → حالة مخصصة بدل 404
+    if (result.reason === 'disabled') {
+      return <PublicUnavailable company={result.company} />;
+    }
     notFound();
   }
 

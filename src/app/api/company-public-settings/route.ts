@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       .from('company_public_settings')
       .select('*')
       .eq('company_id', companyId)
-      .single();
+      .maybeSingle();
 
     // إنشاء صف الإعدادات تلقائياً إذا لم يكن موجوداً (للشركات القديمة)
     if (!data && !error) {
@@ -89,14 +89,10 @@ export async function PUT(request: NextRequest) {
     if (typeof body.showPayment === 'boolean') updateData.show_payment = body.showPayment;
 
     // ضمان وجود صف الإعدادات قبل التحديث
-    await serverSupabase
-      .from('company_public_settings')
-      .upsert({ company_id: companyId }, { onConflict: 'company_id' });
-
+    // إنشاء/تحديث صف الإعدادات في خطوة واحدة (حتى لو لم توجد إعدادات بعد لشركة جديدة)
     const { data, error } = await serverSupabase
       .from('company_public_settings')
-      .update(updateData)
-      .eq('company_id', companyId)
+      .upsert({ ...updateData, company_id: companyId }, { onConflict: 'company_id' })
       .select()
       .single();
 
