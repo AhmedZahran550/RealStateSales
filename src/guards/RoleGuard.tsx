@@ -47,13 +47,13 @@ export default function RoleGuard({
     if (!fallbackUrl) {
       return (
         <div className="min-h-[50vh] flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-4 border border-rose-200 dark:border-rose-900/50 shadow-sm">
+          <div className="w-14 h-14 rounded-2xl bg-error-container text-error flex items-center justify-center mb-4 border border-error shadow-sm">
             <ShieldAlert className="w-7 h-7" />
           </div>
-          <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-1">
+          <h2 className="text-lg font-black text-on-surface mb-1">
             غير مصرح لك بالوصول
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
+          <p className="text-xs text-on-surface-variant max-w-sm">
             حسابك الحالي لا يملك الصلاحيات الكافية لعرض هذه الصفحة أو الإجراء.
           </p>
         </div>

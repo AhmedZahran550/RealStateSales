@@ -205,7 +205,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-surface font-body-md text-on-surface flex flex-col antialiased">
+    <div className="min-h-screen bg-surface text-on-surface flex flex-col antialiased">
       {/* Mobile Sidebar Overlay */}
       {mobileSidebarOpen && (
         <div
@@ -235,14 +235,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </div>
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-space-xs">
-                  <span className="font-headline-sm text-headline-sm text-primary font-bold tracking-tight">
+                  <span className="text-primary font-bold tracking-tight">
                     عقار سيلز
                   </span>
-                  <span className="font-label-sm text-label-sm text-on-surface-variant font-normal">
+                  <span className="text-on-surface-variant font-normal">
                     {isSuperAdmin ? 'Super' : 'AqarSales'}
                   </span>
                 </div>
-                <span className="inline-flex items-center mt-0.5 px-space-xs py-0.5 rounded-md bg-surface-container-high text-primary font-label-sm text-label-sm w-fit font-bold truncate max-w-[170px]">
+                <span className="inline-flex items-center mt-0.5 px-space-xs py-0.5 rounded-md bg-surface-container-high text-primary w-fit font-bold truncate max-w-[170px]">
                   {isSuperAdmin
                     ? 'مدير المنصة العام'
                     : isCompanyAdmin
@@ -298,7 +298,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   >
                     {item.icon}
                   </span>
-                  <span className="font-label-lg text-label-lg truncate">{item.label}</span>
+                  <span className="truncate">{item.label}</span>
                 </div>
                 {item.badge && (
                   <span
@@ -322,15 +322,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             /* Super Admin Platform Status Widget */
             <div className="bg-surface-container-low rounded-xl p-space-md shadow-sm border border-primary/20">
               <div className="flex items-center justify-between mb-space-xs">
-                <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
+                <span className="text-on-surface font-bold text-xs">
                   نطاق إدارة المنصة
                 </span>
-                <span className="font-label-md text-label-md text-emerald-600 font-bold text-xs flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-success font-bold text-xs flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                   نشط
                 </span>
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-sm text-[11px] leading-relaxed">
+              <p className="text-on-surface-variant mb-space-sm text-[11px] leading-relaxed">
                 {companies.length} شركات عقارية • {users.filter((u) => u.role !== 'super_admin').length} مستخدمين ومديرين
               </p>
               <Link
@@ -339,7 +339,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   setMobileSidebarOpen(false);
                   setCurrentSuperAdminTab('companies');
                 }}
-                className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-container text-on-primary transition-all flex items-center justify-center gap-space-xs font-label-md text-label-md font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
+                className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all flex items-center justify-center gap-space-xs font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">corporate_fare</span>
                 لوحة إدارة الشركات
@@ -349,14 +349,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             /* Company Admin Management Widget */
             <div className="bg-surface-container-low rounded-xl p-space-md shadow-sm border border-primary/20">
               <div className="flex items-center justify-between mb-space-xs">
-                <span className="font-label-md text-label-md text-on-surface font-bold text-xs truncate max-w-[140px]">
+                <span className="text-on-surface font-bold text-xs truncate max-w-[140px]">
                   {currentCompany?.name || currentUser.companyName || 'إدارة الشركة'}
                 </span>
-                <span className="font-label-md text-label-md text-primary font-bold text-xs">
+                <span className="text-primary font-bold text-xs">
                   {myUnits.length} وحدة
                 </span>
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-sm text-[11px]">
+              <p className="text-on-surface-variant mb-space-sm text-[11px]">
                 فريق الوسطاء: {companyUsers.filter((u) => u.role === 'user').length} وسيط معتمد
               </p>
               <button
@@ -364,7 +364,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   setMobileSidebarOpen(false);
                   setIsAddUnitOpen(true);
                 }}
-                className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-container text-on-primary transition-all flex items-center justify-center gap-space-xs font-label-md text-label-md font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
+                className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all flex items-center justify-center gap-space-xs font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[18px]">add</span>
@@ -375,14 +375,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             /* Broker Follow-ups Widget */
             <div className="bg-surface-container-low rounded-xl p-space-md shadow-sm">
               <div className="flex items-center justify-between mb-space-xs">
-                <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
+                <span className="text-on-surface font-bold text-xs">
                   متابعات عملائي الخاصة
                 </span>
-                <span className="font-label-md text-label-md text-primary font-bold text-xs">
+                <span className="text-primary font-bold text-xs">
                   {myCustomers.length} عميل
                 </span>
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-md text-[11px]">
+              <p className="text-on-surface-variant mb-space-md text-[11px]">
                 {myCustomers.filter((c) => c.nextFollowupAt).length > 0
                   ? `لديك ${myCustomers.filter((c) => c.nextFollowupAt).length} مواعيد متابعة مستحقة اليوم`
                   : 'لا توجد مواعيد متابعة متأخرة اليوم'}
@@ -392,7 +392,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   setMobileSidebarOpen(false);
                   setIsAddCustomerOpen(true);
                 }}
-                className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-container text-on-primary transition-all flex items-center justify-center gap-space-xs font-label-md text-label-md font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
+                className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all flex items-center justify-center gap-space-xs font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[18px]">person_add</span>
@@ -407,7 +407,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               logout();
               router.replace('/login');
             }}
-            className="flex items-center justify-center gap-space-xs py-space-xs text-on-surface-variant hover:text-error transition-colors font-label-sm text-label-sm cursor-pointer"
+            className="flex items-center justify-center gap-space-xs py-space-xs text-on-surface-variant hover:text-error transition-colors cursor-pointer"
             type="button"
           >
             <span className="material-symbols-outlined text-[18px]">logout</span>
@@ -443,7 +443,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   ? 'بحث في وحدات الشركة أو كود الوحدة...'
                   : 'بحث بالوحدات أو العملاء...'
               }
-              className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] rounded-xl py-2 sm:py-space-sm pr-9 sm:pr-11 pl-7 sm:pl-space-md font-body-sm text-body-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:outline-none focus:ring-2 focus:ring-primary shadow-xs text-xs truncate"
+              className="w-full border border-outline-variant bg-white rounded-xl py-2 sm:py-space-sm pr-9 sm:pr-11 pl-7 sm:pl-space-md text-on-surface placeholder:text-outline font-semibold focus:outline-none focus:ring-2 focus:ring-primary shadow-xs text-xs truncate"
             />
             {searchTerm && (
               <button
@@ -462,7 +462,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {isCompanyAdmin && (
             <button
               onClick={() => setIsAddUnitOpen(true)}
-              className="hidden sm:flex items-center gap-space-xs px-space-md py-space-sm rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-bold transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
+              className="hidden sm:flex items-center gap-space-xs px-space-md py-space-sm rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
               type="button"
             >
               <span className="material-symbols-outlined text-[18px]">add</span>
@@ -474,7 +474,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {isBroker && (
             <button
               onClick={() => setIsAddCustomerOpen(true)}
-              className="hidden sm:flex items-center gap-space-xs px-space-md py-space-sm rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-bold transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
+              className="hidden sm:flex items-center gap-space-xs px-space-md py-space-sm rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
               type="button"
             >
               <span className="material-symbols-outlined text-[18px]">person_add</span>
@@ -498,7 +498,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   notifications
                 </span>
                 {myCustomers.filter((c) => c.nextFollowupAt).length > 0 && (
-                  <span className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm text-[10px] font-bold">
+                  <span className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-secondary text-on-secondary text-[10px] font-bold">
                     {myCustomers.filter((c) => c.nextFollowupAt).length}
                   </span>
                 )}
@@ -566,10 +566,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <span className="absolute bottom-0 left-0 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-surface-container-lowest" />
               </div>
               <div className="hidden md:flex flex-col text-right">
-                <span className="font-label-md text-label-md text-on-surface font-bold leading-tight text-xs">
+                <span className="text-on-surface font-bold leading-tight text-xs">
                   {currentUser.fullName}
                 </span>
-                <span className="font-label-sm text-label-sm text-on-surface-variant leading-tight text-[11px]">
+                <span className="text-on-surface-variant leading-tight text-[11px]">
                   {isSuperAdmin
                     ? 'مدير المنصة العام (Super Admin)'
                     : isCompanyAdmin
@@ -591,7 +591,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       <span dir="ltr">{currentUser.phone}</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2 py-1 rounded-lg">
+                    <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-bold text-warning bg-warning-container px-2 py-1 rounded-lg">
                       <span className="material-symbols-outlined text-[15px]">add_call</span>
                       <span>لم يُسجل رقم هاتف بعد</span>
                     </div>

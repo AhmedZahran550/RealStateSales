@@ -25,7 +25,7 @@ function MatchingContent() {
   if (currentUser?.role === 'admin') {
     return (
       <div className="p-8 max-w-2xl mx-auto my-12 bg-surface-container-lowest rounded-3xl border border-surface-container-high text-center shadow-sm">
-        <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-warning-container text-warning flex items-center justify-center mx-auto mb-4">
           <span className="material-symbols-outlined text-[32px]">shield_person</span>
         </div>
         <h2 className="text-xl font-bold text-on-surface mb-2">قسم مخصص للوسطاء العقاريين</h2>
@@ -35,7 +35,7 @@ function MatchingContent() {
         <div className="flex items-center justify-center gap-3">
           <Link
             href="/admin/users"
-            className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition"
+            className="px-5 py-2.5 rounded-xl bg-warning hover:bg-warning text-white font-bold text-xs shadow-md transition"
           >
             إدارة حسابات المستخدمين
           </Link>
@@ -62,7 +62,7 @@ function MatchingContent() {
         </p>
         <Link
           href="/customers"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs shadow-md transition"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold text-xs shadow-md transition"
         >
           <span className="material-symbols-outlined text-base">groups</span>
           <span>الانتقال لإدارة العملاء</span>
@@ -155,7 +155,7 @@ function MatchingContent() {
     <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-space-md py-space-sm bg-inverse-surface text-inverse-on-surface rounded-xl shadow-xl flex items-center gap-space-xs font-label-md text-label-md animate-in fade-in">
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-space-md py-space-sm bg-inverse-surface text-inverse-on-surface rounded-xl shadow-xl flex items-center gap-space-xs animate-in fade-in">
           <span className="material-symbols-outlined text-primary-fixed text-[20px]">check_circle</span>
           <span>{toastMessage}</span>
         </div>
@@ -165,16 +165,16 @@ function MatchingContent() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
         <div className="flex flex-col gap-space-xs">
           <div className="flex items-center gap-space-xs">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-bold text-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-bold text-xs">
               <span className="material-symbols-outlined text-[14px]">auto_awesome</span>
               خوارزمية التطابق الذكي
             </span>
-            <span className="text-outline text-body-sm font-body-sm text-xs">/</span>
-            <span className="text-on-surface-variant font-label-sm text-label-sm text-xs">
+            <span className="text-outline text-xs">/</span>
+            <span className="text-on-surface-variant text-xs">
               تحديث مباشر لمخزون الحي المتميز
             </span>
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface font-extrabold tracking-tight text-2xl lg:text-3xl">
+          <h1 className="text-on-surface font-extrabold tracking-tight text-2xl lg:text-3xl">
             مطابقة العروض ومولد الرسائل المباشرة
           </h1>
         </div>
@@ -184,8 +184,8 @@ function MatchingContent() {
             <span className="material-symbols-outlined text-[22px]">bolt</span>
           </div>
           <div className="flex flex-col pl-space-md text-right">
-            <span className="font-label-sm text-label-sm text-on-surface-variant text-xs">معدل الإغلاق السريع</span>
-            <span className="font-headline-sm text-headline-sm text-primary font-bold text-sm">3.4 دقيقة / صفقة</span>
+            <span className="text-on-surface-variant text-xs">معدل الإغلاق السريع</span>
+            <span className="text-primary font-bold text-sm">3.4 دقيقة / صفقة</span>
           </div>
         </div>
       </div>
@@ -197,12 +197,12 @@ function MatchingContent() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-center">
           {/* Selector Input side */}
           <div className="lg:col-span-5 flex flex-col gap-space-sm">
-            <label className="font-label-md text-label-md text-on-surface font-bold flex items-center justify-between text-xs" htmlFor="client-select">
+            <label className="text-on-surface font-bold flex items-center justify-between text-xs" htmlFor="client-select">
               <span className="flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-primary text-[18px]">person_pin</span>
                 اختيار العميل المهتم
               </span>
-              <span className="text-secondary font-label-sm text-label-sm flex items-center gap-0.5">
+              <span className="text-secondary flex items-center gap-0.5">
                 <span className="material-symbols-outlined text-[14px]">verified</span>
                 عميل مسجل
               </span>
@@ -212,10 +212,10 @@ function MatchingContent() {
                   id="client-select"
                   value={selectedCustomerId}
                   onChange={(e) => setSelectedCustomerId(e.target.value)}
-                  className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white rounded-xl py-3 pr-10 pl-4 font-body-md text-body-md appearance-none focus:outline-none focus:ring-2 focus:ring-primary shadow-xs cursor-pointer font-bold text-xs"
+                  className="w-full border border-outline-variant bg-white text-on-surface rounded-xl py-3 pr-10 pl-4 appearance-none focus:outline-none focus:ring-2 focus:ring-primary shadow-xs cursor-pointer font-bold text-xs"
                 >
                   {myCustomers.map((c) => (
-                    <option key={c.id} value={c.id} className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
+                    <option key={c.id} value={c.id} className="bg-white text-on-surface ">
                       {c.name} — ميزانية {c.budget ? `${(c.budget / 1000000).toFixed(1)} مليون ج.م` : 'غير محددة'} ({c.phone})
                     </option>
                   ))}
@@ -231,11 +231,11 @@ function MatchingContent() {
 
           {/* Live Filters Extracted Tags */}
           <div className="lg:col-span-7 flex flex-col gap-space-xs">
-            <span className="font-label-sm text-label-sm text-on-surface-variant font-semibold text-xs">
+            <span className="text-on-surface-variant font-semibold text-xs">
               محددات المطابقة التلقائية المستخرجة من سجل العميل:
             </span>
             <div className="flex flex-wrap items-center gap-space-xs">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high text-on-surface font-label-md text-label-md text-xs">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high text-on-surface text-xs">
                 <span className="material-symbols-outlined text-primary text-[16px]">payments</span>
                 <span>
                   الميزانية:{' '}
@@ -244,19 +244,19 @@ function MatchingContent() {
                   </strong>
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high text-on-surface font-label-md text-label-md text-xs">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high text-on-surface text-xs">
                 <span className="material-symbols-outlined text-primary text-[16px]">location_on</span>
                 <span>الموقع: <strong>الحي المتميز - مدينة بدر</strong></span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high text-on-surface font-label-md text-label-md text-xs">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high text-on-surface text-xs">
                 <span className="material-symbols-outlined text-primary text-[16px]">villa</span>
                 <span>النوع: <strong>فيلات وشقق الحي المتميز</strong></span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high text-on-surface font-label-md text-label-md text-xs">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high text-on-surface text-xs">
                 <span className="material-symbols-outlined text-tertiary text-[16px]">credit_card</span>
                 <span>السداد: <strong>تقسيط مريح (مقدم ≤ 10%)</strong></span>
               </div>
-              <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-bold text-xs">
+              <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-primary-fixed text-on-primary-fixed font-bold text-xs">
                 <span className="material-symbols-outlined text-[14px]">tune</span> جاهزية الاستلام: فوري
               </div>
             </div>
@@ -298,14 +298,14 @@ function MatchingContent() {
         <div className={`xl:col-span-7 flex-col gap-space-md ${mobileTab === 'units' ? 'flex' : 'hidden xl:flex'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-bold font-label-sm text-label-sm text-xs">
+              <span className="w-7 h-7 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-bold text-xs">
                 {matchedUnits.length}
               </span>
-              <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold text-lg">
+              <h2 className="text-on-surface font-bold text-lg">
                 وحدات تطابق طلب العميل بنسبة تفوق 90%
               </h2>
             </div>
-            <span className="font-body-sm text-body-sm text-on-surface-variant text-xs">
+            <span className="text-on-surface-variant text-xs">
               اختر الوحدة لتحديث نص العرض الفوري
             </span>
           </div>
@@ -332,11 +332,11 @@ function MatchingContent() {
                   {/* Thumbnail with status pill */}
                   <div className="relative sm:w-44 h-36 rounded-xl overflow-hidden shrink-0">
                     <img src={img} alt={`وحدة ${unit.plotNo}`} className="w-full h-full object-cover" />
-                    <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-primary text-on-primary font-label-sm text-label-sm font-bold flex items-center gap-1 shadow-sm text-xs">
+                    <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-primary text-on-primary font-bold flex items-center gap-1 shadow-sm text-xs">
                       <span className="material-symbols-outlined text-[13px]">check_circle</span>
                       {score}% تطابق
                     </span>
-                    <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-inverse-surface/80 text-inverse-on-surface font-label-sm text-label-sm backdrop-blur-sm text-xs">
+                    <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-inverse-surface/80 text-inverse-on-surface backdrop-blur-sm text-xs">
                       كود: #BD-{unit.zoneId}-{unit.plotNo}
                     </div>
                   </div>
@@ -346,13 +346,13 @@ function MatchingContent() {
                     <div>
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <span className="font-label-sm text-label-sm text-secondary font-bold text-xs">
+                          <span className="text-secondary font-bold text-xs">
                             الحي المتميز • منطقة {unit.zoneId}
                           </span>
-                          <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold text-base">
+                          <h3 className="text-on-surface font-bold text-base">
                             {unit.description || `وحدة فاخرة قطعة ${unit.plotNo}`}
                           </h3>
-                          <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5 text-xs">
+                          <p className="text-on-surface-variant flex items-center gap-1 mt-0.5 text-xs">
                             <span className="material-symbols-outlined text-[16px] text-outline">location_on</span>
                             مدينة بدر - بالقرب من المحاور الرئيسية
                           </p>
@@ -371,20 +371,20 @@ function MatchingContent() {
                       {/* Quick Specs Grid */}
                       <div className="grid grid-cols-3 gap-2 mt-3 pt-2 bg-surface-container-low rounded-xl p-2 text-center text-xs">
                         <div>
-                          <span className="font-label-sm text-label-sm text-on-surface-variant block">المساحة</span>
-                          <span className="font-label-md text-label-md text-on-surface font-bold">
+                          <span className="text-on-surface-variant block">المساحة</span>
+                          <span className="text-on-surface font-bold">
                             {unit.area} م²
                           </span>
                         </div>
                         <div>
-                          <span className="font-label-sm text-label-sm text-on-surface-variant block">النوع</span>
-                          <span className="font-label-md text-label-md text-on-surface font-bold">
+                          <span className="text-on-surface-variant block">النوع</span>
+                          <span className="text-on-surface font-bold">
                             {UNIT_KIND_LABELS[unit.unitKind] || 'شقة'}
                           </span>
                         </div>
                         <div>
-                          <span className="font-label-sm text-label-sm text-on-surface-variant block">الاستلام</span>
-                          <span className="font-label-md text-label-md text-primary font-bold">فوري</span>
+                          <span className="text-on-surface-variant block">الاستلام</span>
+                          <span className="text-primary font-bold">فوري</span>
                         </div>
                       </div>
                     </div>
@@ -392,15 +392,15 @@ function MatchingContent() {
                     {/* Price & Payment Terms */}
                     <div className="flex items-center justify-between mt-3 pt-2 border-t border-surface-container-low">
                       <div className="flex flex-col">
-                        <span className="font-label-sm text-label-sm text-on-surface-variant text-xs">السعر الإجمالي</span>
-                        <span className="font-headline-sm text-headline-sm text-primary font-bold text-base">
+                        <span className="text-on-surface-variant text-xs">السعر الإجمالي</span>
+                        <span className="text-primary font-bold text-base">
                           {unit.price.toLocaleString()} ج.م
                         </span>
                       </div>
                       <div className="flex items-center gap-space-sm text-left">
                         <div className="bg-surface-container px-2.5 py-1 rounded-lg text-xs">
-                          <span className="font-label-sm text-label-sm text-on-surface-variant block">المقدم (10%)</span>
-                          <span className="font-label-md text-label-md text-on-surface font-bold">
+                          <span className="text-on-surface-variant block">المقدم (10%)</span>
+                          <span className="text-on-surface font-bold">
                             {(unit.price * 0.1).toLocaleString()} ج.م
                           </span>
                         </div>
@@ -413,7 +413,7 @@ function MatchingContent() {
                           setSelectedUnitId(unit.id);
                           setMobileTab('proposal');
                         }}
-                        className="xl:hidden w-full mt-3 py-2 px-3 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer min-h-[38px] shadow-sm"
+                        className="xl:hidden w-full mt-3 py-2 px-3 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer min-h-[38px] shadow-sm"
                       >
                         <span className="material-symbols-outlined text-[16px]">chat</span>
                         <span>تجهيز ومشاركة العرض لهذه الوحدة ←</span>
@@ -431,11 +431,11 @@ function MatchingContent() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[24px]">chat_bubble</span>
-              <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold text-lg">
+              <h2 className="text-on-surface font-bold text-lg">
                 معاينة وتخصيص رسالة الواتساب
               </h2>
             </div>
-            <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary font-bold bg-primary-fixed px-2 py-0.5 rounded-full text-xs">
+            <span className="inline-flex items-center gap-1 text-primary font-bold bg-primary-fixed px-2 py-0.5 rounded-full text-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> جاهز للإرسال
             </span>
           </div>
@@ -445,14 +445,14 @@ function MatchingContent() {
             {/* Header simulation */}
             <div className="bg-surface-container-low p-space-sm rounded-xl flex items-center justify-between mb-space-md">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-label-sm text-xs">
+                <div className="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-xs">
                   {currentCustomer?.name?.charAt(0) || 'ع'}
                 </div>
                 <div className="flex flex-col text-right">
-                  <span className="font-label-md text-label-md text-on-surface font-bold leading-tight text-xs">
+                  <span className="text-on-surface font-bold leading-tight text-xs">
                     {currentCustomer?.name}
                   </span>
-                  <span className="font-label-sm text-label-sm text-primary leading-tight text-[11px]">
+                  <span className="text-primary leading-tight text-[11px]">
                     متصل الآن عبر واتساب ({currentCustomer?.phone})
                   </span>
                 </div>
@@ -462,10 +462,10 @@ function MatchingContent() {
 
             {/* Chat Bubble Content Area */}
             <div className="bg-surface-container-high/30 rounded-xl p-space-md text-right flex flex-col gap-space-sm border border-surface-container-high/20">
-              <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm text-on-surface font-body-sm text-body-sm leading-relaxed whitespace-pre-line text-xs font-mono select-all">
+              <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm text-on-surface leading-relaxed whitespace-pre-line text-xs font-mono select-all">
                 {whatsappProposalText}
               </div>
-              <div className="flex items-center justify-between text-outline font-label-sm text-label-sm px-1 text-[11px]">
+              <div className="flex items-center justify-between text-outline px-1 text-[11px]">
                 <span className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-primary text-[14px]">done_all</span>
                   تم التنسيق التلقائي
@@ -479,7 +479,7 @@ function MatchingContent() {
               {/* Primary WhatsApp Share Button */}
               <button
                 onClick={handleShareWhatsApp}
-                className="w-full py-3.5 px-space-md rounded-xl bg-primary hover:bg-primary-container text-on-primary transition-all flex items-center justify-center gap-2 font-label-lg text-label-lg font-bold shadow-md hover:shadow-lg active:scale-[0.99] cursor-pointer text-sm"
+                className="w-full py-3.5 px-space-md rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg active:scale-[0.99] cursor-pointer text-sm"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[24px]">send</span>
@@ -489,7 +489,7 @@ function MatchingContent() {
               {/* Copy Button */}
               <button
                 onClick={handleCopyProposal}
-                className="w-full py-2.5 px-space-md rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition-all flex items-center justify-center gap-1.5 font-label-md text-label-md font-bold text-xs cursor-pointer"
+                className="w-full py-2.5 px-space-md rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition-all flex items-center justify-center gap-1.5 font-bold text-xs cursor-pointer"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[18px]">content_copy</span>
@@ -502,10 +502,10 @@ function MatchingContent() {
           <div className="bg-surface-container-low rounded-xl p-space-md flex items-start gap-space-sm text-right border border-surface-container-high/30">
             <span className="material-symbols-outlined text-tertiary text-[20px] shrink-0 mt-0.5">lightbulb</span>
             <div className="flex flex-col">
-              <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
+              <span className="text-on-surface font-bold text-xs">
                 نصيحة لإغلاق أسرع:
               </span>
-              <p className="font-body-sm text-body-sm text-on-surface-variant text-[11px] mt-0.5">
+              <p className="text-on-surface-variant text-[11px] mt-0.5">
                 العملاء يفضلون تلقي تفاصيل الاستلام والمقدم في أول رسالة. تم إبراز ميعاد الاستلام في قالب العرض تلقائياً.
               </p>
             </div>

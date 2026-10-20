@@ -87,7 +87,7 @@ export default function MapPage() {
               setUnitFormPresetZone(undefined);
               setIsUnitFormOpen(true);
             }}
-            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs shadow-md transition cursor-pointer w-full sm:w-auto min-h-[40px]"
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold text-xs shadow-md transition cursor-pointer w-full sm:w-auto min-h-[40px]"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             <span>إضافة وحدة</span>

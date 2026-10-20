@@ -391,8 +391,8 @@ export default function SuperAdminDashboardPage() {
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2.5 bg-slate-900 text-white rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold animate-in fade-in border border-slate-700">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2.5 bg-surface-container-low text-white rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold animate-in fade-in border border-outline">
+          <CheckCircle2 className="w-4 h-4 text-success" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -400,7 +400,7 @@ export default function SuperAdminDashboardPage() {
       {/* 1. Header Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-surface-container-low p-6 lg:p-8 shadow-sm border border-surface-container-high/40">
         <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 -right-16 w-56 h-56 rounded-full bg-amber-500/10 blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-16 -right-16 w-56 h-56 rounded-full bg-warning-container blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="space-y-1">
@@ -413,10 +413,10 @@ export default function SuperAdminDashboardPage() {
                 Multi-Tenant Management
               </span>
             </div>
-            <h1 className="font-headline-lg text-headline-lg text-on-surface font-extrabold tracking-tight text-xl sm:text-2xl lg:text-3xl">
+            <h1 className="text-on-surface font-extrabold tracking-tight text-xl sm:text-2xl lg:text-3xl">
               إدارة الشركات والمستخدمين والتقارير
             </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant text-xs sm:text-sm">
+            <p className="text-on-surface-variant text-xs sm:text-sm">
               التحكم المركزي في الشركات العقارية، إدارة حسابات المديرين والوسطاء، والاطلاع على التقارير الإحصائية.
             </p>
           </div>
@@ -428,7 +428,7 @@ export default function SuperAdminDashboardPage() {
                   setFormError('');
                   setIsAddCompanyOpen(true);
                 }}
-                className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+                className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-white font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
                 type="button"
               >
                 <Plus className="w-4 h-4" />
@@ -442,7 +442,7 @@ export default function SuperAdminDashboardPage() {
                   setFormError('');
                   setIsAddUserModalOpen(true);
                 }}
-                className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+                className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-warning hover:bg-warning text-white font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
                 type="button"
               >
                 <UserPlus className="w-4 h-4" />
@@ -470,7 +470,7 @@ export default function SuperAdminDashboardPage() {
           <div>
             <span className="text-xs text-on-surface-variant font-bold block">إجمالي الشركات</span>
             <span className="text-2xl font-extrabold text-primary mt-1 block">{totalCompanies} شركة</span>
-            <span className="text-[11px] text-emerald-600 font-semibold">{activeCompanies} شركة نشطة</span>
+            <span className="text-[11px] text-success font-semibold">{activeCompanies} شركة نشطة</span>
           </div>
           <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <Store className="w-6 h-6" />
@@ -480,12 +480,12 @@ export default function SuperAdminDashboardPage() {
         <div className="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/40 flex items-center justify-between">
           <div>
             <span className="text-xs text-on-surface-variant font-bold block">مديرو الشركات</span>
-            <span className="text-2xl font-extrabold text-amber-700 dark:text-amber-400 mt-1 block">
+            <span className="text-2xl font-extrabold text-warning mt-1 block">
               {companyAdmins.length} مدير
             </span>
             <span className="text-[11px] text-on-surface-variant">مسؤولو الشركات</span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-warning-container text-warning flex items-center justify-center">
             <ShieldCheck className="w-6 h-6" />
           </div>
         </div>
@@ -493,12 +493,12 @@ export default function SuperAdminDashboardPage() {
         <div className="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/40 flex items-center justify-between">
           <div>
             <span className="text-xs text-on-surface-variant font-bold block">وسطاء المبيعات</span>
-            <span className="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-1 block">
+            <span className="text-2xl font-extrabold text-accent-indigo mt-1 block">
               {brokers.length} وسيط
             </span>
             <span className="text-[11px] text-on-surface-variant">موزعون على الشركات</span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-accent-indigo/10 text-accent-indigo flex items-center justify-center">
             <Users className="w-6 h-6" />
           </div>
         </div>
@@ -506,12 +506,12 @@ export default function SuperAdminDashboardPage() {
         <div className="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/40 flex items-center justify-between">
           <div>
             <span className="text-xs text-on-surface-variant font-bold block">حجم المخزون بالمنصة</span>
-            <span className="text-2xl font-extrabold text-teal-700 dark:text-teal-400 mt-1 block">
+            <span className="text-2xl font-extrabold text-info mt-1 block">
               {totalUnits} وحدة
             </span>
             <span className="text-[11px] text-on-surface-variant">إجمالي وحدات الشركات</span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-info-container text-info flex items-center justify-center">
             <Home className="w-6 h-6" />
           </div>
         </div>
@@ -647,8 +647,8 @@ export default function SuperAdminDashboardPage() {
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           comp.isActive
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                            : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                            ? 'bg-success-container text-success  '
+                            : 'bg-error-container text-on-error-container  '
                         }`}
                       >
                         {comp.isActive ? 'نشطة' : 'معطلة'}
@@ -687,15 +687,15 @@ export default function SuperAdminDashboardPage() {
                       </div>
                       <div>
                         <span className="text-[10px] text-on-surface-variant block">فريق الوسطاء</span>
-                        <span className="font-bold text-xs text-indigo-600">{compBrokers.length} وسيط</span>
+                        <span className="font-bold text-xs text-accent-indigo">{compBrokers.length} وسيط</span>
                       </div>
                     </div>
 
                     {/* Admin Assignment Block */}
-                    <div className="mt-3 p-2.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40">
+                    <div className="mt-3 p-2.5 rounded-xl bg-warning-container/70 border border-warning/25 ">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[11px] font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1">
-                          <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+                        <span className="text-[11px] font-bold text-warning flex items-center gap-1">
+                          <ShieldCheck className="w-3.5 h-3.5 text-warning" />
                           مدير الشركة المسؤول:
                         </span>
                         <button
@@ -715,14 +715,14 @@ export default function SuperAdminDashboardPage() {
                           {compAdmins.map((adm) => (
                             <div key={adm.id} className="flex items-center justify-between text-xs">
                               <span className="font-bold text-on-surface">{adm.fullName}</span>
-                              <span className="font-mono text-amber-700 dark:text-amber-400 text-[11px]">
+                              <span className="font-mono text-warning text-[11px]">
                                 @{adm.username}
                               </span>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-[11px] text-amber-800 dark:text-amber-400 font-medium">
+                        <p className="text-[11px] text-warning font-medium">
                           لا يوجد مدير مخصص بعد، اضغط "تعيين/إضافة مدير"
                         </p>
                       )}
@@ -748,8 +748,8 @@ export default function SuperAdminDashboardPage() {
                       }}
                       className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${
                         comp.isActive
-                          ? 'bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/50 dark:text-amber-300'
-                          : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-300'
+                          ? 'bg-warning-container text-warning hover:bg-warning-container  '
+                          : 'bg-success-container text-success hover:bg-success-container  '
                       }`}
                     >
                       {comp.isActive ? 'تعطيل' : 'تفعيل'}
@@ -761,7 +761,7 @@ export default function SuperAdminDashboardPage() {
                           showToast('تم حذف الشركة بنجاح');
                         }
                       }}
-                      className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+                      className="p-1.5 rounded-lg text-error hover:bg-error-container transition cursor-pointer"
                       title="حذف الشركة"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -833,7 +833,7 @@ export default function SuperAdminDashboardPage() {
                   onClick={() => setUserRoleFilter('company_admin')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                     userRoleFilter === 'company_admin'
-                      ? 'bg-amber-600 text-white shadow-xs'
+                      ? 'bg-warning text-white shadow-xs'
                       : 'text-on-surface-variant hover:text-on-surface'
                   }`}
                 >
@@ -843,7 +843,7 @@ export default function SuperAdminDashboardPage() {
                   onClick={() => setUserRoleFilter('user')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                     userRoleFilter === 'user'
-                      ? 'bg-indigo-600 text-white shadow-xs'
+                      ? 'bg-accent-indigo text-white shadow-xs'
                       : 'text-on-surface-variant hover:text-on-surface'
                   }`}
                 >
@@ -876,7 +876,7 @@ export default function SuperAdminDashboardPage() {
                       <tr key={u.id} className="hover:bg-surface-container-low/50 transition-colors">
                         <td className="p-3.5">
                           <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-700 to-amber-500 text-white font-black text-xs flex items-center justify-center shrink-0">
+                            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-primary-strong to-primary text-white font-black text-xs flex items-center justify-center shrink-0">
                               {u.fullName.slice(0, 1)}
                             </div>
                             <span className="font-bold text-on-surface">{u.fullName}</span>
@@ -893,8 +893,8 @@ export default function SuperAdminDashboardPage() {
                           <span
                             className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
                               isAdmin
-                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
-                                : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
+                                ? 'bg-warning-container text-warning   border border-warning '
+                                : 'bg-accent-indigo-container text-on-accent-indigo-container  '
                             }`}
                           >
                             {isAdmin ? 'مدير شركة' : 'وسيط عقاري'}
@@ -914,7 +914,7 @@ export default function SuperAdminDashboardPage() {
                               className="px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
                               title="إعادة تعيين كلمة المرور"
                             >
-                              <KeyRound className="w-3 h-3 text-amber-600" />
+                              <KeyRound className="w-3 h-3 text-warning" />
                               <span>تغيير كلمة المرور</span>
                             </button>
                             <button
@@ -924,7 +924,7 @@ export default function SuperAdminDashboardPage() {
                                   showToast('تم حذف الحساب بنجاح');
                                 }
                               }}
-                              className="p-1 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+                              className="p-1 rounded-lg text-error hover:bg-error-container transition cursor-pointer"
                               title="حذف المستخدم"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -970,7 +970,7 @@ export default function SuperAdminDashboardPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => window.print()}
-                className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-md hover:bg-primary-container transition flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-md hover:bg-primary-strong transition flex items-center gap-1.5 cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
                 <span>طباعة التقرير</span>
@@ -1017,32 +1017,32 @@ export default function SuperAdminDashboardPage() {
                         {rep.admin ? (
                           <div className="flex flex-col">
                             <span className="font-bold text-on-surface">{rep.admin.fullName}</span>
-                            <span className="text-[10px] text-amber-700 dark:text-amber-400 font-mono">
+                            <span className="text-[10px] text-warning font-mono">
                               @{rep.admin.username}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-rose-500 font-bold text-[11px]">لم يتم التعيين</span>
+                          <span className="text-error font-bold text-[11px]">لم يتم التعيين</span>
                         )}
                       </td>
-                      <td className="p-3.5 text-center font-bold text-indigo-600">
+                      <td className="p-3.5 text-center font-bold text-accent-indigo">
                         {rep.brokersCount} وسيط
                       </td>
                       <td className="p-3.5 text-center font-black text-primary text-sm">
                         {rep.totalUnitsCount} وحدة
                       </td>
                       <td className="p-3.5 text-center">
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-[11px]">
+                        <span className="px-2 py-0.5 rounded-full bg-success-container text-success font-bold text-[11px]">
                           {rep.availableCount}
                         </span>
                       </td>
                       <td className="p-3.5 text-center">
-                        <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-bold text-[11px]">
+                        <span className="px-2 py-0.5 rounded-full bg-warning-container text-warning font-bold text-[11px]">
                           {rep.reservedCount}
                         </span>
                       </td>
                       <td className="p-3.5 text-center">
-                        <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-300 font-bold text-[11px]">
+                        <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-bold text-[11px]">
                           {rep.soldCount}
                         </span>
                       </td>
@@ -1050,8 +1050,8 @@ export default function SuperAdminDashboardPage() {
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                             rep.company.isActive
-                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                              : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                              ? 'bg-success-container text-success  '
+                              : 'bg-error-container text-on-error-container  '
                           }`}
                         >
                           {rep.company.isActive ? 'نشطة' : 'معطلة'}
@@ -1094,7 +1094,7 @@ export default function SuperAdminDashboardPage() {
 
             <form onSubmit={handleAddCompanySubmit} className="p-4 sm:p-6 space-y-4 max-h-[80vh] overflow-y-auto">
               {formError && (
-                <div className="p-3 rounded-xl bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300 text-xs font-bold border border-rose-200">
+                <div className="p-3 rounded-xl bg-error-container text-on-error-container text-xs font-bold border border-error">
                   {formError}
                 </div>
               )}
@@ -1108,7 +1108,7 @@ export default function SuperAdminDashboardPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-bold text-on-surface block mb-1">
-                      اسم الشركة <span className="text-rose-500">*</span>
+                      اسم الشركة <span className="text-error">*</span>
                     </label>
                     <input
                       type="text"
@@ -1183,8 +1183,8 @@ export default function SuperAdminDashboardPage() {
               {/* Admin Provisioning Section */}
               <div className="pt-4 border-t border-surface-container-high/60 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-black text-amber-700 dark:text-amber-400 uppercase flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-amber-600" />
+                  <h4 className="text-xs font-black text-warning uppercase flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-warning" />
                     حساب مدير الشركة (Company Admin)
                   </h4>
                   <label className="flex items-center gap-2 text-xs font-bold cursor-pointer">
@@ -1199,11 +1199,11 @@ export default function SuperAdminDashboardPage() {
                 </div>
 
                 {createAdminNow && (
-                  <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 space-y-3">
+                  <div className="p-3.5 rounded-xl bg-warning-container/60 border border-warning/25 space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs font-bold text-on-surface block mb-1">
-                          اسم المدير بالكامل <span className="text-rose-500">*</span>
+                          اسم المدير بالكامل <span className="text-error">*</span>
                         </label>
                         <input
                           type="text"
@@ -1211,12 +1211,12 @@ export default function SuperAdminDashboardPage() {
                           value={adminFullName}
                           onChange={(e) => setAdminFullName(e.target.value)}
                           placeholder="مثال: م. أحمد عبد الرحمن"
-                          className="w-full px-3 py-2 rounded-xl bg-surface-container-lowest text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+                          className="w-full px-3 py-2 rounded-xl bg-surface-container-lowest text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-warning/40"
                         />
                       </div>
                       <div>
                         <label className="text-xs font-bold text-on-surface block mb-1">
-                          اسم المستخدم (Login Username) <span className="text-rose-500">*</span>
+                          اسم المستخدم (Login Username) <span className="text-error">*</span>
                         </label>
                         <input
                           type="text"
@@ -1224,7 +1224,7 @@ export default function SuperAdminDashboardPage() {
                           value={adminUsername}
                           onChange={(e) => setAdminUsername(e.target.value)}
                           placeholder="مثال: ahmed_admin"
-                          className="w-full px-3 py-2 rounded-xl bg-surface-container-lowest text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+                          className="w-full px-3 py-2 rounded-xl bg-surface-container-lowest text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-warning/40"
                         />
                       </div>
                     </div>
@@ -1232,7 +1232,7 @@ export default function SuperAdminDashboardPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs font-bold text-on-surface block mb-1">
-                          كلمة المرور <span className="text-rose-500">*</span>
+                          كلمة المرور <span className="text-error">*</span>
                         </label>
                         <input
                           type="text"
@@ -1240,7 +1240,7 @@ export default function SuperAdminDashboardPage() {
                           value={adminPassword}
                           onChange={(e) => setAdminPassword(e.target.value)}
                           placeholder="123456"
-                          className="w-full px-3 py-2 rounded-xl bg-surface-container-lowest text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-amber-500/40 font-mono"
+                          className="w-full px-3 py-2 rounded-xl bg-surface-container-lowest text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-warning/40 font-mono"
                         />
                       </div>
                       <div>
@@ -1250,7 +1250,7 @@ export default function SuperAdminDashboardPage() {
                           value={adminPhone}
                           onChange={(e) => setAdminPhone(e.target.value)}
                           placeholder="010XXXXXXXX"
-                          className="w-full px-3 py-2 rounded-xl bg-surface-container-lowest text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+                          className="w-full px-3 py-2 rounded-xl bg-surface-container-lowest text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-warning/40"
                         />
                       </div>
                     </div>
@@ -1269,7 +1269,7 @@ export default function SuperAdminDashboardPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white text-xs font-bold transition shadow-md disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-white text-xs font-bold transition shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? 'جاري الحفظ...' : 'حفظ وإنشاء الشركة'}
                 </button>
@@ -1372,7 +1372,7 @@ export default function SuperAdminDashboardPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white text-xs font-bold transition shadow-md disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-white text-xs font-bold transition shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   حفظ التعديلات
                 </button>
@@ -1390,7 +1390,7 @@ export default function SuperAdminDashboardPage() {
           <div className="relative w-full max-w-md bg-surface-container-lowest rounded-2xl shadow-2xl border border-surface-container-high/60 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-surface-container-high/40 bg-surface-container-low">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-amber-600" />
+                <ShieldCheck className="w-5 h-5 text-warning" />
                 <div>
                   <h3 className="font-bold text-sm text-on-surface">تعيين مدير جديد</h3>
                   <p className="text-[11px] text-on-surface-variant">لشركة "{selectedCompany.name}"</p>
@@ -1406,7 +1406,7 @@ export default function SuperAdminDashboardPage() {
 
             <form onSubmit={handleAddAdminSubmit} className="p-5 space-y-3">
               {formError && (
-                <div className="p-2.5 rounded-xl bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300 text-xs font-bold">
+                <div className="p-2.5 rounded-xl bg-error-container text-on-error-container text-xs font-bold">
                   {formError}
                 </div>
               )}
@@ -1419,7 +1419,7 @@ export default function SuperAdminDashboardPage() {
                   value={adminFullName}
                   onChange={(e) => setAdminFullName(e.target.value)}
                   placeholder="م. حسام الدين"
-                  className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+                  className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-warning/40"
                 />
               </div>
 
@@ -1431,7 +1431,7 @@ export default function SuperAdminDashboardPage() {
                   value={adminUsername}
                   onChange={(e) => setAdminUsername(e.target.value)}
                   placeholder="hosam_admin"
-                  className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+                  className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-warning/40"
                 />
               </div>
 
@@ -1443,7 +1443,7 @@ export default function SuperAdminDashboardPage() {
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
                   placeholder="123456"
-                  className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-amber-500/40 font-mono"
+                  className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-warning/40 font-mono"
                 />
               </div>
 
@@ -1454,7 +1454,7 @@ export default function SuperAdminDashboardPage() {
                   value={adminPhone}
                   onChange={(e) => setAdminPhone(e.target.value)}
                   placeholder="010XXXXXXXX"
-                  className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+                  className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-warning/40"
                 />
               </div>
 
@@ -1469,7 +1469,7 @@ export default function SuperAdminDashboardPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-md disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-warning hover:bg-warning text-white text-xs font-bold transition shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? 'جاري الإنشاء...' : 'إنشاء حساب المدير'}
                 </button>
@@ -1500,7 +1500,7 @@ export default function SuperAdminDashboardPage() {
 
             <form onSubmit={handleCreateUserSubmit} className="p-5 space-y-3">
               {formError && (
-                <div className="p-2.5 rounded-xl bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300 text-xs font-bold">
+                <div className="p-2.5 rounded-xl bg-error-container text-on-error-container text-xs font-bold">
                   {formError}
                 </div>
               )}
@@ -1592,7 +1592,7 @@ export default function SuperAdminDashboardPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white text-xs font-bold transition shadow-md disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-white text-xs font-bold transition shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? 'جاري الإنشاء...' : 'إنشاء الحساب'}
                 </button>
@@ -1610,7 +1610,7 @@ export default function SuperAdminDashboardPage() {
           <div className="relative w-full max-w-sm bg-surface-container-lowest rounded-2xl shadow-2xl border border-surface-container-high/60 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-surface-container-high/40 bg-surface-container-low">
               <div className="flex items-center gap-2">
-                <KeyRound className="w-4 h-4 text-amber-600" />
+                <KeyRound className="w-4 h-4 text-warning" />
                 <h3 className="font-bold text-sm text-on-surface">إعادة تعيين كلمة المرور</h3>
               </div>
               <button
@@ -1635,7 +1635,7 @@ export default function SuperAdminDashboardPage() {
                   value={newPasswordValue}
                   onChange={(e) => setNewPasswordValue(e.target.value)}
                   placeholder="123456"
-                  className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-amber-500/40 font-mono"
+                  className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-warning/40 font-mono"
                 />
               </div>
 
@@ -1650,7 +1650,7 @@ export default function SuperAdminDashboardPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-md disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-warning hover:bg-warning text-white text-xs font-bold transition shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? 'جاري الحفظ...' : 'تغيير كلمة المرور'}
                 </button>

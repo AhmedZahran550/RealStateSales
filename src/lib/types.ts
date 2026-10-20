@@ -186,46 +186,46 @@ export interface Customer {
 export const STAGE_CONFIG: Record<CustomerStage, { label: string; color: string; bg: string; border: string }> = {
   lead: {
     label: 'عميل محتمل',
-    color: 'text-sky-700 dark:text-sky-300',
-    bg: 'bg-sky-50 dark:bg-sky-950/60',
-    border: 'border-sky-300 dark:border-sky-800',
+    color: 'text-on-info-container',
+    bg: 'bg-info-container',
+    border: 'border-info',
   },
   asking: {
     label: 'يسأل عن التفاصيل',
-    color: 'text-amber-700 dark:text-amber-300',
-    bg: 'bg-amber-50 dark:bg-amber-950/60',
-    border: 'border-amber-300 dark:border-amber-800',
+    color: 'text-on-warning-container',
+    bg: 'bg-warning-container',
+    border: 'border-warning',
   },
   viewed: {
     label: 'معاينة موقعية',
-    color: 'text-indigo-700 dark:text-indigo-300',
-    bg: 'bg-indigo-50 dark:bg-indigo-950/60',
-    border: 'border-indigo-300 dark:border-indigo-800',
+    color: 'text-on-accent-indigo-container',
+    bg: 'bg-accent-indigo-container',
+    border: 'border-accent-indigo',
   },
   negotiating: {
     label: 'مرحلة التفاوض',
-    color: 'text-purple-700 dark:text-purple-300',
-    bg: 'bg-purple-50 dark:bg-purple-950/60',
-    border: 'border-purple-300 dark:border-purple-800',
+    color: 'text-on-accent-purple-container',
+    bg: 'bg-accent-purple-container',
+    border: 'border-accent-purple',
   },
   reserved: {
     label: 'تم الحجز المبدئي',
-    color: 'text-emerald-700 dark:text-emerald-300',
-    bg: 'bg-emerald-50 dark:bg-emerald-950/60',
-    border: 'border-emerald-300 dark:border-emerald-800',
+    color: 'text-on-success-container',
+    bg: 'bg-success-container',
+    border: 'border-success',
   },
   closed: {
     label: 'تم التعاقد والبيع',
-    color: 'text-amber-800 dark:text-amber-300',
-    bg: 'bg-amber-100 dark:bg-amber-950/70',
-    border: 'border-amber-400 dark:border-amber-700',
+    color: 'text-on-success-container',
+    bg: 'bg-success-container',
+    border: 'border-success',
   },
   lost: {
 
     label: 'صفقة ملغاة',
-    color: 'text-rose-700 dark:text-rose-300',
-    bg: 'bg-rose-50 dark:bg-rose-950/60',
-    border: 'border-rose-300 dark:border-rose-800',
+    color: 'text-on-error-container',
+    bg: 'bg-error-container',
+    border: 'border-error',
   },
 };
 
@@ -319,14 +319,14 @@ export interface PublicReservation {
 export const UNIT_STATUS_CONFIG: Record<UnitStatus, { label: string; badgeClass: string }> = {
   available: {
     label: 'متاح للبيع',
-    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800',
+    badgeClass: 'bg-success-container text-on-success-container border-success',
   },
   reserved: {
     label: 'حجز مؤقت',
-    badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800',
+    badgeClass: 'bg-warning-container text-on-warning-container border-warning',
   },
   sold: {
     label: 'تم البيع',
-    badgeClass: 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    badgeClass: 'bg-surface-container text-on-surface-variant border-outline',
   },
 };

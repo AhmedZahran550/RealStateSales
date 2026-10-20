@@ -129,17 +129,17 @@ export default function CustomerDetailModal({
     new Date(customer.nextFollowupAt).toDateString() === todayDateString;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto sm:my-8 max-h-[94vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-outline-variant overflow-hidden my-auto sm:my-8 max-h-[94vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 shrink-0">
+        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-outline-variant bg-surface-container-low shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-600 text-white flex items-center justify-center font-bold text-base sm:text-lg shadow-md shadow-amber-600/30 shrink-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-warning text-white flex items-center justify-center font-bold text-base sm:text-lg shadow-md shadow-warning/30 shrink-0">
               {customer.name.slice(0, 2)}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+                <h3 className="font-bold text-base sm:text-lg text-on-surface ">
                   {customer.name}
                 </h3>
                 <span
@@ -148,7 +148,7 @@ export default function CustomerDetailModal({
                   {stageConfig.label}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-on-surface-variant mt-0.5">
                 المصدر: {customer.source || 'غير محدد'} • البروكر: {customer.ownerName || 'حسام الشريف'}
               </p>
             </div>
@@ -161,10 +161,10 @@ export default function CustomerDetailModal({
                   onEdit(customer);
                   onClose();
                 }}
-                className="px-3.5 py-2 rounded-xl text-amber-800 dark:text-amber-300 bg-amber-500/10 dark:bg-amber-950/60 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-600 dark:hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold border border-amber-300/80 dark:border-amber-800/80 shadow-xs cursor-pointer"
+                className="px-3.5 py-2 rounded-xl text-warning bg-warning-container hover:bg-warning hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold border border-warning shadow-xs cursor-pointer"
                 title="تعديل بيانات العميل"
               >
-                <Edit className="w-4 h-4 text-amber-600 group-hover:text-white" />
+                <Edit className="w-4 h-4 text-warning group-hover:text-white" />
                 <span>تعديل</span>
               </button>
             )}
@@ -175,7 +175,7 @@ export default function CustomerDetailModal({
                   onClose();
                 }
               }}
-              className="px-3.5 py-2 rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold border border-rose-300/80 dark:border-rose-800/80 shadow-xs cursor-pointer"
+              className="px-3.5 py-2 rounded-xl text-error bg-error-container hover:bg-error hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold border border-error shadow-xs cursor-pointer"
               title="حذف العميل"
             >
               <Trash2 className="w-4 h-4" />
@@ -183,7 +183,7 @@ export default function CustomerDetailModal({
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="p-2 rounded-xl text-on-surface-variant hover:text-on-surface-variant hover:bg-surface-container "
             >
               <X className="w-5 h-5" />
             </button>
@@ -197,9 +197,9 @@ export default function CustomerDetailModal({
             {/* Phone */}
             <a
               href={`tel:${customer.phone}`}
-              className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-xs font-bold transition"
+              className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold transition"
             >
-              <Phone className="w-4 h-4 text-amber-600" />
+              <Phone className="w-4 h-4 text-warning" />
               <span>اتصال: {customer.phone}</span>
             </a>
 
@@ -208,14 +208,14 @@ export default function CustomerDetailModal({
               href={waUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition"
+              className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-success hover:bg-success text-white text-xs font-bold shadow-md shadow-success/30 transition"
             >
               <MessageCircle className="w-4 h-4" />
               <span>محادثة واتساب مباشرة</span>
             </a>
 
             {/* Budget */}
-            <div className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-bold">
+            <div className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-warning-container border border-warning text-warning text-xs font-bold">
               <span>الميزانية:</span>
               <span className="font-black text-sm">
                 {customer.budget ? `${customer.budget.toLocaleString('ar-EG')} ج.م` : 'غير محددة'}
@@ -224,8 +224,8 @@ export default function CustomerDetailModal({
           </div>
 
           {/* Stage Progression Selector */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
-            <span className="block text-xs font-bold text-slate-500 mb-2">
+          <div className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant ">
+            <span className="block text-xs font-bold text-on-surface-variant mb-2">
               تحديث مرحلة العميل في دورة المبيعات:
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -237,8 +237,8 @@ export default function CustomerDetailModal({
                     onClick={() => handleStageChange(stgKey as CustomerStage)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border ${
                       isActive
-                        ? `${cfg.bg} ${cfg.color} ${cfg.border} ring-2 ring-amber-500 shadow-sm`
-                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-400'
+                        ? `${cfg.bg} ${cfg.color} ${cfg.border} ring-2 ring-warning shadow-sm`
+                        : 'bg-white  border-outline-variant  text-on-surface-variant  hover:border-outline-variant'
                     }`}
                   >
                     {isActive && <UserCheck className="w-3.5 h-3.5" />}
@@ -253,24 +253,24 @@ export default function CustomerDetailModal({
           <div
             className={`p-4 sm:p-5 rounded-2xl border space-y-3.5 transition-all ${
               isOverdue
-                ? 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900 text-rose-950 dark:text-rose-200'
+                ? 'bg-error-container/90  border-error  text-on-error-container '
                 : isToday
-                ? 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900 text-amber-950 dark:text-amber-200'
+                ? 'bg-warning-container/90  border-warning  text-on-warning-container '
                 : customer.nextFollowupAt
-                ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900 text-emerald-950 dark:text-emerald-200'
-                : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                ? 'bg-success-container/70  border-success  text-on-success-container '
+                : 'bg-surface-container-low  border-outline-variant  text-on-surface-variant '
             }`}
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                   isOverdue
-                    ? 'bg-rose-500 text-white shadow-sm'
+                    ? 'bg-error text-white shadow-sm'
                     : isToday
-                    ? 'bg-amber-500 text-white shadow-sm'
+                    ? 'bg-warning text-white shadow-sm'
                     : customer.nextFollowupAt
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'bg-slate-300 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                    ? 'bg-success text-white shadow-sm'
+                    : 'bg-surface-container-highest  text-on-surface-variant '
                 }`}>
                   <Calendar className="w-5 h-5" />
                 </div>
@@ -289,7 +289,7 @@ export default function CustomerDetailModal({
                       const fInfo = formatArabicFollowupDate(customer.nextFollowupAt);
                       return (
                         <div className="flex items-center flex-wrap gap-1.5 mt-1">
-                          <span className="px-2 py-0.5 rounded-lg bg-amber-600/15 dark:bg-amber-400/20 text-amber-900 dark:text-amber-200 font-black text-xs">
+                          <span className="px-2 py-0.5 rounded-lg bg-warning/15 text-warning font-black text-xs">
                             {fInfo.dayName}
                           </span>
                           <span className="font-bold text-xs">{fInfo.formattedDate}</span>
@@ -317,13 +317,13 @@ export default function CustomerDetailModal({
                       handleReschedule(undefined);
                     }
                   }}
-                  className="text-xs px-2.5 py-1.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#151d2a] font-mono font-semibold text-stone-900 dark:text-stone-50 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-xs"
+                  className="text-xs px-2.5 py-1.5 rounded-xl border border-outline-variant bg-white font-mono font-semibold text-on-surface focus:outline-none focus:ring-2 focus:ring-warning shadow-xs"
                 />
               </div>
             </div>
 
             {/* Quick 1-Click Presets */}
-            <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80">
+            <div className="pt-2 border-t border-outline-variant/60 ">
               <span className="block text-[11px] font-bold opacity-75 mb-2">
                 إعادة جدولة سريعة بنقرة واحدة:
               </span>
@@ -331,28 +331,28 @@ export default function CustomerDetailModal({
                 <button
                   type="button"
                   onClick={() => handleReschedule(getQuickDateIso('today'))}
-                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-amber-500 hover:text-amber-600 transition shadow-xs"
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-on-surface border border-outline-variant hover:border-warning hover:text-warning transition shadow-xs"
                 >
                   ⚡ اليوم (بعد ساعتين)
                 </button>
                 <button
                   type="button"
                   onClick={() => handleReschedule(getQuickDateIso('tomorrow'))}
-                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-amber-500 hover:text-amber-600 transition shadow-xs"
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-on-surface border border-outline-variant hover:border-warning hover:text-warning transition shadow-xs"
                 >
                   🌅 غداً (12 ظهراً)
                 </button>
                 <button
                   type="button"
                   onClick={() => handleReschedule(getQuickDateIso('3days'))}
-                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-amber-500 hover:text-amber-600 transition shadow-xs"
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-on-surface border border-outline-variant hover:border-warning hover:text-warning transition shadow-xs"
                 >
                   📆 بعد 3 أيام
                 </button>
                 <button
                   type="button"
                   onClick={() => handleReschedule(getQuickDateIso('nextweek'))}
-                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-amber-500 hover:text-amber-600 transition shadow-xs"
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-on-surface border border-outline-variant hover:border-warning hover:text-warning transition shadow-xs"
                 >
                   🗓️ الأسبوع القادم
                 </button>
@@ -360,7 +360,7 @@ export default function CustomerDetailModal({
                   <button
                     type="button"
                     onClick={() => handleReschedule(undefined)}
-                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 hover:bg-rose-200 transition"
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-error-container text-error hover:bg-error-container transition"
                   >
                     ❌ إلغاء الموعد
                   </button>
@@ -372,8 +372,8 @@ export default function CustomerDetailModal({
           {/* Interested Units */}
           {interestedUnits.length > 0 && (
             <div>
-              <h4 className="text-xs font-bold uppercase text-slate-400 mb-2.5 flex items-center gap-1.5">
-                <Building2 className="w-4 h-4 text-amber-600" />
+              <h4 className="text-xs font-bold uppercase text-on-surface-variant mb-2.5 flex items-center gap-1.5">
+                <Building2 className="w-4 h-4 text-warning" />
                 الوحدات المهتم بها ({interestedUnits.length})
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -381,17 +381,17 @@ export default function CustomerDetailModal({
                   <div
                     key={u.id}
                     onClick={() => onSelectUnit && onSelectUnit(u)}
-                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 hover:border-amber-500 cursor-pointer flex items-center justify-between"
+                    className="p-3 rounded-xl border border-outline-variant bg-surface-container-low hover:border-warning cursor-pointer flex items-center justify-between"
                   >
                     <div>
-                      <p className="font-bold text-xs text-slate-900 dark:text-white">
+                      <p className="font-bold text-xs text-on-surface ">
                         منطقة {u.zoneId} – قطعة {u.plotNo} ({UNIT_KIND_LABELS[u.unitKind]})
                       </p>
-                      <p className="text-[11px] text-amber-600 font-bold mt-0.5">
+                      <p className="text-[11px] text-warning font-bold mt-0.5">
                         {u.price.toLocaleString('ar-EG')} ج.م • {u.area} م²
                       </p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 transform rotate-180" />
+                    <ChevronRight className="w-4 h-4 text-on-surface-variant transform rotate-180" />
                   </div>
                 ))}
               </div>
@@ -399,9 +399,9 @@ export default function CustomerDetailModal({
           )}
 
           {/* Add New Activity Box */}
-          <div className="p-4 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
-            <h4 className="text-xs font-bold text-amber-900 dark:text-amber-200 mb-2 flex items-center gap-1.5">
-              <Send className="w-3.5 h-3.5 text-amber-600" />
+          <div className="p-4 rounded-2xl border border-warning bg-warning-container/50 ">
+            <h4 className="text-xs font-bold text-warning mb-2 flex items-center gap-1.5">
+              <Send className="w-3.5 h-3.5 text-warning" />
               تسجيل نشاط جديد (مكالمة، واتساب، معاينة، ملاحظة)
             </h4>
             <form onSubmit={handleAddActivity} className="space-y-3">
@@ -421,8 +421,8 @@ export default function CustomerDetailModal({
                       onClick={() => setActivityType(type)}
                       className={`text-xs px-3 py-1 rounded-lg font-bold transition ${
                         activityType === type
-                          ? 'bg-amber-600 text-white shadow-sm'
-                          : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                          ? 'bg-warning text-white shadow-sm'
+                          : 'bg-white  border border-outline-variant  text-on-surface-variant '
                       }`}
                     >
                       {labels[type]}
@@ -436,24 +436,24 @@ export default function CustomerDetailModal({
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 placeholder="اكتب خلاصة المكالمة أو تفاصيل الزيارة أو متطلبات العميل..."
-                className="w-full text-xs p-2.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 shadow-xs"
+                className="w-full text-xs p-2.5 rounded-xl border border-outline-variant bg-white text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary shadow-xs"
                 required
               />
 
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="text-stone-700 dark:text-stone-300 font-bold">تحديث المتابعة القادمة:</span>
+                  <span className="text-on-surface-variant font-bold">تحديث المتابعة القادمة:</span>
                   <input
                     type="date"
                     value={newFollowupDate}
                     onChange={(e) => setNewFollowupDate(e.target.value)}
-                    className="text-xs px-2.5 py-1 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-50 font-mono font-semibold shadow-xs"
+                    className="text-xs px-2.5 py-1 rounded-lg border border-outline-variant bg-white text-on-surface font-mono font-semibold shadow-xs"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white text-xs font-bold shadow-md shadow-amber-600/30 transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-warning hover:bg-warning active:bg-warning text-white text-xs font-bold shadow-md shadow-warning/30 transition-all cursor-pointer"
                 >
                   حفظ النشاط
                 </button>
@@ -463,22 +463,22 @@ export default function CustomerDetailModal({
 
           {/* Activity Timeline */}
           <div>
-            <h4 className="text-xs font-bold uppercase text-slate-400 mb-3 flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-amber-600" />
+            <h4 className="text-xs font-bold uppercase text-on-surface-variant mb-3 flex items-center gap-1.5">
+              <Clock className="w-4 h-4 text-warning" />
               سجل الأنشطة والمتابعات ({customer.activities?.length || 0})
             </h4>
 
-            <div className="relative border-r-2 border-slate-200 dark:border-slate-800 pr-5 mr-3 space-y-4">
+            <div className="relative border-r-2 border-outline-variant pr-5 mr-3 space-y-4">
               {customer.activities && customer.activities.length > 0 ? (
                 customer.activities.map((act) => {
                   return (
                     <div key={act.id} className="relative group">
                       {/* Node bullet */}
-                      <span className="absolute -right-[27px] top-1.5 w-3 h-3 rounded-full bg-amber-500 border-2 border-white dark:border-slate-900" />
+                      <span className="absolute -right-[27px] top-1.5 w-3 h-3 rounded-full bg-warning border-2 border-white " />
 
-                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 text-xs">
-                        <div className="flex items-center justify-between text-slate-400 mb-1">
-                          <span className="font-bold text-slate-700 dark:text-slate-300">
+                      <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant/80 text-xs">
+                        <div className="flex items-center justify-between text-on-surface-variant mb-1">
+                          <span className="font-bold text-on-surface-variant ">
                             {act.authorName || 'البروكر'}
                           </span>
                           <span>
@@ -490,7 +490,7 @@ export default function CustomerDetailModal({
                             })}
                           </span>
                         </div>
-                        <p className="text-slate-800 dark:text-slate-200 font-medium leading-relaxed">
+                        <p className="text-on-surface font-medium leading-relaxed">
                           {act.note}
                         </p>
                       </div>
@@ -498,7 +498,7 @@ export default function CustomerDetailModal({
                   );
                 })
               ) : (
-                <p className="text-xs text-slate-400">لا توجد أنشطة مسجلة بعد لهذا العميل.</p>
+                <p className="text-xs text-on-surface-variant">لا توجد أنشطة مسجلة بعد لهذا العميل.</p>
               )}
             </div>
           </div>

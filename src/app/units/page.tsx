@@ -160,7 +160,7 @@ export default function UnitsPage() {
     <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
       {/* Toast Notification Feedback */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-space-md py-space-sm bg-inverse-surface text-inverse-on-surface rounded-xl shadow-xl flex items-center gap-space-xs font-label-md text-label-md animate-in fade-in">
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-space-md py-space-sm bg-inverse-surface text-inverse-on-surface rounded-xl shadow-xl flex items-center gap-space-xs animate-in fade-in">
           <span className="material-symbols-outlined text-primary-fixed text-[20px]">check_circle</span>
           <span>{toastMessage}</span>
         </div>
@@ -170,14 +170,14 @@ export default function UnitsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
         <div className="flex flex-col">
           <div className="flex items-center gap-space-sm">
-            <h1 className="font-headline-xl text-headline-xl text-on-surface font-extrabold tracking-tight text-2xl lg:text-3xl">
+            <h1 className="text-on-surface font-extrabold tracking-tight text-2xl lg:text-3xl">
               سجل الوحدات والمخزون
             </h1>
-            <span className="px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-bold text-xs">
+            <span className="px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-bold text-xs">
               {myUnits.length} وحدة مسجلة
             </span>
           </div>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1 text-sm">
+          <p className="text-on-surface-variant mt-1 text-sm">
             تصفح وإدارة المحفظة العقارية الحالية، إرسال العروض الفورية، وتحديث حالات التعاقد.
           </p>
         </div>
@@ -185,7 +185,7 @@ export default function UnitsPage() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-space-sm w-full md:w-auto">
           <button
             onClick={() => exportUnitsToExcel(filteredUnits)}
-            className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-on-surface transition-all shadow-sm font-label-md text-label-md font-bold text-xs border border-surface-container-high cursor-pointer min-h-[40px]"
+            className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-on-surface transition-all shadow-sm font-bold text-xs border border-surface-container-high cursor-pointer min-h-[40px]"
             type="button"
           >
             <span className="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span>
@@ -195,7 +195,7 @@ export default function UnitsPage() {
             <>
               <button
                 onClick={() => setIsBuildingModalOpen(true)}
-                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface transition-all shadow-xs font-label-md text-label-md font-bold text-xs border border-surface-container-high cursor-pointer min-h-[42px]"
+                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface transition-all shadow-xs font-bold text-xs border border-surface-container-high cursor-pointer min-h-[42px]"
                 type="button"
               >
                 <Building2 className="w-4 h-4 text-primary" />
@@ -208,7 +208,7 @@ export default function UnitsPage() {
                   setTargetBuildingIdForUnit(undefined);
                   setIsUnitFormOpen(true);
                 }}
-                className="flex items-center justify-center gap-space-xs px-space-md sm:px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary transition-all shadow-md font-label-lg text-label-lg font-bold text-xs sm:text-sm cursor-pointer min-h-[42px]"
+                className="flex items-center justify-center gap-space-xs px-space-md sm:px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all shadow-md font-bold text-xs sm:text-sm cursor-pointer min-h-[42px]"
                 type="button"
               >
                 <Plus className="w-4 h-4" />
@@ -223,13 +223,13 @@ export default function UnitsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
         <div className="bg-surface-container-lowest p-3.5 sm:p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
           <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-on-surface-variant font-bold text-xs">
+            <span className="text-on-surface-variant font-bold text-xs">
               إجمالي المعروض المتاح
             </span>
-            <span className="font-headline-lg text-headline-lg text-primary font-extrabold mt-0.5 text-xl sm:text-2xl">
+            <span className="text-primary font-extrabold mt-0.5 text-xl sm:text-2xl">
               {totalAvailable} وحدة
             </span>
-            <span className="font-label-sm text-label-sm text-outline mt-0.5 text-[11px]">
+            <span className="text-outline mt-0.5 text-[11px]">
               بقيمة {(totalValue / 1000000).toFixed(1)}M ج.م
             </span>
           </div>
@@ -240,13 +240,13 @@ export default function UnitsPage() {
 
         <div className="bg-surface-container-lowest p-3.5 sm:p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
           <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-on-surface-variant font-bold text-xs">
+            <span className="text-on-surface-variant font-bold text-xs">
               حجز مؤقت (مفاوضات)
             </span>
-            <span className="font-headline-lg text-headline-lg text-tertiary font-extrabold mt-0.5 text-xl sm:text-2xl">
+            <span className="text-tertiary font-extrabold mt-0.5 text-xl sm:text-2xl">
               {totalReserved} وحدات
             </span>
-            <span className="font-label-sm text-label-sm text-tertiary mt-0.5 text-[11px]">
+            <span className="text-tertiary mt-0.5 text-[11px]">
               متوقع إغلاقها قريباً
             </span>
           </div>
@@ -257,13 +257,13 @@ export default function UnitsPage() {
 
         <div className="bg-surface-container-lowest p-3.5 sm:p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
           <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-on-surface-variant font-bold text-xs">
+            <span className="text-on-surface-variant font-bold text-xs">
               تم التعاقد والبيع
             </span>
-            <span className="font-headline-lg text-headline-lg text-secondary font-extrabold mt-0.5 text-xl sm:text-2xl">
+            <span className="text-secondary font-extrabold mt-0.5 text-xl sm:text-2xl">
               {totalSold} وحدات
             </span>
-            <span className="font-label-sm text-label-sm text-outline mt-0.5 text-[11px]">
+            <span className="text-outline mt-0.5 text-[11px]">
               صفقات ناجحة
             </span>
           </div>
@@ -274,13 +274,13 @@ export default function UnitsPage() {
 
         <div className="bg-surface-container-lowest p-3.5 sm:p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
           <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-on-surface-variant font-bold text-xs">
+            <span className="text-on-surface-variant font-bold text-xs">
               استلام فوري
             </span>
-            <span className="font-headline-lg text-headline-lg text-on-surface font-extrabold mt-0.5 text-xl sm:text-2xl">
+            <span className="text-on-surface font-extrabold mt-0.5 text-xl sm:text-2xl">
               {myUnits.filter((u) => u.deliveryNote?.includes('فوري')).length} وحدة
             </span>
-            <span className="font-label-sm text-label-sm text-primary font-bold mt-0.5 text-[11px]">
+            <span className="text-primary font-bold mt-0.5 text-[11px]">
               أعلى طلب للمستثمرين
             </span>
           </div>
@@ -296,7 +296,7 @@ export default function UnitsPage() {
           <div className="flex items-center gap-space-xs overflow-x-auto pb-1 md:pb-0">
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-space-md py-space-xs rounded-xl font-label-md text-label-md font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${
+              className={`px-space-md py-space-xs rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${
                 statusFilter === 'all'
                   ? 'bg-primary text-on-primary shadow-sm'
                   : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
@@ -307,7 +307,7 @@ export default function UnitsPage() {
             </button>
             <button
               onClick={() => setStatusFilter('available')}
-              className={`px-space-md py-space-xs rounded-xl font-label-md text-label-md font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${
+              className={`px-space-md py-space-xs rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${
                 statusFilter === 'available'
                   ? 'bg-primary text-on-primary shadow-sm'
                   : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
@@ -318,7 +318,7 @@ export default function UnitsPage() {
             </button>
             <button
               onClick={() => setStatusFilter('reserved')}
-              className={`px-space-md py-space-xs rounded-xl font-label-md text-label-md font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${
+              className={`px-space-md py-space-xs rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${
                 statusFilter === 'reserved'
                   ? 'bg-primary text-on-primary shadow-sm'
                   : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
@@ -329,7 +329,7 @@ export default function UnitsPage() {
             </button>
             <button
               onClick={() => setStatusFilter('sold')}
-              className={`px-space-md py-space-xs rounded-xl font-label-md text-label-md font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${
+              className={`px-space-md py-space-xs rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${
                 statusFilter === 'sold'
                   ? 'bg-primary text-on-primary shadow-sm'
                   : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
@@ -375,7 +375,7 @@ export default function UnitsPage() {
               <div className="flex items-center gap-space-xs bg-surface-container-low p-1 rounded-xl">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-label-sm text-label-sm font-bold transition-all text-xs cursor-pointer ${
+                  className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-bold transition-all text-xs cursor-pointer ${
                     viewMode === 'grid'
                       ? 'bg-surface-container-lowest text-primary shadow-sm'
                       : 'text-on-surface-variant hover:text-on-surface'
@@ -387,7 +387,7 @@ export default function UnitsPage() {
                 </button>
                 <button
                   onClick={() => setViewMode('table')}
-                  className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-label-sm text-label-sm font-bold transition-all text-xs cursor-pointer ${
+                  className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-bold transition-all text-xs cursor-pointer ${
                     viewMode === 'table'
                       ? 'bg-surface-container-lowest text-primary shadow-sm'
                       : 'text-on-surface-variant hover:text-on-surface'
@@ -406,7 +406,7 @@ export default function UnitsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-sm">
           {/* Search */}
           <div className="relative">
-            <span className="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-slate-400 text-[20px] pointer-events-none">
+            <span className="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">
               search
             </span>
             <input
@@ -414,7 +414,7 @@ export default function UnitsPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="كود الوحدة، رقم القطعة، الوصف..."
-              className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] rounded-xl py-2.5 pr-10 pl-space-sm font-body-sm text-body-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:outline-none focus:ring-2 focus:ring-primary text-xs shadow-xs"
+              className="w-full border border-outline-variant bg-white rounded-xl py-2.5 pr-10 pl-space-sm text-on-surface placeholder:text-outline font-semibold focus:outline-none focus:ring-2 focus:ring-primary text-xs shadow-xs"
             />
           </div>
 
@@ -423,16 +423,16 @@ export default function UnitsPage() {
             <select
               value={zoneFilter}
               onChange={(e) => setZoneFilter(e.target.value)}
-              className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] rounded-xl py-2.5 pr-space-md pl-8 font-body-sm text-body-sm text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
+              className="w-full border border-outline-variant bg-white rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
             >
-              <option value="all" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">كافة مناطق الحي المتميز (1-16)</option>
+              <option value="all" className="bg-white text-on-surface ">كافة مناطق الحي المتميز (1-16)</option>
               {Array.from({ length: 16 }, (_, i) => i + 1).map((z) => (
-                <option key={z} value={z.toString()} className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">
+                <option key={z} value={z.toString()} className="bg-white text-on-surface ">
                   منطقة {z}
                 </option>
               ))}
             </select>
-            <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-slate-400 text-[18px] pointer-events-none">
+            <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">
               expand_more
             </span>
           </div>
@@ -442,18 +442,18 @@ export default function UnitsPage() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] rounded-xl py-2.5 pr-space-md pl-8 font-body-sm text-body-sm text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
+              className="w-full border border-outline-variant bg-white rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
             >
-              <option value="all" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">نوع الوحدة (الكل)</option>
-              <option value="duplex" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">دوبلكس</option>
-              <option value="ground_garden" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">أرضي بحديقة</option>
-              <option value="floor_1" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">دور أول متكرر</option>
-              <option value="floor_2" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">دور ثاني</option>
-              <option value="floor_3" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">دور ثالث</option>
-              <option value="roof" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">رووف</option>
-              <option value="other" className="bg-white dark:bg-[#151d2a] text-slate-900 dark:text-white">أخرى</option>
+              <option value="all" className="bg-white text-on-surface ">نوع الوحدة (الكل)</option>
+              <option value="duplex" className="bg-white text-on-surface ">دوبلكس</option>
+              <option value="ground_garden" className="bg-white text-on-surface ">أرضي بحديقة</option>
+              <option value="floor_1" className="bg-white text-on-surface ">دور أول متكرر</option>
+              <option value="floor_2" className="bg-white text-on-surface ">دور ثاني</option>
+              <option value="floor_3" className="bg-white text-on-surface ">دور ثالث</option>
+              <option value="roof" className="bg-white text-on-surface ">رووف</option>
+              <option value="other" className="bg-white text-on-surface ">أخرى</option>
             </select>
-            <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-slate-400 text-[18px] pointer-events-none">
+            <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">
               expand_more
             </span>
           </div>
@@ -462,9 +462,9 @@ export default function UnitsPage() {
         {/* Active Filter Chips */}
         {(zoneFilter !== 'all' || typeFilter !== 'all' || searchTerm) && (
           <div className="flex items-center flex-wrap gap-space-xs pt-1 border-t border-surface-container-low pt-2">
-            <span className="font-label-sm text-label-sm text-outline text-xs">الفلاتر المطبقة:</span>
+            <span className="text-outline text-xs">الفلاتر المطبقة:</span>
             {zoneFilter !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface font-label-sm text-label-sm text-xs">
+              <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface text-xs">
                 المنطقة: منطقة {zoneFilter}
                 <button onClick={() => setZoneFilter('all')} className="hover:text-error cursor-pointer">
                   ✕
@@ -472,7 +472,7 @@ export default function UnitsPage() {
               </span>
             )}
             {typeFilter !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface font-label-sm text-label-sm text-xs">
+              <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface text-xs">
                 النوع: {UNIT_KIND_LABELS[typeFilter as UnitKind] || typeFilter}
                 <button onClick={() => setTypeFilter('all')} className="hover:text-error cursor-pointer">
                   ✕
@@ -485,7 +485,7 @@ export default function UnitsPage() {
                 setTypeFilter('all');
                 setSearchTerm('');
               }}
-              className="font-label-sm text-label-sm text-secondary hover:underline mr-space-xs font-bold text-xs cursor-pointer"
+              className="text-secondary hover:underline mr-space-xs font-bold text-xs cursor-pointer"
               type="button"
             >
               إعادة تعيين الكل
@@ -526,7 +526,7 @@ export default function UnitsPage() {
           ) : (
             <div className="p-12 text-center rounded-2xl bg-surface-container-lowest border border-surface-container-high/60 shadow-xs">
               <Building2 className="w-12 h-12 text-on-surface-variant/40 mx-auto mb-3" />
-              <h3 className="font-headline-sm text-headline-sm font-bold text-on-surface text-base">
+              <h3 className="font-bold text-on-surface text-base">
                 لا توجد مباني أو قطع مطابقة
               </h3>
               <p className="text-xs text-on-surface-variant mt-1 max-w-sm mx-auto">
@@ -535,7 +535,7 @@ export default function UnitsPage() {
               {(isCompanyAdmin || isSuperAdmin) && (
                 <button
                   onClick={() => setIsBuildingModalOpen(true)}
-                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs shadow-sm hover:bg-primary-container transition cursor-pointer"
+                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs shadow-sm hover:bg-primary-strong transition cursor-pointer"
                   type="button"
                 >
                   <Plus className="w-4 h-4" />
@@ -576,22 +576,22 @@ export default function UnitsPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-inverse-surface/70 via-transparent to-transparent" />
 
                     <div className="absolute top-space-sm right-space-sm flex flex-col gap-1">
-                      <span className={`px-space-sm py-1 rounded-lg font-label-sm text-label-sm font-bold shadow-sm text-xs ${statusBadge.class}`}>
+                      <span className={`px-space-sm py-1 rounded-lg font-bold shadow-sm text-xs ${statusBadge.class}`}>
                         {statusBadge.text}
                       </span>
-                      <span className="px-space-sm py-0.5 rounded-lg bg-surface-container-lowest/90 backdrop-blur-md text-primary font-label-sm text-label-sm font-bold shadow-sm text-xs">
+                      <span className="px-space-sm py-0.5 rounded-lg bg-surface-container-lowest/90 backdrop-blur-md text-primary font-bold shadow-sm text-xs">
                         {UNIT_KIND_LABELS[unit.unitKind] || 'شقة سكنية'}
                       </span>
                     </div>
 
                     <div className="absolute top-space-sm left-space-sm flex flex-col gap-1 items-end">
-                      <span className="px-space-sm py-0.5 rounded-lg bg-surface-container-lowest/95 backdrop-blur-md text-on-surface font-label-sm text-label-sm font-bold shadow-sm flex items-center gap-1 text-xs">
+                      <span className="px-space-sm py-0.5 rounded-lg bg-surface-container-lowest/95 backdrop-blur-md text-on-surface font-bold shadow-sm flex items-center gap-1 text-xs">
                         <span className="material-symbols-outlined text-[14px] text-tertiary">schedule</span>
                         {unit.deliveryNote || 'استلام فوري'}
                       </span>
                       {unit.companyName && (
-                        <span className="px-2 py-0.5 rounded-lg bg-slate-900/90 text-white font-label-sm text-label-sm font-bold shadow-sm flex items-center gap-1 text-[11px]">
-                          <span className="material-symbols-outlined text-[13px] text-amber-400">corporate_fare</span>
+                        <span className="px-2 py-0.5 rounded-lg bg-surface-container-low/90 text-white font-bold shadow-sm flex items-center gap-1 text-[11px]">
+                          <span className="material-symbols-outlined text-[13px] text-warning">corporate_fare</span>
                           {unit.companyName}
                         </span>
                       )}
@@ -599,7 +599,7 @@ export default function UnitsPage() {
 
                     <div className="absolute bottom-space-sm right-space-sm text-surface-container-lowest flex items-center gap-space-xs">
                       <span className="material-symbols-outlined text-[16px] text-tertiary-fixed">location_on</span>
-                      <span className="font-label-sm text-label-sm font-bold text-surface-container-lowest drop-shadow text-xs">
+                      <span className="font-bold text-surface-container-lowest drop-shadow text-xs">
                         الحي المتميز • منطقة {unit.zoneId}
                       </span>
                     </div>
@@ -609,15 +609,15 @@ export default function UnitsPage() {
                   <div className="p-space-md flex flex-col flex-1 justify-between gap-space-md">
                     <div className="flex flex-col">
                       <div className="flex items-center justify-between gap-space-xs mb-1">
-                        <span className="font-label-sm text-label-sm text-primary font-bold text-xs">
+                        <span className="text-primary font-bold text-xs">
                           كود: #BD-{unit.zoneId}-{unit.plotNo}
                         </span>
-                        <span className="font-label-sm text-label-sm text-outline text-xs">
+                        <span className="text-outline text-xs">
                           قطعة {unit.plotNo}
                         </span>
                       </div>
 
-                      <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold leading-snug line-clamp-1 text-base">
+                      <h3 className="text-on-surface font-bold leading-snug line-clamp-1 text-base">
                         {unit.description || `وحدة فاخرة بالمنطقة ${unit.zoneId}`}
                       </h3>
 
@@ -625,13 +625,13 @@ export default function UnitsPage() {
                       <div className="grid grid-cols-2 gap-space-xs bg-surface-container-low rounded-xl p-space-sm mt-space-sm text-center">
                         <div className="flex flex-col items-center">
                           <span className="material-symbols-outlined text-[18px] text-primary">square_foot</span>
-                          <span className="font-label-sm text-label-sm text-on-surface font-bold mt-0.5 text-xs">
+                          <span className="text-on-surface font-bold mt-0.5 text-xs">
                             {unit.area} م²
                           </span>
                         </div>
                         <div className="flex flex-col items-center">
                           <span className="material-symbols-outlined text-[18px] text-primary">layers</span>
-                          <span className="font-label-sm text-label-sm text-on-surface font-bold mt-0.5 text-xs">
+                          <span className="text-on-surface font-bold mt-0.5 text-xs">
                             {UNIT_KIND_LABELS[unit.unitKind] || 'سكنية'}
                           </span>
                         </div>
@@ -640,17 +640,17 @@ export default function UnitsPage() {
                       {/* Price Breakdown */}
                       <div className="mt-space-md bg-surface-container-lowest flex flex-col gap-1">
                         <div className="flex items-baseline justify-between">
-                          <span className="font-label-sm text-label-sm text-on-surface-variant text-xs">
+                          <span className="text-on-surface-variant text-xs">
                             السعر الإجمالي:
                           </span>
-                          <span className="font-headline-md text-headline-md text-primary font-extrabold text-lg">
+                          <span className="text-primary font-extrabold text-lg">
                             {unit.price.toLocaleString()}{' '}
-                            <span className="font-label-sm text-label-sm text-on-surface-variant font-normal text-xs">
+                            <span className="text-on-surface-variant font-normal text-xs">
                               ج.م
                             </span>
                           </span>
                         </div>
-                        <div className="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm text-[11px]">
+                        <div className="flex items-center justify-between text-on-surface-variant text-[11px]">
                           <span>
                             المقدم (10%):{' '}
                             <strong className="text-on-surface">
@@ -685,10 +685,10 @@ export default function UnitsPage() {
                             className={`px-2 py-0.5 rounded-lg font-bold transition cursor-pointer text-[10px] ${
                               unit.status === st
                                 ? st === 'available'
-                                  ? 'bg-emerald-600 text-white shadow-xs'
+                                  ? 'bg-success text-white shadow-xs'
                                   : st === 'reserved'
-                                  ? 'bg-amber-600 text-white shadow-xs'
-                                  : 'bg-rose-600 text-white shadow-xs'
+                                  ? 'bg-warning text-white shadow-xs'
+                                  : 'bg-error text-white shadow-xs'
                                 : 'text-on-surface-variant hover:bg-surface-container-high'
                             }`}
                           >
@@ -703,7 +703,7 @@ export default function UnitsPage() {
                       <div className="grid grid-cols-2 gap-space-xs">
                         <button
                           onClick={() => copyUnitDetails(unit)}
-                          className="copy-unit-btn flex items-center justify-center gap-1 py-space-sm px-space-xs rounded-xl bg-surface-container-low hover:bg-surface-container-high text-on-surface transition-colors font-label-sm text-label-sm font-bold text-xs cursor-pointer"
+                          className="copy-unit-btn flex items-center justify-center gap-1 py-space-sm px-space-xs rounded-xl bg-surface-container-low hover:bg-surface-container-high text-on-surface transition-colors font-bold text-xs cursor-pointer"
                           type="button"
                         >
                           <span className="material-symbols-outlined text-[16px] text-on-surface-variant">
@@ -712,7 +712,7 @@ export default function UnitsPage() {
                           نسخ التفاصيل
                         </button>
                         <a
-                          className="flex items-center justify-center gap-1 py-space-sm px-space-xs rounded-xl bg-primary-container hover:bg-primary text-on-primary transition-colors font-label-sm text-label-sm font-bold text-xs"
+                          className="flex items-center justify-center gap-1 py-space-sm px-space-xs rounded-xl bg-primary-container hover:bg-primary text-on-primary transition-colors font-bold text-xs"
                           href={createUnitWhatsAppUrl(unit, currentUser)}
                           target="_blank"
                           rel="noreferrer"
@@ -724,7 +724,7 @@ export default function UnitsPage() {
 
                       <button
                         onClick={() => setSelectedUnit(unit)}
-                        className="w-full py-space-xs text-center text-primary hover:text-primary-container font-label-sm text-label-sm font-bold transition-colors text-xs cursor-pointer"
+                        className="w-full py-space-xs text-center text-primary hover:text-primary-container font-bold transition-colors text-xs cursor-pointer"
                         type="button"
                       >
                         {isCompanyAdmin || isSuperAdmin ? 'تفاصيل كاملة وتعديل مواصفات الوحدة ←' : 'عرض كافة تفاصيل ومشاركة الوحدة ←'}
@@ -763,7 +763,7 @@ export default function UnitsPage() {
                 {filteredUnits.map((u) => (
                   <tr key={u.id} className="hover:bg-surface-container-low/50 transition-colors">
                     <td className="p-3.5 font-bold text-primary">#BD-{u.zoneId}-{u.plotNo}</td>
-                    <td className="p-3.5 font-bold text-slate-800 dark:text-slate-200">
+                    <td className="p-3.5 font-bold text-on-surface ">
                       {u.companyName || 'محفظة الشركة'}
                     </td>
                     <td className="p-3.5">منطقة {u.zoneId} • قطعة {u.plotNo}</td>
@@ -780,10 +780,10 @@ export default function UnitsPage() {
                         }}
                         className={`px-2 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer ${
                           u.status === 'available'
-                            ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                            ? 'bg-success-container  text-success  border-success '
                             : u.status === 'reserved'
-                            ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
-                            : 'bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800'
+                            ? 'bg-warning-container  text-warning  border-warning '
+                            : 'bg-error-container  text-on-error-container  border-error '
                         }`}
                       >
                         <option value="available">متاحة للبيع</option>

@@ -72,27 +72,27 @@ export default function DashboardPage() {
       <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
         {/* 1. Header Banner */}
         <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-4 sm:p-6 lg:p-space-lg shadow-sm border border-surface-container-high/40">
-          <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+          <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-warning-container blur-3xl pointer-events-none" />
           <div className="absolute -bottom-16 -right-16 w-56 h-56 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-md">
             <div className="flex flex-col gap-space-xs">
               <div className="flex items-center gap-space-sm">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 font-label-sm text-label-sm font-bold text-xs">
-                  <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-warning-container text-warning font-bold text-xs">
+                  <span className="w-2 h-2 rounded-full bg-warning animate-pulse" />
                   لوحة إدارة شركة {currentCompany?.name || currentUser.companyName || 'العقارية'}
                 </span>
-                <span className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 text-xs">
+                <span className="text-on-surface-variant flex items-center gap-1 text-xs">
                   <span className="material-symbols-outlined text-[16px]">calendar_today</span>
                   {todayArabic}
                 </span>
               </div>
-              <h1 className="font-headline-lg text-headline-lg text-on-surface font-extrabold tracking-tight text-xl sm:text-2xl lg:text-3xl">
+              <h1 className="text-on-surface font-extrabold tracking-tight text-xl sm:text-2xl lg:text-3xl">
                 مرحباً {currentUser.fullName}، لديك{' '}
-                <span className="text-amber-600 font-black">{companyBrokers.length} وسطاء</span> بشركتك و{' '}
+                <span className="text-warning font-black">{companyBrokers.length} وسطاء</span> بشركتك و{' '}
                 <span className="text-primary font-black">{myUnits.length} وحدة</span> عقارية مسجلة
               </h1>
-              <p className="font-body-md text-body-md text-on-surface-variant text-xs sm:text-sm">
+              <p className="text-on-surface-variant text-xs sm:text-sm">
                 أنت المسؤول عن إضافة وحذف وتعديل وحدات ومباني شركتك، وإدارة حسابات وسطاء وفريق مبيعات الشركة.
               </p>
             </div>
@@ -100,7 +100,7 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-space-sm w-full sm:w-auto shrink-0">
               <button
                 onClick={() => setIsUnitFormOpen(true)}
-                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white font-label-md text-label-md font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-white font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[20px]">add_home_work</span>
@@ -108,14 +108,14 @@ export default function DashboardPage() {
               </button>
               <Link
                 href="/admin/users"
-                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-label-md text-label-md font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-warning hover:bg-warning text-white font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
               >
                 <span className="material-symbols-outlined text-[20px]">manage_accounts</span>
                 <span>إدارة وسطاء الشركة</span>
               </Link>
               <Link
                 href="/units"
-                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-md text-label-md font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px] border border-surface-container-high"
+                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px] border border-surface-container-high"
               >
                 <span className="material-symbols-outlined text-[20px]">apartment</span>
                 <span>استعراض محفظة الوحدات</span>
@@ -129,26 +129,26 @@ export default function DashboardPage() {
           {/* Stat 1: Total Users */}
           <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm border border-surface-container-high/40">
             <div className="flex items-start justify-between mb-space-sm">
-              <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-warning-container text-warning flex items-center justify-center">
                 <span className="material-symbols-outlined text-[26px]">manage_accounts</span>
               </div>
-              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-label-sm text-label-sm font-bold text-xs">
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-warning-container text-warning font-bold text-xs">
                 وسطاء الشركة
               </span>
             </div>
             <div>
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
+              <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
                 فريق الوسطاء المسجلين
               </span>
               <div className="flex items-baseline gap-space-xs">
-                <span className="font-headline-xl text-headline-xl text-on-surface font-extrabold tracking-tight text-3xl">
+                <span className="text-on-surface font-extrabold tracking-tight text-3xl">
                   {companyBrokers.length}
                 </span>
-                <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">وسيط</span>
+                <span className="text-on-surface-variant font-bold text-xs">وسيط</span>
               </div>
             </div>
             <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2">
-              <Link href="/admin/users" className="text-amber-600 font-bold hover:underline text-xs flex items-center gap-1">
+              <Link href="/admin/users" className="text-warning font-bold hover:underline text-xs flex items-center gap-1">
                 <span>إدارة وإضافة وسطاء</span>
                 <span className="material-symbols-outlined text-sm">arrow_back</span>
               </Link>
@@ -161,19 +161,19 @@ export default function DashboardPage() {
               <div className="w-12 h-12 rounded-xl bg-primary-fixed text-primary flex items-center justify-center">
                 <span className="material-symbols-outlined text-[26px]">apartment</span>
               </div>
-              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-bold text-xs">
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs">
                 محفظة الوحدات
               </span>
             </div>
             <div>
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
+              <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
                 إجمالي الوحدات المسجلة
               </span>
               <div className="flex items-baseline gap-space-xs">
-                <span className="font-headline-xl text-headline-xl text-on-surface font-extrabold tracking-tight text-3xl">
+                <span className="text-on-surface font-extrabold tracking-tight text-3xl">
                   {myUnits.length}
                 </span>
-                <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">وحدة</span>
+                <span className="text-on-surface-variant font-bold text-xs">وحدة</span>
               </div>
             </div>
             <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2 text-xs">
@@ -185,27 +185,27 @@ export default function DashboardPage() {
           {/* Stat 3: Available Units & Value */}
           <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm border border-surface-container-high/40">
             <div className="flex items-start justify-between mb-space-sm">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-success-container text-success flex items-center justify-center">
                 <span className="material-symbols-outlined text-[26px]">check_circle</span>
               </div>
-              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-label-sm text-label-sm font-bold text-xs">
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-success-container text-success font-bold text-xs">
                 متاح للبيع
               </span>
             </div>
             <div>
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
+              <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
                 المعروض المتاح حالياً
               </span>
               <div className="flex items-baseline gap-space-xs">
-                <span className="font-headline-xl text-headline-xl text-emerald-600 font-extrabold tracking-tight text-3xl">
+                <span className="text-success font-extrabold tracking-tight text-3xl">
                   {availableUnits.length}
                 </span>
-                <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">وحدة</span>
+                <span className="text-on-surface-variant font-bold text-xs">وحدة</span>
               </div>
             </div>
             <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2 text-xs">
               <span>بقيمة: <strong className="text-on-surface">{(totalInventoryValue / 1_000_000).toFixed(1)} مليون ج.م</strong></span>
-              <span className="material-symbols-outlined text-emerald-600 text-[18px]">attach_money</span>
+              <span className="material-symbols-outlined text-success text-[18px]">attach_money</span>
             </div>
           </div>
 
@@ -215,19 +215,19 @@ export default function DashboardPage() {
               <div className="w-12 h-12 rounded-xl bg-secondary-fixed text-on-secondary-fixed-variant flex items-center justify-center">
                 <span className="material-symbols-outlined text-[26px]">handshake</span>
               </div>
-              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-label-sm text-label-sm font-bold text-xs">
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-bold text-xs">
                 حجز وتعاقد
               </span>
             </div>
             <div>
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
+              <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
                 حجز مؤقت ومباع
               </span>
               <div className="flex items-baseline gap-space-xs">
-                <span className="font-headline-xl text-headline-xl text-secondary font-extrabold tracking-tight text-3xl">
+                <span className="text-secondary font-extrabold tracking-tight text-3xl">
                   {totalReservedUnits + totalSoldUnits}
                 </span>
-                <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">وحدة</span>
+                <span className="text-on-surface-variant font-bold text-xs">وحدة</span>
               </div>
             </div>
             <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2 text-xs">
@@ -241,17 +241,17 @@ export default function DashboardPage() {
         <div className="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm border border-surface-container-high/40">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-xs mb-space-md pb-space-sm border-b border-surface-container-high/30">
             <div>
-              <h2 className="font-headline-md text-headline-md text-on-surface font-bold text-xl flex items-center gap-2">
-                <span className="material-symbols-outlined text-amber-600">group</span>
+              <h2 className="text-on-surface font-bold text-xl flex items-center gap-2">
+                <span className="material-symbols-outlined text-warning">group</span>
                 <span>وسطاء وفريق عمل الشركة ({companyBrokers.length})</span>
               </h2>
-              <p className="font-body-sm text-body-sm text-on-surface-variant text-xs mt-0.5">
+              <p className="text-on-surface-variant text-xs mt-0.5">
                 فريق وسطاء شركة {currentCompany?.name || currentUser.companyName || ''} المصرح لهم بعرض ومشاركة وحدات محفظة الشركة وتحديث حالتها
               </p>
             </div>
             <Link
               href="/admin/users"
-              className="text-xs font-bold text-amber-600 hover:underline flex items-center gap-1 self-start sm:self-auto"
+              className="text-xs font-bold text-warning hover:underline flex items-center gap-1 self-start sm:self-auto"
             >
               <span>إدارة وتعديل الحسابات بالكامل</span>
               <span className="material-symbols-outlined text-sm">arrow_back</span>
@@ -260,14 +260,14 @@ export default function DashboardPage() {
 
           {companyBrokers.length === 0 ? (
             <div className="p-8 text-center rounded-2xl bg-surface-container-low border border-dashed border-surface-container-high">
-              <span className="material-symbols-outlined text-4xl text-amber-600 mb-2">person_add</span>
+              <span className="material-symbols-outlined text-4xl text-warning mb-2">person_add</span>
               <h3 className="font-bold text-sm text-on-surface mb-1">لا يوجد وسطاء مسجلين تحت شركتك بعد</h3>
               <p className="text-xs text-on-surface-variant mb-4">
                 أضف وسطاء مبيعات لتمكينهم من الاطلاع على وحدات الشركة ومشاركتها مع عملائهم
               </p>
               <Link
                 href="/admin/users"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-warning hover:bg-warning text-white font-bold text-xs shadow-sm transition"
               >
                 <span className="material-symbols-outlined text-[18px]">add</span>
                 <span>+ إضافة وسيط جديد للشركة</span>
@@ -284,19 +284,19 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={u.id}
-                    className="p-4 rounded-xl bg-surface-container-low border border-surface-container-high/50 hover:border-amber-500/50 transition-all flex flex-col justify-between gap-3 shadow-xs"
+                    className="p-4 rounded-xl bg-surface-container-low border border-surface-container-high/50 hover:border-warning/50 transition-all flex flex-col justify-between gap-3 shadow-xs"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-amber-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                        <div className="w-10 h-10 rounded-xl bg-warning text-white font-bold flex items-center justify-center text-sm shadow-sm">
                           {u.fullName.charAt(0)}
                         </div>
                         <div>
                           <h3 className="font-bold text-sm text-on-surface">{u.fullName}</h3>
-                          <p className="text-xs text-amber-700 dark:text-amber-400 font-mono font-semibold">@{u.username}</p>
+                          <p className="text-xs text-warning font-mono font-semibold">@{u.username}</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-success-container text-success border border-success">
                         وسيط معتمد
                       </span>
                     </div>
@@ -310,8 +310,8 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <span className="text-[11px] text-on-surface-variant block">حالة الحساب:</span>
-                        <span className="font-bold text-emerald-600 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                        <span className="font-bold text-success flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-success inline-block" />
                           نشط بالمنظومة
                         </span>
                       </div>
@@ -320,7 +320,7 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2 pt-2 border-t border-surface-container-high/40">
                       <Link
                         href="/admin/users"
-                        className="flex-1 py-1.5 px-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200 text-center text-xs font-bold transition flex items-center justify-center gap-1"
+                        className="flex-1 py-1.5 px-2 rounded-lg bg-warning-container hover:bg-warning-container text-warning text-center text-xs font-bold transition flex items-center justify-center gap-1"
                       >
                         <span className="material-symbols-outlined text-[16px]">manage_accounts</span>
                         <span>إدارة وتعديل</span>
@@ -330,7 +330,7 @@ export default function DashboardPage() {
                           href={whatsappUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-200 text-center text-xs font-bold transition flex items-center justify-center gap-1"
+                          className="flex-1 py-1.5 px-2 rounded-lg bg-success-container hover:bg-success-container text-success text-center text-xs font-bold transition flex items-center justify-center gap-1"
                         >
                           <span className="material-symbols-outlined text-[16px]">chat</span>
                           <span>مراسلة واتساب</span>
@@ -352,11 +352,11 @@ export default function DashboardPage() {
         <div className="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm border border-surface-container-high/40">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-xs mb-space-md pb-space-sm border-b border-surface-container-high/30">
             <div>
-              <h2 className="font-headline-md text-headline-md text-on-surface font-bold text-xl flex items-center gap-2">
+              <h2 className="text-on-surface font-bold text-xl flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">apartment</span>
                 <span>أحدث وحدات محفظة الشركة</span>
               </h2>
-              <p className="font-body-sm text-body-sm text-on-surface-variant text-xs mt-0.5">
+              <p className="text-on-surface-variant text-xs mt-0.5">
                 استعراض سريع للوحدات المتاحة والمعروضة تحت إدارة الشركة
               </p>
             </div>
@@ -378,10 +378,10 @@ export default function DashboardPage() {
 
               const statusBadge =
                 unit.status === 'available'
-                  ? { text: 'متاح للبيع', bg: 'bg-emerald-600 text-white' }
+                  ? { text: 'متاح للبيع', bg: 'bg-success text-white' }
                   : unit.status === 'reserved'
-                  ? { text: 'حجز مؤقت', bg: 'bg-amber-600 text-white' }
-                  : { text: 'تم البيع', bg: 'bg-rose-600 text-white' };
+                  ? { text: 'حجز مؤقت', bg: 'bg-warning text-white' }
+                  : { text: 'تم البيع', bg: 'bg-error text-white' };
 
               return (
                 <div
@@ -414,7 +414,7 @@ export default function DashboardPage() {
                     </div>
                     <button
                       onClick={() => setSelectedUnit(unit)}
-                      className="w-full mt-1 py-1.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs transition cursor-pointer"
+                      className="w-full mt-1 py-1.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold text-xs transition cursor-pointer"
                     >
                       عرض التفاصيل الكاملة
                     </button>
@@ -487,23 +487,23 @@ export default function DashboardPage() {
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-md">
           <div className="flex flex-col gap-space-xs">
             <div className="flex items-center gap-space-sm">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-bold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-primary font-bold">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 متابعة فورية
               </span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 text-xs">
+              <span className="text-on-surface-variant flex items-center gap-1 text-xs">
                 <span className="material-symbols-outlined text-[16px]">calendar_today</span>
                 {todayArabic}
               </span>
             </div>
-            <h1 className="font-headline-lg text-headline-lg text-on-surface font-extrabold tracking-tight text-xl sm:text-2xl lg:text-3xl">
+            <h1 className="text-on-surface font-extrabold tracking-tight text-xl sm:text-2xl lg:text-3xl">
               مرحباً {currentUser.fullName}، لديك{' '}
               <span className="text-primary font-black">
                 {myCustomers.length} عملاء مسجلين
               </span>{' '}
               و <span className="text-secondary font-black">{negotiatingCustomers.length} صفقات</span> قيد التفاوض والحجز
             </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant text-xs sm:text-sm">
+            <p className="text-on-surface-variant text-xs sm:text-sm">
               إدارة المخزون العقاري ومتابعة العملاء المحتملين لمدينة بدر والحي المتميز لحظياً.
             </p>
           </div>
@@ -511,7 +511,7 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-space-sm w-full sm:w-auto shrink-0">
             <button
               onClick={() => setIsCustomerModalOpen(true)}
-              className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+              className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
               type="button"
             >
               <span className="material-symbols-outlined text-[20px]">person_add</span>
@@ -519,7 +519,7 @@ export default function DashboardPage() {
             </button>
             <Link
               href="/units"
-              className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-secondary-container hover:bg-secondary text-on-secondary font-label-md text-label-md font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+              className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-secondary-container hover:bg-secondary text-on-secondary font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
             >
               <span className="material-symbols-outlined text-[20px]">apartment</span>
               <span>استعراض ومشاركة الوحدات</span>
@@ -536,24 +536,24 @@ export default function DashboardPage() {
             <div className="w-12 h-12 rounded-xl bg-surface-container-high text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-[26px]">apartment</span>
             </div>
-            <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-bold text-xs">
+            <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-bold text-xs">
               <span className="material-symbols-outlined text-[14px]">inventory_2</span>
               المخزون
             </span>
           </div>
           <div>
-            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
+            <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
               إجمالي الوحدات المسجلة
             </span>
             <div className="flex items-baseline gap-space-xs">
-              <span className="font-headline-xl text-headline-xl text-on-surface font-extrabold tracking-tight text-3xl">
+              <span className="text-on-surface font-extrabold tracking-tight text-3xl">
                 {myUnits.length}
               </span>
-              <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">وحدة</span>
+              <span className="text-on-surface-variant font-bold text-xs">وحدة</span>
             </div>
           </div>
           <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2">
-            <span className="font-body-sm text-body-sm text-xs">
+            <span className="text-xs">
               منها <strong className="text-primary font-bold">{availableUnitsCount} وحدة متاحة</strong>
             </span>
             <span className="material-symbols-outlined text-primary text-[18px]">verified</span>
@@ -566,23 +566,23 @@ export default function DashboardPage() {
             <div className="w-12 h-12 rounded-xl bg-primary-fixed text-on-primary-fixed-variant flex items-center justify-center group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-[26px]">groups</span>
             </div>
-            <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-bold text-xs">
+            <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-bold text-xs">
               قاعدة العملاء
             </span>
           </div>
           <div>
-            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
+            <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
               العملاء المسجلين
             </span>
             <div className="flex items-baseline gap-space-xs">
-              <span className="font-headline-xl text-headline-xl text-primary font-extrabold tracking-tight text-3xl">
+              <span className="text-primary font-extrabold tracking-tight text-3xl">
                 {myCustomers.length}
               </span>
-              <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">عميل</span>
+              <span className="text-on-surface-variant font-bold text-xs">عميل</span>
             </div>
           </div>
           <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2">
-            <span className="font-body-sm text-body-sm text-xs">جاري المتابعة والتنسيق</span>
+            <span className="text-xs">جاري المتابعة والتنسيق</span>
             <span className="material-symbols-outlined text-primary-container text-[18px]">support_agent</span>
           </div>
         </div>
@@ -593,23 +593,23 @@ export default function DashboardPage() {
             <div className="w-12 h-12 rounded-xl bg-secondary-fixed text-on-secondary-fixed-variant flex items-center justify-center group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-[26px]">handshake</span>
             </div>
-            <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-label-sm text-label-sm font-bold text-xs">
+            <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-bold text-xs">
               {negotiatingCustomers.length} صفقات
             </span>
           </div>
           <div>
-            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
+            <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
               حجم الصفقات قيد التفاوض
             </span>
             <div className="flex items-baseline gap-space-xs">
-              <span className="font-headline-xl text-headline-xl text-secondary font-extrabold tracking-tight text-3xl">
+              <span className="text-secondary font-extrabold tracking-tight text-3xl">
                 {formattedNegotiatingSum}
               </span>
-              <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">{negotiatingSumUnit}</span>
+              <span className="text-on-surface-variant font-bold text-xs">{negotiatingSumUnit}</span>
             </div>
           </div>
           <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2">
-            <span className="font-body-sm text-body-sm text-xs">
+            <span className="text-xs">
               {negotiatingCustomers.length > 0 ? 'مراحل تفاوض وحجز جارية' : 'لا توجد مفاوضات حالياً'}
             </span>
             <span className="material-symbols-outlined text-secondary text-[18px]">hourglass_top</span>
@@ -622,19 +622,19 @@ export default function DashboardPage() {
             <div className="w-12 h-12 rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-[26px]">payments</span>
             </div>
-            <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-tertiary-fixed-dim text-on-tertiary-fixed font-label-sm text-label-sm font-bold text-xs">
+            <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-tertiary-fixed-dim text-on-tertiary-fixed font-bold text-xs">
               عمولة 2.5%
             </span>
           </div>
           <div>
-            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
+            <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
               العمولات المتوقعة
             </span>
             <div className="flex items-baseline gap-space-xs">
-              <span className="font-headline-xl text-headline-xl text-tertiary font-extrabold tracking-tight text-3xl">
+              <span className="text-tertiary font-extrabold tracking-tight text-3xl">
                 {expectedCommission.toLocaleString()}
               </span>
-              <span className="font-label-md text-label-md text-on-surface-variant font-bold text-xs">ج.م</span>
+              <span className="text-on-surface-variant font-bold text-xs">ج.م</span>
             </div>
           </div>
           <div className="mt-space-sm pt-space-xs">
@@ -655,14 +655,14 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-xs mb-space-md pb-space-sm border-b border-surface-container-high/30">
             <div className="flex items-center gap-space-xs">
               <span className="w-3 h-3 rounded-full bg-secondary animate-ping" />
-              <h2 className="font-headline-md text-headline-md text-on-surface font-bold text-xl">
+              <h2 className="text-on-surface font-bold text-xl">
                 متابعات اليوم العاجلة
               </h2>
-              <span className="px-2.5 py-0.5 rounded-lg bg-surface-container-high text-primary font-label-sm text-label-sm font-bold text-xs">
+              <span className="px-2.5 py-0.5 rounded-lg bg-surface-container-high text-primary font-bold text-xs">
                 {urgentFollowups.length} مستحقة
               </span>
             </div>
-            <span className="font-body-sm text-body-sm text-on-surface-variant text-xs">
+            <span className="text-on-surface-variant text-xs">
               الترتيب حسب موعد الاتصال المحدد
             </span>
           </div>
@@ -688,19 +688,19 @@ export default function DashboardPage() {
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-space-sm mb-space-sm">
                       <div className="flex items-center gap-space-sm">
-                        <div className="w-11 h-11 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-bold text-headline-sm shrink-0">
+                        <div className="w-11 h-11 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-bold shrink-0">
                           {initialLetter}
                         </div>
                         <div>
                           <div className="flex items-center gap-space-xs">
-                            <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold text-base">
+                            <h3 className="text-on-surface font-bold text-base">
                               {lead.name}
                             </h3>
-                            <span className={`px-2 py-0.5 rounded-md font-label-sm text-label-sm font-bold text-xs ${tagColor}`}>
+                            <span className={`px-2 py-0.5 rounded-md font-bold text-xs ${tagColor}`}>
                               {lead.budget ? 'مستثمر' : 'متابعة'}
                             </span>
                           </div>
-                          <span className="font-body-sm text-body-sm text-on-surface-variant text-xs">
+                          <span className="text-on-surface-variant text-xs">
                             {lead.notes || 'اهتمام بوحدات الحي المتميز والموقع الاستراتيجي'} • الميزانية:{' '}
                             {lead.budget ? `${(lead.budget / 1000000).toFixed(1)}M ج.م` : 'غير محددة'}
                           </span>
@@ -709,7 +709,7 @@ export default function DashboardPage() {
 
                       <div className="flex items-center gap-1.5 self-start sm:self-auto bg-surface-container-lowest px-2.5 py-1 rounded-lg border border-surface-container-high/40 shadow-xs">
                         <span className="material-symbols-outlined text-secondary text-[16px]">alarm</span>
-                        <span className="font-label-sm text-label-sm text-on-surface font-bold text-xs">
+                        <span className="text-on-surface font-bold text-xs">
                           {lead.nextFollowupAt
                             ? (() => {
                                 const f = formatArabicFollowupDate(lead.nextFollowupAt);
@@ -721,7 +721,7 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="bg-surface-container-lowest rounded-lg p-space-sm mb-space-md">
-                      <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-space-xs text-xs">
+                      <p className="text-on-surface-variant flex items-center gap-space-xs text-xs">
                         <span className="material-symbols-outlined text-primary text-[16px]">history</span>
                         <strong>آخر تحديث:</strong>{' '}
                         {lead.activities?.[0]?.note || lead.notes || 'عميل مسجل في قاعدة البيانات'}
@@ -731,14 +731,14 @@ export default function DashboardPage() {
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-space-xs">
                       <div className="flex items-center gap-space-xs w-full sm:w-auto">
                         <a
-                          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-sm text-label-sm font-bold transition-colors text-xs min-h-[38px]"
+                          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-bold transition-colors text-xs min-h-[38px]"
                           href={`tel:${lead.phone}`}
                         >
                           <span className="material-symbols-outlined text-[16px] text-primary">call</span>
                           <span dir="ltr">{lead.phone}</span>
                         </a>
                         <a
-                          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-primary-container text-on-primary font-label-sm text-label-sm font-bold hover:bg-primary transition-colors text-xs min-h-[38px]"
+                          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-primary-container text-on-primary font-bold hover:bg-primary transition-colors text-xs min-h-[38px]"
                           href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
                           target="_blank"
                           rel="noreferrer"
@@ -749,7 +749,7 @@ export default function DashboardPage() {
                       </div>
 
                       <button
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1 px-3.5 py-2 rounded-lg bg-surface-container hover:bg-primary hover:text-on-primary text-primary font-label-sm text-label-sm font-bold transition-all text-xs cursor-pointer min-h-[38px]"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1 px-3.5 py-2 rounded-lg bg-surface-container hover:bg-primary hover:text-on-primary text-primary font-bold transition-all text-xs cursor-pointer min-h-[38px]"
                         disabled={isDone}
                         onClick={() => markFollowupDone(lead.id)}
                         type="button"
@@ -772,12 +772,12 @@ export default function DashboardPage() {
         {/* Sales Pipeline Funnel & Stage Distribution (1 Col) */}
         <div className="flex flex-col bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm border border-surface-container-high/40">
           <div className="flex items-center justify-between mb-space-sm">
-            <h2 className="font-headline-md text-headline-md text-on-surface font-bold text-xl">
+            <h2 className="text-on-surface font-bold text-xl">
               قمع المبيعات (Pipeline)
             </h2>
             <span className="material-symbols-outlined text-primary text-[24px]">filter_alt</span>
           </div>
-          <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-md text-xs">
+          <p className="text-on-surface-variant mb-space-md text-xs">
             توزيع مراحل العملاء المحتملين ونسب التحويل الفعلية
           </p>
 
@@ -787,16 +787,16 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-space-xs">
                   <span className="w-3 h-3 rounded-full bg-primary-container" />
-                  <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
+                  <span className="text-on-surface font-bold text-xs">
                     1. استفسارات وعملاء جدد
                   </span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-primary font-extrabold text-sm">{newLeadsCount}</span>
+                <span className="text-primary font-extrabold text-sm">{newLeadsCount}</span>
               </div>
               <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
                 <div className="bg-primary h-full rounded-full" style={{ width: `${leadPct}%` }} />
               </div>
-              <div className="flex items-center justify-between mt-1 text-on-surface-variant font-body-sm text-body-sm text-[11px]">
+              <div className="flex items-center justify-between mt-1 text-on-surface-variant text-[11px]">
                 <span>المرحلة الأولى</span>
                 <span className="font-bold">{leadPct}%</span>
               </div>
@@ -806,16 +806,16 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-space-xs">
                   <span className="w-3 h-3 rounded-full bg-surface-tint" />
-                  <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
+                  <span className="text-on-surface font-bold text-xs">
                     2. معاينات وزيارات ميدانية
                   </span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-primary-container font-extrabold text-sm">{viewedCount}</span>
+                <span className="text-primary-container font-extrabold text-sm">{viewedCount}</span>
               </div>
               <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
                 <div className="bg-primary-container h-full rounded-full" style={{ width: `${viewedPct}%` }} />
               </div>
-              <div className="flex items-center justify-between mt-1 text-on-surface-variant font-body-sm text-body-sm text-[11px]">
+              <div className="flex items-center justify-between mt-1 text-on-surface-variant text-[11px]">
                 <span>معدل تحويل للمعاينة</span>
                 <span className="font-bold">{viewedPct}%</span>
               </div>
@@ -825,16 +825,16 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-space-xs">
                   <span className="w-3 h-3 rounded-full bg-tertiary-container" />
-                  <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
+                  <span className="text-on-surface font-bold text-xs">
                     3. مرحلة التفاوض والعروض
                   </span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-tertiary font-extrabold text-sm">{inNegotiationCount}</span>
+                <span className="text-tertiary font-extrabold text-sm">{inNegotiationCount}</span>
               </div>
               <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
                 <div className="bg-tertiary-container h-full rounded-full" style={{ width: `${negPct}%` }} />
               </div>
-              <div className="flex items-center justify-between mt-1 text-on-surface-variant font-body-sm text-body-sm text-[11px]">
+              <div className="flex items-center justify-between mt-1 text-on-surface-variant text-[11px]">
                 <span>معدل تقديم عروض أسعار</span>
                 <span className="font-bold">{negPct}%</span>
               </div>
@@ -844,16 +844,16 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-space-xs">
                   <span className="w-3 h-3 rounded-full bg-secondary" />
-                  <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
+                  <span className="text-on-surface font-bold text-xs">
                     4. حجز وإبرام عقود
                   </span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-secondary font-extrabold text-sm">{closedCount}</span>
+                <span className="text-secondary font-extrabold text-sm">{closedCount}</span>
               </div>
               <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
                 <div className="bg-secondary-container h-full rounded-full" style={{ width: `${closedPct}%` }} />
               </div>
-              <div className="flex items-center justify-between mt-1 text-on-surface-variant font-body-sm text-body-sm text-[11px]">
+              <div className="flex items-center justify-between mt-1 text-on-surface-variant text-[11px]">
                 <span>نسبة الإغلاق الكلية (Closing)</span>
                 <span className="font-bold text-secondary">{closedPct}%</span>
               </div>
@@ -864,13 +864,13 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-space-xs">
                 <span className="material-symbols-outlined text-primary text-[22px]">insights</span>
-                <span className="font-label-md text-label-md text-on-surface font-bold text-xs">
+                <span className="text-on-surface font-bold text-xs">
                   إجمالي العملاء في المسار
                 </span>
               </div>
-              <span className="font-headline-sm text-headline-sm text-primary font-black text-sm">{myCustomers.length} عملاء</span>
+              <span className="text-primary font-black text-sm">{myCustomers.length} عملاء</span>
             </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 text-[11px]">
+            <p className="text-on-surface-variant mt-1 text-[11px]">
               مزامنة فورية مع قاعدة بيانات سحابية لحظياً.
             </p>
           </div>
@@ -883,17 +883,17 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center gap-space-xs">
               <span className="material-symbols-outlined text-primary text-[24px]">domain_add</span>
-              <h2 className="font-headline-md text-headline-md text-on-surface font-bold text-xl">
+              <h2 className="text-on-surface font-bold text-xl">
                 أحدث الوحدات المضافة للمخزون
               </h2>
             </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">
+            <p className="text-on-surface-variant text-xs">
               عروض جديدة جاهزة للترويج الفوري مع تفاصيل الأسعار والموقع
             </p>
           </div>
           <Link
             href="/units"
-            className="flex items-center gap-1 text-primary hover:text-primary-container font-label-md text-label-md font-bold self-start sm:self-auto text-sm"
+            className="flex items-center gap-1 text-primary hover:text-primary-container font-bold self-start sm:self-auto text-sm"
           >
             عرض جميع الوحدات ({myUnits.length})
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -919,10 +919,10 @@ export default function DashboardPage() {
                     alt={`وحدة ${unit.plotNo}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <span className="absolute top-space-sm right-space-sm px-2.5 py-1 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-bold shadow-md text-xs">
+                  <span className="absolute top-space-sm right-space-sm px-2.5 py-1 rounded-lg bg-primary text-on-primary font-bold shadow-md text-xs">
                     {unit.status === 'available' ? 'متاح حصرياً' : unit.status === 'reserved' ? 'حجز مؤقت' : 'تم البيع'}
                   </span>
-                  <span className="absolute bottom-space-sm right-space-sm px-2 py-0.5 rounded-md bg-inverse-surface/80 backdrop-blur-sm text-inverse-on-surface font-label-sm text-label-sm text-xs">
+                  <span className="absolute bottom-space-sm right-space-sm px-2 py-0.5 rounded-md bg-inverse-surface/80 backdrop-blur-sm text-inverse-on-surface text-xs">
                     كود: BD-{unit.zoneId}-{unit.plotNo}
                   </span>
                 </div>
@@ -930,18 +930,18 @@ export default function DashboardPage() {
                 <div className="p-space-md flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-label-sm text-label-sm text-primary font-bold text-xs">
+                      <span className="text-primary font-bold text-xs">
                         الحي المتميز • منطقة {unit.zoneId}
                       </span>
-                      <span className="font-label-sm text-label-sm text-on-surface-variant text-xs">
+                      <span className="text-on-surface-variant text-xs">
                         قطعة {unit.plotNo}
                       </span>
                     </div>
-                    <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold mb-space-xs line-clamp-1 text-base">
+                    <h3 className="text-on-surface font-bold mb-space-xs line-clamp-1 text-base">
                       {unit.description || `وحدة فاخرة قطعة ${unit.plotNo}`}
                     </h3>
 
-                    <div className="flex items-center gap-space-md my-space-sm text-on-surface-variant font-label-sm text-label-sm text-xs">
+                    <div className="flex items-center gap-space-md my-space-sm text-on-surface-variant text-xs">
                       <div className="flex items-center gap-1">
                         <span className="material-symbols-outlined text-[16px] text-primary">square_foot</span>
                         <span>{unit.area} م²</span>
@@ -959,10 +959,10 @@ export default function DashboardPage() {
 
                   <div className="pt-space-xs flex items-center justify-between">
                     <div>
-                      <span className="font-label-sm text-label-sm text-on-surface-variant block text-[11px]">
+                      <span className="text-on-surface-variant block text-[11px]">
                         السعر الإجمالي
                       </span>
-                      <span className="font-headline-sm text-headline-sm text-on-surface font-black text-base">
+                      <span className="text-on-surface font-black text-base">
                         {unit.price.toLocaleString()} ج.م
                       </span>
                     </div>

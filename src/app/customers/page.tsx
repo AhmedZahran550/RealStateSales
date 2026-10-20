@@ -157,7 +157,7 @@ function CustomersContent() {
   if (currentUser?.role === 'admin' || currentUser?.role === 'company_admin' || currentUser?.role === 'super_admin') {
     return (
       <div className="p-8 max-w-2xl mx-auto my-12 bg-surface-container-lowest rounded-3xl border border-surface-container-high text-center shadow-sm">
-        <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-warning-container text-warning flex items-center justify-center mx-auto mb-4">
           <span className="material-symbols-outlined text-[32px]">lock</span>
         </div>
         <h2 className="text-xl font-bold text-on-surface mb-2">خصوصية العملاء وجداول المواعيد</h2>
@@ -167,7 +167,7 @@ function CustomersContent() {
         <div className="flex items-center justify-center gap-3">
           <Link
             href={currentUser?.role === 'super_admin' ? '/super-admin' : '/'}
-            className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition"
+            className="px-5 py-2.5 rounded-xl bg-warning hover:bg-warning text-white font-bold text-xs shadow-md transition"
           >
             العودة للوحة الإدارة
           </Link>
@@ -187,14 +187,14 @@ function CustomersContent() {
       {/* 1. Header & Action Ribbon */}
       <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm border border-surface-container-high/40">
         <div className="flex flex-col">
-          <div className="flex items-center gap-space-xs text-primary font-label-md text-label-md text-xs font-bold">
+          <div className="flex items-center gap-space-xs text-primary text-xs font-bold">
             <span className="material-symbols-outlined text-[18px]">hub</span>
             <span>منظومة إدارة علاقات العملاء الذكية (CRM)</span>
           </div>
-          <h1 className="font-headline-xl text-headline-xl text-on-surface font-extrabold tracking-tight mt-0.5 text-2xl lg:text-3xl">
+          <h1 className="text-on-surface font-extrabold tracking-tight mt-0.5 text-2xl lg:text-3xl">
             إدارة العملاء والمتابعات
           </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1 text-sm">
+          <p className="text-on-surface-variant mt-1 text-sm">
             متابعة وتحديث مسار مشتري العقارات، تسجيل الملاحظات اليومية وتحديد مواعيد المعاينات بدقة.
           </p>
         </div>
@@ -231,7 +231,7 @@ function CustomersContent() {
               setEditingCustomer(null);
               setIsCustomerModalOpen(true);
             }}
-            className="flex items-center justify-center gap-space-xs w-full sm:w-auto px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg font-bold transition-all shadow-md text-sm cursor-pointer min-h-[42px]"
+            className="flex items-center justify-center gap-space-xs w-full sm:w-auto px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-md text-sm cursor-pointer min-h-[42px]"
             type="button"
           >
             <span className="material-symbols-outlined text-[20px]">person_add</span>
@@ -244,19 +244,19 @@ function CustomersContent() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
         <div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
           <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-on-surface-variant font-medium text-xs">
+            <span className="text-on-surface-variant font-medium text-xs">
               متابعات اليوم المستحقة
             </span>
-            <span className="font-headline-lg text-headline-lg text-secondary font-bold text-2xl">
+            <span className="text-secondary font-bold text-2xl">
               {followupStats.today} عملاء
             </span>
             {followupStats.overdue > 0 ? (
-              <span className="font-label-sm text-label-sm text-rose-600 flex items-center gap-1 font-bold mt-0.5 text-[11px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-ping" />
+              <span className="text-error flex items-center gap-1 font-bold mt-0.5 text-[11px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-error animate-ping" />
                 +{followupStats.overdue} متأخرة بحاجة لاتصال
               </span>
             ) : (
-              <span className="font-label-sm text-label-sm text-secondary flex items-center gap-1 font-semibold mt-0.5 text-[11px]">
+              <span className="text-secondary flex items-center gap-1 font-semibold mt-0.5 text-[11px]">
                 <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-ping" />
                 جاهزة للمتابعة الفورية
               </span>
@@ -269,13 +269,13 @@ function CustomersContent() {
 
         <div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
           <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-on-surface-variant font-medium text-xs">
+            <span className="text-on-surface-variant font-medium text-xs">
               معاينات ميدانية نشطة
             </span>
-            <span className="font-headline-lg text-headline-lg text-primary font-bold text-2xl">
+            <span className="text-primary font-bold text-2xl">
               {stageCounts.viewed} زيارات
             </span>
-            <span className="font-label-sm text-label-sm text-primary font-semibold mt-0.5 text-[11px]">
+            <span className="text-primary font-semibold mt-0.5 text-[11px]">
               مرحلة المعاينة الميدانية
             </span>
           </div>
@@ -286,13 +286,13 @@ function CustomersContent() {
 
         <div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
           <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-on-surface-variant font-medium text-xs">
+            <span className="text-on-surface-variant font-medium text-xs">
               صفقات قيد التفاوض
             </span>
-            <span className="font-headline-lg text-headline-lg text-tertiary font-bold text-2xl">
+            <span className="text-tertiary font-bold text-2xl">
               {stageCounts.negotiating} صفقات
             </span>
-            <span className="font-label-sm text-label-sm text-on-surface-variant mt-0.5 text-[11px]">
+            <span className="text-on-surface-variant mt-0.5 text-[11px]">
               في مرحلة تقديم العروض
             </span>
           </div>
@@ -303,13 +303,13 @@ function CustomersContent() {
 
         <div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
           <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-on-surface-variant font-medium text-xs">
+            <span className="text-on-surface-variant font-medium text-xs">
               نسبة تحويل الصفقات
             </span>
-            <span className="font-headline-lg text-headline-lg text-primary-container font-bold text-2xl">
+            <span className="text-primary-container font-bold text-2xl">
               {myCustomers.length > 0 ? Math.round(((stageCounts.reserved + stageCounts.closed) / myCustomers.length) * 100) : 0}%
             </span>
-            <span className="font-label-sm text-label-sm text-primary font-semibold mt-0.5 text-[11px]">
+            <span className="text-primary font-semibold mt-0.5 text-[11px]">
               معدل الإغلاق والتعاقد
             </span>
           </div>
@@ -350,44 +350,44 @@ function CustomersContent() {
                 onClick={() => setFollowupFilter('today')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   followupFilter === 'today'
-                    ? 'bg-amber-600 text-white shadow-xs'
-                    : 'bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-900/40'
+                    ? 'bg-warning text-white shadow-xs'
+                    : 'bg-warning-container  hover:bg-warning-container text-warning  border border-warning '
                 }`}
               >
                 <span>🔔 مستحقة اليوم</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-[10px] font-black">{followupStats.today}</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-warning/20 text-[10px] font-black">{followupStats.today}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setFollowupFilter('overdue')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   followupFilter === 'overdue'
-                    ? 'bg-rose-600 text-white shadow-xs'
-                    : 'bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-900/40'
+                    ? 'bg-error text-white shadow-xs'
+                    : 'bg-error-container  hover:bg-error-container text-on-error-container  border border-error '
                 }`}
               >
                 <span>⚠️ متأخرة</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-rose-500/20 text-[10px] font-black">{followupStats.overdue}</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-black/10 text-[10px] font-black">{followupStats.overdue}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setFollowupFilter('upcoming')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   followupFilter === 'upcoming'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-900/40'
+                    ? 'bg-success text-white shadow-xs'
+                    : 'bg-success-container  hover:bg-success-container text-success  border border-success '
                 }`}
               >
                 <span>📅 قادمة</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-[10px] font-black">{followupStats.upcoming}</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-black/10 text-[10px] font-black">{followupStats.upcoming}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setFollowupFilter('none')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   followupFilter === 'none'
-                    ? 'bg-stone-700 text-white shadow-xs'
-                    : 'bg-surface-container hover:bg-stone-200 text-stone-600 dark:text-stone-400'
+                    ? 'bg-inverse-surface text-white shadow-xs'
+                    : 'bg-surface-container hover:bg-surface-container-high text-on-surface-variant '
                 }`}
               >
                 <span>⏳ بدون موعد</span>
@@ -399,7 +399,7 @@ function CustomersContent() {
             <div className="flex items-center gap-space-xs overflow-x-auto pb-1">
               <button
                 onClick={() => setSelectedStage('all')}
-                className={`px-space-md py-space-sm rounded-xl font-label-md text-label-md transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
+                className={`px-space-md py-space-sm rounded-xl transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
                   selectedStage === 'all'
                     ? 'bg-primary text-on-primary font-bold shadow-sm'
                     : 'bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold'
@@ -414,7 +414,7 @@ function CustomersContent() {
 
               <button
                 onClick={() => setSelectedStage('lead')}
-                className={`px-space-md py-space-sm rounded-xl font-label-md text-label-md transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
+                className={`px-space-md py-space-sm rounded-xl transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
                   selectedStage === 'lead'
                     ? 'bg-primary text-on-primary font-bold shadow-sm'
                     : 'bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold'
@@ -430,7 +430,7 @@ function CustomersContent() {
 
               <button
                 onClick={() => setSelectedStage('viewed')}
-                className={`px-space-md py-space-sm rounded-xl font-label-md text-label-md transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
+                className={`px-space-md py-space-sm rounded-xl transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
                   selectedStage === 'viewed'
                     ? 'bg-primary text-on-primary font-bold shadow-sm'
                     : 'bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold'
@@ -446,7 +446,7 @@ function CustomersContent() {
 
               <button
                 onClick={() => setSelectedStage('negotiating')}
-                className={`px-space-md py-space-sm rounded-xl font-label-md text-label-md transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
+                className={`px-space-md py-space-sm rounded-xl transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
                   selectedStage === 'negotiating'
                     ? 'bg-primary text-on-primary font-bold shadow-sm'
                     : 'bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold'
@@ -462,7 +462,7 @@ function CustomersContent() {
 
               <button
                 onClick={() => setSelectedStage('reserved')}
-                className={`px-space-md py-space-sm rounded-xl font-label-md text-label-md transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
+                className={`px-space-md py-space-sm rounded-xl transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
                   selectedStage === 'reserved'
                     ? 'bg-primary text-on-primary font-bold shadow-sm'
                     : 'bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold'
@@ -480,7 +480,7 @@ function CustomersContent() {
             {/* Advanced Filters */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm items-center pt-space-xs border-t border-surface-container-low pt-2">
               <div className="relative">
-                <span className="material-symbols-outlined absolute right-space-md top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 text-[20px] pointer-events-none">
+                <span className="material-symbols-outlined absolute right-space-md top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">
                   search
                 </span>
                 <input
@@ -488,7 +488,7 @@ function CustomersContent() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="بحث بالاسم، رقم الموبايل أو الملاحظات..."
-                  className="w-full bg-white dark:bg-[#151d2a] border border-stone-300 dark:border-stone-700/80 rounded-xl py-2.5 pr-11 pl-space-md font-semibold text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-xs shadow-xs"
+                  className="w-full bg-white border border-outline-variant rounded-xl py-2.5 pr-11 pl-space-md font-semibold text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary text-xs shadow-xs"
                 />
               </div>
 
@@ -496,7 +496,7 @@ function CustomersContent() {
                 <select
                   value={budgetFilter}
                   onChange={(e) => setBudgetFilter(e.target.value)}
-                  className="w-full bg-white dark:bg-[#151d2a] border border-stone-300 dark:border-stone-700/80 rounded-xl py-2.5 pr-space-md pl-8 font-bold text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 appearance-none cursor-pointer text-xs shadow-xs"
+                  className="w-full bg-white border border-outline-variant rounded-xl py-2.5 pr-space-md pl-8 font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary appearance-none cursor-pointer text-xs shadow-xs"
                 >
                   <option value="all">نطاق الميزانية (الكل)</option>
                   <option value="1-3">1 - 3 مليون ج.م</option>
@@ -504,7 +504,7 @@ function CustomersContent() {
                   <option value="6-10">6 - 10 مليون ج.م</option>
                   <option value="10-30">أكثر من 10 مليون ج.م</option>
                 </select>
-                <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 text-[18px] pointer-events-none">
+                <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">
                   expand_more
                 </span>
               </div>
@@ -539,7 +539,7 @@ function CustomersContent() {
                             {lead.name}
                           </h3>
                           {/* الحالة */}
-                          <span className={`px-2.5 py-0.5 rounded-full font-label-sm text-[11px] font-bold border ${stageConfig.bg} ${stageConfig.color} ${stageConfig.border}`}>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${stageConfig.bg} ${stageConfig.color} ${stageConfig.border}`}>
                             {stageConfig.label}
                           </span>
                         </div>
@@ -560,7 +560,7 @@ function CustomersContent() {
                               href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-emerald-600 hover:text-emerald-700 transition"
+                              className="text-success hover:text-success transition"
                               title="محادثة واتساب"
                             >
                               <span className="material-symbols-outlined text-[16px]">chat</span>
@@ -574,15 +574,15 @@ function CustomersContent() {
                               return (
                                 <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border transition-all ${
                                   followup.isOverdue
-                                    ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-300 dark:border-rose-900/60 shadow-xs'
+                                    ? 'bg-error-container text-error   border-error  shadow-xs'
                                     : followup.isToday
-                                    ? 'bg-amber-50 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 border-amber-300 dark:border-amber-900/60 shadow-xs'
-                                    : 'bg-emerald-50 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200 border-emerald-300 dark:border-emerald-900/60 shadow-xs'
+                                    ? 'bg-warning-container text-warning   border-warning  shadow-xs'
+                                    : 'bg-success-container text-success   border-success  shadow-xs'
                                 }`}>
                                   <span className="material-symbols-outlined text-[15px]">alarm</span>
                                   <span>
                                     {followup.isOverdue ? '⚠️ متأخرة: ' : followup.isToday ? '🔔 اليوم: ' : '📅 '}
-                                    <strong className="text-stone-900 dark:text-stone-100 font-extrabold">{followup.dayName}</strong>
+                                    <strong className="text-on-surface font-extrabold">{followup.dayName}</strong>
                                     {' '}
                                     <span>({followup.formattedDate})</span>
                                     {' • '}
@@ -592,7 +592,7 @@ function CustomersContent() {
                               );
                             })()
                           ) : (
-                            <span className="text-[11px] text-stone-400 font-medium">بدون موعد متابعة</span>
+                            <span className="text-[11px] text-on-surface-variant font-medium">بدون موعد متابعة</span>
                           )}
                         </div>
                       </div>
@@ -604,7 +604,7 @@ function CustomersContent() {
                       <button
                         type="button"
                         onClick={() => setSelectedCustomer(lead)}
-                        className="flex-1 md:flex-none px-3.5 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer min-h-[38px]"
+                        className="flex-1 md:flex-none px-3.5 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container text-on-surface font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer min-h-[38px]"
                         title="عرض كافة التفاصيل والملاحظات وسجل العميل"
                       >
                         <span className="material-symbols-outlined text-[17px] text-primary">visibility</span>
@@ -614,7 +614,7 @@ function CustomersContent() {
                       {/* زر المطابقة */}
                       <Link
                         href={`/matching?customerId=${lead.id}`}
-                        className="flex-1 md:flex-none px-3.5 py-2 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm font-bold transition flex items-center justify-center gap-1.5 shadow-sm text-xs min-h-[38px]"
+                        className="flex-1 md:flex-none px-3.5 py-2 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition flex items-center justify-center gap-1.5 shadow-sm text-xs min-h-[38px]"
                         title="مطابقة الوحدات المعروضة لطلب العميل"
                       >
                         <span className="material-symbols-outlined text-[17px]">travel_explore</span>
@@ -628,7 +628,7 @@ function CustomersContent() {
                           setEditingCustomer(lead);
                           setIsCustomerModalOpen(true);
                         }}
-                        className="px-3 py-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-300/80 dark:border-amber-800/80 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-600 dark:hover:text-white transition-all flex items-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[38px]"
+                        className="px-3 py-2 rounded-xl bg-warning-container text-warning border border-warning hover:bg-warning hover:text-white transition-all flex items-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[38px]"
                         title="تعديل بيانات ومتابعة العميل"
                       >
                         <span className="material-symbols-outlined text-[17px]">edit_note</span>
@@ -644,7 +644,7 @@ function CustomersContent() {
                             showToast(`تم حذف العميل "${lead.name}" بنجاح`);
                           }
                         }}
-                        className="px-3 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-300/80 dark:border-rose-800/80 hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white transition-all flex items-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[38px]"
+                        className="px-3 py-2 rounded-xl bg-error-container text-error border border-error hover:bg-error hover:text-white transition-all flex items-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[38px]"
                         title="حذف العميل"
                       >
                         <span className="material-symbols-outlined text-[17px]">delete_forever</span>
@@ -723,8 +723,8 @@ function CustomersContent() {
 
       {/* Floating Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-slate-900 text-white font-bold text-xs shadow-2xl border border-white/20 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-200">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-surface-container-low text-white font-bold text-xs shadow-2xl border border-white/20 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
           <span>{toastMessage}</span>
         </div>
       )}

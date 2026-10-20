@@ -19,7 +19,7 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
   return (
     <div className="min-h-screen">
       {/* الترويسة الرئيسية */}
-      <header className="bg-gradient-to-tr from-emerald-900 via-emerald-800 to-emerald-600 text-white">
+      <header className="hero-gradient text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
           <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6">
             <div className="flex items-center gap-4 text-center sm:text-right">
@@ -78,17 +78,17 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
             <div className="flex gap-3">
               <div className="rounded-2xl bg-white/10 backdrop-blur px-4 py-3 text-center ring-1 ring-white/10">
                 <div className="flex items-center justify-center gap-1.5">
-                  <KeyRound className="w-4 h-4 text-emerald-300" />
+                  <KeyRound className="w-4 h-4 text-white/90" />
                   <span className="text-xl font-black">{units.length}</span>
                 </div>
-                <p className="text-[10px] font-bold text-white/70 mt-0.5">وحدة معروضة</p>
+                <p className="text-[10px] font-bold text-white/75 mt-0.5">وحدة معروضة</p>
               </div>
               <div className="rounded-2xl bg-white/10 backdrop-blur px-4 py-3 text-center ring-1 ring-white/10">
                 <div className="flex items-center justify-center gap-1.5">
-                  <History className="w-4 h-4 text-emerald-300" />
+                  <History className="w-4 h-4 text-white/90" />
                   <span className="text-xl font-black">{gallery.length}</span>
                 </div>
-                <p className="text-[10px] font-bold text-white/70 mt-0.5">عمل منجز</p>
+                <p className="text-[10px] font-bold text-white/75 mt-0.5">عمل منجز</p>
               </div>
             </div>
           </div>
@@ -128,14 +128,14 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {activeTab === 'units' ? (
             units.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-stone-100 dark:bg-stone-900 flex items-center justify-center mb-3">
-                  <Building2 className="w-7 h-7 text-stone-400" />
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <Building2 className="w-7 h-7" />
                 </div>
-                <p className="font-bold text-stone-600 dark:text-stone-300">
+                <p className="empty-state-title">
                   لا توجد وحدات معروضة حالياً
                 </p>
-                <p className="text-xs text-stone-400 mt-1">تابعنا لمشاهدة العروض الجديدة</p>
+                <p className="empty-state-hint">تابعنا لمشاهدة العروض الجديدة</p>
               </div>
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
@@ -156,8 +156,8 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
       </main>
 
       {/* تذييل بسيط */}
-      <footer className="border-t border-stone-200 dark:border-stone-800 py-6 text-center">
-        <p className="text-[11px] text-stone-400">
+      <footer className="border-t border-outline-variant py-6 text-center">
+        <p className="text-[11px] text-on-surface-variant">
           {company.name} © {new Date().getFullYear()} — جميع الحقوق محفوظة
         </p>
       </footer>

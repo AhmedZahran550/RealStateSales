@@ -195,16 +195,16 @@ export default function LiveMapPicker({
   return (
     <div className="space-y-2.5">
       {/* شريط الإجراءات والإحداثيات */}
-      <div className="flex flex-wrap items-center justify-between gap-2 bg-[#fdfbf7] dark:bg-[#18202e] p-2.5 rounded-2xl border border-amber-200/80 dark:border-amber-900/40 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-surface p-2.5 rounded-2xl border border-warning/80 text-xs">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center shadow-sm">
+          <div className="w-7 h-7 rounded-lg bg-warning text-white flex items-center justify-center shadow-sm">
             <MapPin className="w-4 h-4" />
           </div>
           <div>
-            <span className="font-extrabold text-[#1c1917] dark:text-[#f5f5f4] block">
+            <span className="font-extrabold text-[#1c1917] block">
               الموقع على الخريطة الحية (GPS)
             </span>
-            <span className="text-[11px] font-mono text-amber-700 dark:text-amber-400 font-bold">
+            <span className="text-[11px] font-mono text-warning font-bold">
               {currentLat.toFixed(5)}, {currentLng.toFixed(5)}
             </span>
           </div>
@@ -218,8 +218,8 @@ export default function LiveMapPicker({
             disabled={isLocating}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-[11px] transition ${
               locationSuccess
-                ? 'bg-emerald-600 text-white'
-                : 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm shadow-amber-600/30'
+                ? 'bg-success text-white'
+                : 'bg-warning hover:bg-warning text-white shadow-sm shadow-warning/30'
             }`}
             title="تحديد الموقع الحالي للهاتف / الجهاز أمام العقار"
           >
@@ -237,7 +237,7 @@ export default function LiveMapPicker({
           <button
             type="button"
             onClick={handleResetToHayElMotamayez}
-            className="p-1.5 rounded-xl border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 hover:bg-amber-100/60 dark:hover:bg-amber-950/60 transition"
+            className="p-1.5 rounded-xl border border-warning text-warning hover:bg-warning-container/60 transition"
             title="العودة لمركز الحي المتميز"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -248,10 +248,10 @@ export default function LiveMapPicker({
             href={`https://www.google.com/maps?q=${currentLat},${currentLng}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-[11px] transition"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-outline-variant text-on-surface-variant hover:bg-surface-container font-bold text-[11px] transition"
             title="فتح الموقع في Google Maps"
           >
-            <ExternalLink className="w-3 h-3 text-amber-600" />
+            <ExternalLink className="w-3 h-3 text-warning" />
             <span className="hidden sm:inline">Google Maps</span>
           </a>
         </div>
@@ -259,14 +259,14 @@ export default function LiveMapPicker({
 
       {/* حاوية الخريطة */}
       <div
-        className="relative w-full rounded-2xl overflow-hidden border border-amber-200 dark:border-amber-900/60 shadow-inner bg-slate-100 dark:bg-slate-900"
+        className="relative w-full rounded-2xl overflow-hidden border border-warning shadow-inner bg-surface-container "
         style={{ height }}
       >
         <div ref={mapContainerRef} className="w-full h-full" />
         
         {/* دليل إرشادي سريع */}
-        <div className="absolute bottom-2 right-2 z-[400] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-2.5 py-1 rounded-xl border border-amber-200/60 dark:border-amber-900/40 text-[10px] text-amber-900 dark:text-amber-300 font-bold shadow-sm flex items-center gap-1.5 pointer-events-none">
-          <MapPin className="w-3 h-3 text-amber-600" />
+        <div className="absolute bottom-2 right-2 z-[400] bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-xl border border-warning/25 text-[10px] text-warning font-bold shadow-sm flex items-center gap-1.5 pointer-events-none">
+          <MapPin className="w-3 h-3 text-warning" />
           <span>انقر في أي مكان أو اسحب الدبوس لتغيير موقع الوحدة</span>
         </div>
       </div>

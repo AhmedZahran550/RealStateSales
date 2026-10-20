@@ -660,7 +660,7 @@ export default function AddBuildingWithUnitsModal({
                   اختر العمارة / القطعة المراد إضافة الوحدة إليها *
                 </label>
                 {buildings.length === 0 ? (
-                  <div className="p-4 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 text-xs">
+                  <div className="p-4 rounded-xl bg-warning-container text-warning border border-warning text-xs">
                     لا توجد عمارات مسجلة حالياً لشركتك. يرجى التبديل لتبويب &quot;إضافة عمارة جديدة&quot;.
                   </div>
                 ) : (
@@ -896,7 +896,7 @@ export default function AddBuildingWithUnitsModal({
             <button
               type="submit"
               disabled={loading || (mode === 'existing_building' && !selectedBuildingId)}
-              className="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs shadow-md transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold text-xs shadow-md transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {loading ? (
                 <span>جاري الحفظ...</span>

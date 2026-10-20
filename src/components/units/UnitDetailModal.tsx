@@ -134,25 +134,25 @@ export default function UnitDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-white dark:bg-[#131a26] rounded-3xl shadow-2xl border border-amber-200/80 dark:border-amber-900/50 overflow-hidden my-auto sm:my-8 max-h-[94vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-warning/80 overflow-hidden my-auto sm:my-8 max-h-[94vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-amber-100 dark:border-stone-800 bg-[#fbf9f6] dark:bg-[#18202e] shrink-0">
+        <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-warning/25 bg-surface shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white flex items-center justify-center font-black shadow-md shadow-amber-600/30 shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary-strong via-primary to-primary text-white flex items-center justify-center font-black shadow-md shadow-warning/30 shrink-0">
               {unit.zoneId}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-black text-stone-900 dark:text-white">
+                <h3 className="text-base sm:text-lg font-black text-on-surface ">
                   منطقة {unit.zoneId} - قطعة {unit.plotNo}
                 </h3>
                 {unit.companyName && (
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-semibold border border-stone-200 dark:border-stone-700">
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-semibold border border-outline-variant ">
                     {unit.companyName}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-stone-500 dark:text-stone-400">
+              <p className="text-xs text-on-surface-variant ">
                 {UNIT_KIND_LABELS[unit.unitKind]} • الدور {unit.floor === 0 ? 'الأرضي' : unit.floor || 'متكرر'}
               </p>
             </div>
@@ -163,8 +163,8 @@ export default function UnitDetailModal({
               onClick={() => setShowHistory((prev) => !prev)}
               className={`p-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-xs font-bold ${
                 showHistory
-                  ? 'bg-amber-600 text-white shadow-sm'
-                  : 'text-stone-500 hover:text-amber-600 hover:bg-stone-100 dark:hover:bg-stone-800'
+                  ? 'bg-warning text-white shadow-sm'
+                  : 'text-on-surface-variant hover:text-warning hover:bg-surface-container '
               }`}
               title="سجل تعديلات وحالات الوحدة"
             >
@@ -174,7 +174,7 @@ export default function UnitDetailModal({
             {canManage && onEdit && (
               <button
                 onClick={() => onEdit(unit)}
-                className="p-2 rounded-xl text-stone-500 hover:text-amber-600 hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer"
+                className="p-2 rounded-xl text-on-surface-variant hover:text-warning hover:bg-surface-container transition cursor-pointer"
                 title="تعديل بيانات ومواصفات الوحدة"
               >
                 <Edit className="w-4 h-4" />
@@ -188,7 +188,7 @@ export default function UnitDetailModal({
                     onClose();
                   }
                 }}
-                className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
+                className="p-2 rounded-xl text-error hover:bg-error-container transition cursor-pointer"
                 title="حذف الوحدة من مخزون الشركة"
               >
                 <Trash2 className="w-4 h-4" />
@@ -196,7 +196,7 @@ export default function UnitDetailModal({
             )}
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-stone-400 hover:text-stone-600 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer"
+              className="p-2 rounded-xl text-on-surface-variant hover:text-on-surface-variant hover:bg-surface-container transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -206,10 +206,10 @@ export default function UnitDetailModal({
         {/* Modal Body */}
         <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-6 max-h-[78vh] overflow-y-auto flex-1">
           {/* Quick Status Bar for Brokers and Admins */}
-          <div className="p-3 rounded-2xl bg-amber-50/70 dark:bg-stone-900/60 border border-amber-200 dark:border-amber-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div className="p-3 rounded-2xl bg-warning-container/70 border border-warning flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-              <span className="text-xs font-bold text-stone-700 dark:text-stone-300">
+              <span className="w-2.5 h-2.5 rounded-full bg-warning animate-pulse" />
+              <span className="text-xs font-bold text-on-surface-variant ">
                 تحديث حالة الوحدة:
               </span>
               <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${statusInfo.badgeClass}`}>
@@ -217,14 +217,14 @@ export default function UnitDetailModal({
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-stone-200/70 dark:bg-stone-950 p-1 rounded-xl">
+            <div className="flex items-center gap-1.5 bg-surface-container-high/70 p-1 rounded-xl">
               <button
                 type="button"
                 onClick={() => handleStatusChange('available')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
                   unit.status === 'available'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                    ? 'bg-success text-white shadow-sm'
+                    : 'text-on-surface-variant  hover:text-on-surface '
                 }`}
               >
                 متاح للبيع
@@ -234,8 +234,8 @@ export default function UnitDetailModal({
                 onClick={() => handleStatusChange('reserved')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
                   unit.status === 'reserved'
-                    ? 'bg-amber-600 text-white shadow-sm'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                    ? 'bg-warning text-white shadow-sm'
+                    : 'text-on-surface-variant  hover:text-on-surface '
                 }`}
               >
                 حجز مؤقت
@@ -245,8 +245,8 @@ export default function UnitDetailModal({
                 onClick={() => handleStatusChange('sold')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
                   unit.status === 'sold'
-                    ? 'bg-rose-600 text-white shadow-sm'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                    ? 'bg-error text-white shadow-sm'
+                    : 'text-on-surface-variant  hover:text-on-surface '
                 }`}
               >
                 تم البيع
@@ -256,26 +256,26 @@ export default function UnitDetailModal({
 
           {/* Unit History Panel (Toggleable) */}
           {showHistory && (
-            <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 space-y-3 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-2">
+            <div className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant space-y-3 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between border-b border-outline-variant pb-2">
                 <div className="flex items-center gap-2">
-                  <History className="w-4 h-4 text-amber-600" />
-                  <h4 className="text-xs font-bold text-stone-800 dark:text-stone-200">
+                  <History className="w-4 h-4 text-warning" />
+                  <h4 className="text-xs font-bold text-on-surface ">
                     سجل التغييرات والحالات (Audit History)
                   </h4>
                 </div>
-                <span className="text-[11px] text-stone-400 font-semibold">
+                <span className="text-[11px] text-on-surface-variant font-semibold">
                   {historyList.length} حركة مسجلة
                 </span>
               </div>
 
               {loadingHistory ? (
-                <div className="py-4 text-center text-xs text-stone-400 flex items-center justify-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-amber-600" />
+                <div className="py-4 text-center text-xs text-on-surface-variant flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-warning" />
                   <span>جاري تحميل سجل الحركات...</span>
                 </div>
               ) : historyList.length === 0 ? (
-                <p className="text-xs text-stone-400 py-3 text-center">
+                <p className="text-xs text-on-surface-variant py-3 text-center">
                   لا توجد حركات مسجلة لهذه الوحدة حتى الآن.
                 </p>
               ) : (
@@ -283,14 +283,14 @@ export default function UnitDetailModal({
                   {historyList.map((h) => (
                     <div
                       key={h.id}
-                      className="p-2.5 rounded-xl bg-white dark:bg-stone-800/80 border border-stone-200/80 dark:border-stone-700/60 flex items-start justify-between gap-3 text-xs"
+                      className="p-2.5 rounded-xl bg-white border border-outline-variant/80 flex items-start justify-between gap-3 text-xs"
                     >
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-stone-800 dark:text-stone-200">
+                          <span className="font-bold text-on-surface ">
                             {h.changedByName || 'مستخدم'}
                           </span>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-semibold">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-warning-container text-warning font-semibold">
                             {h.changeType === 'status_change'
                               ? 'تغيير حالة'
                               : h.changeType === 'created'
@@ -298,11 +298,11 @@ export default function UnitDetailModal({
                               : 'تحديث بيانات'}
                           </span>
                         </div>
-                        <p className="text-stone-600 dark:text-stone-300 text-[11px]">
+                        <p className="text-on-surface-variant text-[11px]">
                           {h.details || 'تم إجراء تعديل على الوحدة'}
                         </p>
                       </div>
-                      <span className="text-[10px] text-stone-400 font-mono shrink-0">
+                      <span className="text-[10px] text-on-surface-variant font-mono shrink-0">
                         {new Date(h.createdAt).toLocaleDateString('ar-EG', {
                           month: 'short',
                           day: 'numeric',
@@ -320,7 +320,7 @@ export default function UnitDetailModal({
           {/* Media Gallery / Lightbox */}
           {mediaList.length > 0 ? (
             <div className="space-y-3">
-              <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-stone-200 dark:border-stone-800 group flex items-center justify-center">
+              <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-outline-variant group flex items-center justify-center">
                 {currentMedia?.kind === 'video' ? (
                   <video
                     key={currentMedia.externalUrl || currentMedia.storagePath}
@@ -348,17 +348,17 @@ export default function UnitDetailModal({
                   >
                     {isDownloading ? (
                       <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-warning" />
                         <span>جاري التحميل...</span>
                       </>
                     ) : downloadSuccess ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="text-emerald-400">تم الحفظ!</span>
+                        <Check className="w-3.5 h-3.5 text-success" />
+                        <span className="text-success">تم الحفظ!</span>
                       </>
                     ) : (
                       <>
-                        <Download className="w-3.5 h-3.5 text-amber-400" />
+                        <Download className="w-3.5 h-3.5 text-warning" />
                         <span>{currentMedia?.kind === 'video' ? 'تحميل الفيديو' : 'حفظ الصورة'}</span>
                       </>
                     )}
@@ -376,7 +376,7 @@ export default function UnitDetailModal({
                       onClick={() =>
                         setActiveMediaIndex((prev) => (prev > 0 ? prev - 1 : mediaList.length - 1))
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/70 text-white hover:bg-amber-600 transition z-10 cursor-pointer"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/70 text-white hover:bg-warning transition z-10 cursor-pointer"
                       title="السابق"
                     >
                       <ChevronRight className="w-5 h-5" />
@@ -385,7 +385,7 @@ export default function UnitDetailModal({
                       onClick={() =>
                         setActiveMediaIndex((prev) => (prev < mediaList.length - 1 ? prev + 1 : 0))
                       }
-                      className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/70 text-white hover:bg-amber-600 transition z-10 cursor-pointer"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/70 text-white hover:bg-warning transition z-10 cursor-pointer"
                       title="التالي"
                     >
                       <ChevronLeft className="w-5 h-5" />
@@ -402,11 +402,11 @@ export default function UnitDetailModal({
                       key={m.id || idx}
                       onClick={() => setActiveMediaIndex(idx)}
                       className={`relative w-20 h-14 rounded-lg overflow-hidden border-2 flex-shrink-0 transition bg-black cursor-pointer ${
-                        idx === activeMediaIndex ? 'border-amber-500 scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-90'
+                        idx === activeMediaIndex ? 'border-warning scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-90'
                       }`}
                     >
                       {m.kind === 'video' ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center text-amber-400 bg-stone-900">
+                        <div className="w-full h-full flex flex-col items-center justify-center text-warning-container bg-inverse-surface">
                           <Film className="w-4 h-4" />
                           <span className="text-[9px] font-bold">فيديو</span>
                         </div>
@@ -423,30 +423,30 @@ export default function UnitDetailModal({
               )}
             </div>
           ) : (
-            <div className="p-8 text-center bg-stone-50 dark:bg-stone-800/40 rounded-2xl border border-dashed border-stone-200 dark:border-stone-800">
-              <Building2 className="w-12 h-12 text-stone-300 dark:text-stone-600 mx-auto mb-2" />
-              <p className="text-xs text-stone-500">لا توجد صور مرفقة لهذه الوحدة بعد</p>
+            <div className="p-8 text-center bg-surface-container-low rounded-2xl border border-dashed border-outline-variant ">
+              <Building2 className="w-12 h-12 text-on-surface-variant mx-auto mb-2" />
+              <p className="text-xs text-on-surface-variant">لا توجد صور مرفقة لهذه الوحدة بعد</p>
             </div>
           )}
 
           {/* Pricing Highlight Card */}
-          <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-600/10 to-amber-500/10 border border-amber-300/40 dark:border-amber-800/40 flex flex-wrap items-center justify-between gap-4">
+          <div className="p-5 rounded-2xl bg-gradient-to-r from-warning/10 via-primary/10 to-primary/10 border border-warning/40 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <span className="text-xs text-stone-500 dark:text-stone-400 font-semibold">
+              <span className="text-xs text-on-surface-variant font-semibold">
                 السعر الإجمالي المطلوب:
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-amber-900 dark:text-amber-300">
+                <span className="text-3xl font-black text-warning ">
                   {unit.price.toLocaleString('ar-EG')}
                 </span>
-                <span className="text-sm font-bold text-amber-700 dark:text-amber-400">جنيه مصري</span>
+                <span className="text-sm font-bold text-warning ">جنيه مصري</span>
                 {unit.negotiable && (
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-bold border border-amber-300 dark:border-amber-800">
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-warning-container text-warning font-bold border border-warning ">
                     قابل للتفاوض
                   </span>
                 )}
               </div>
-              <p className="text-xs text-stone-500 mt-1">
+              <p className="text-xs text-on-surface-variant mt-1">
                 سعر المتر التقريبي: {Math.round(unit.price / (unit.area || 1)).toLocaleString('ar-EG')} ج.م / م²
               </p>
             </div>
@@ -458,11 +458,11 @@ export default function UnitDetailModal({
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }}
-                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs transition cursor-pointer"
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs transition cursor-pointer"
                 type="button"
                 title="نسخ تفاصيل الوحدة"
               >
-                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
                 <span>{copied ? 'تم النسخ!' : 'نسخ التفاصيل'}</span>
               </button>
 
@@ -470,7 +470,7 @@ export default function UnitDetailModal({
                 href={waShareUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-success hover:bg-success text-white font-bold text-xs shadow-md shadow-success/30 transition"
               >
                 <MessageCircle className="w-4 h-4" />
                 مشاركة عبر واتساب
@@ -480,19 +480,19 @@ export default function UnitDetailModal({
 
           {/* Real GPS Location Card */}
           {googleMapsUrl && (
-            <div className="p-4 rounded-2xl bg-[#fdfbf7] dark:bg-[#18202e] border border-amber-200 dark:border-amber-900/40 flex items-center justify-between gap-3">
+            <div className="p-4 rounded-2xl bg-surface border border-warning flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-warning text-white flex items-center justify-center shadow-sm">
                   <Navigation className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-xs text-[#1c1917] dark:text-[#f5f5f4] flex items-center gap-1.5">
+                  <h4 className="font-extrabold text-xs text-[#1c1917] flex items-center gap-1.5">
                     <span>الموقع الجغرافي الحقيقي (GPS)</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-bold">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-warning-container text-warning font-bold">
                       OpenStreetMap
                     </span>
                   </h4>
-                  <p className="text-[11px] font-mono text-amber-700 dark:text-amber-400 font-bold mt-0.5">
+                  <p className="text-[11px] font-mono text-warning font-bold mt-0.5">
                     {unit.lat?.toFixed(5)}, {unit.lng?.toFixed(5)}
                   </p>
                 </div>
@@ -502,7 +502,7 @@ export default function UnitDetailModal({
                 href={googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-warning hover:bg-warning text-white font-bold text-xs shadow-sm transition"
               >
                 <span>فتح في خرائط جوجل</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -512,30 +512,30 @@ export default function UnitDetailModal({
 
           {/* Specs Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-800">
-              <span className="text-[11px] text-stone-400 font-semibold">المساحة المبنية</span>
-              <p className="text-sm font-bold text-stone-900 dark:text-white mt-0.5">
+            <div className="p-3.5 rounded-2xl bg-surface-container-low border border-outline-variant ">
+              <span className="text-[11px] text-on-surface-variant font-semibold">المساحة المبنية</span>
+              <p className="text-sm font-bold text-on-surface mt-0.5">
                 {unit.area} م²
               </p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-800">
-              <span className="text-[11px] text-stone-400 font-semibold">مساحة الحديقة / التراس</span>
-              <p className="text-sm font-bold text-stone-900 dark:text-white mt-0.5">
+            <div className="p-3.5 rounded-2xl bg-surface-container-low border border-outline-variant ">
+              <span className="text-[11px] text-on-surface-variant font-semibold">مساحة الحديقة / التراس</span>
+              <p className="text-sm font-bold text-on-surface mt-0.5">
                 {unit.gardenArea ? `${unit.gardenArea} م²` : 'بدون حديقة'}
               </p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-800">
-              <span className="text-[11px] text-stone-400 font-semibold">الواجهة والاتجاه</span>
-              <p className="text-sm font-bold text-stone-900 dark:text-white mt-0.5">
+            <div className="p-3.5 rounded-2xl bg-surface-container-low border border-outline-variant ">
+              <span className="text-[11px] text-on-surface-variant font-semibold">الواجهة والاتجاه</span>
+              <p className="text-sm font-bold text-on-surface mt-0.5">
                 {unit.side || 'واجهة بحري'}
               </p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-800">
-              <span className="text-[11px] text-stone-400 font-semibold">ميعاد التسليم</span>
-              <p className="text-sm font-bold text-stone-900 dark:text-white mt-0.5">
+            <div className="p-3.5 rounded-2xl bg-surface-container-low border border-outline-variant ">
+              <span className="text-[11px] text-on-surface-variant font-semibold">ميعاد التسليم</span>
+              <p className="text-sm font-bold text-on-surface mt-0.5">
                 {unit.deliveryNote}
               </p>
             </div>
@@ -543,23 +543,23 @@ export default function UnitDetailModal({
 
           {/* Payment Terms & Description */}
           <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
-              <h4 className="text-xs font-bold uppercase text-stone-500 mb-1 flex items-center gap-1.5">
-                <CreditCard className="w-4 h-4 text-amber-600" />
+            <div className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant ">
+              <h4 className="text-xs font-bold uppercase text-on-surface-variant mb-1 flex items-center gap-1.5">
+                <CreditCard className="w-4 h-4 text-warning" />
                 شروط ونظام السداد
               </h4>
-              <p className="text-sm font-medium text-stone-800 dark:text-stone-200">
+              <p className="text-sm font-medium text-on-surface ">
                 {unit.paymentTerms}
               </p>
             </div>
 
             {unit.description && (
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
-                <h4 className="text-xs font-bold uppercase text-stone-500 mb-1 flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-amber-500" />
+              <div className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant ">
+                <h4 className="text-xs font-bold uppercase text-on-surface-variant mb-1 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-warning" />
                   وصف وتفاصيل العقار
                 </h4>
-                <p className="text-sm leading-relaxed text-stone-700 dark:text-stone-300 whitespace-pre-line">
+                <p className="text-sm leading-relaxed text-on-surface-variant whitespace-pre-line">
                   {unit.description}
                 </p>
               </div>
@@ -568,20 +568,20 @@ export default function UnitDetailModal({
 
           {/* المميزات والمواصفات (مع التوريث الذكي من المبنى) */}
           {displayFeatures.length > 0 && (
-            <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 space-y-2.5">
+            <div className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant space-y-2.5">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold uppercase text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-amber-500" />
+                <h4 className="text-xs font-bold uppercase text-on-surface-variant flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-warning" />
                   مميزات ومواصفات العقار
                 </h4>
 
                 {isInherited ? (
-                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/70 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 font-bold flex items-center gap-1">
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-info-container text-info border border-info font-bold flex items-center gap-1">
                     <Info className="w-3 h-3" />
                     موروثة تلقائياً من مواصفات المبنى (قطعة #{unit.plotNo})
                   </span>
                 ) : (
-                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold flex items-center gap-1">
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-success-container text-success border border-success font-bold flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3" />
                     مميزات خاصة بالوحدة
                   </span>
@@ -592,9 +592,9 @@ export default function UnitDetailModal({
                 {displayFeatures.map((f, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800/60 flex items-center gap-1"
+                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-warning-container text-warning border border-warning flex items-center gap-1"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-warning" />
                     {f}
                   </span>
                 ))}

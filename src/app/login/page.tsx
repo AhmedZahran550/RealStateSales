@@ -69,7 +69,7 @@ export default function LoginPage() {
 
 
   return (
-    <div className="bg-surface font-body-md text-on-surface min-h-screen flex items-center justify-center p-3 sm:p-6 lg:p-12">
+    <div className="bg-surface text-on-surface min-h-screen flex items-center justify-center p-3 sm:p-6 lg:p-12">
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 rounded-2xl overflow-hidden shadow-2xl bg-surface-container-lowest border border-surface-container-high/60">
         {/* الجانب الترحيبي والبصري (الزمردي الداكن) */}
         <div className="lg:col-span-5 relative bg-primary p-5 sm:p-8 lg:p-12 flex flex-col justify-between overflow-hidden text-on-primary">
@@ -83,10 +83,10 @@ export default function LoginPage() {
               <span className="material-symbols-outlined text-primary text-[32px]">real_estate_agent</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-headline-md text-headline-md font-bold tracking-tight text-surface-container-lowest text-2xl">
+              <span className="font-bold tracking-tight text-surface-container-lowest text-2xl">
                 عقار سيلز
               </span>
-              <span className="font-label-sm text-label-sm text-on-primary-container tracking-wider">
+              <span className="text-on-primary-container tracking-wider">
                 Aqar Sales Pro
               </span>
             </div>
@@ -96,12 +96,12 @@ export default function LoginPage() {
           <div className="relative z-10 my-10 lg:my-0 space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-container/40 text-on-primary-container backdrop-blur-sm">
               <span className="material-symbols-outlined text-sm">hotel_class</span>
-              <span className="font-label-sm text-label-sm font-bold">المنصة الأولى لمستشاري العقارات</span>
+              <span className="font-bold">المنصة الأولى لمستشاري العقارات</span>
             </div>
-            <h1 className="font-headline-xl text-headline-xl text-surface-container-lowest leading-snug font-extrabold text-3xl">
+            <h1 className="text-surface-container-lowest leading-snug font-extrabold text-3xl">
               منصتك الذكية لإغلاق الصفقات بذكاء وسرعة
             </h1>
-            <p className="font-body-md text-body-md text-on-primary-container leading-relaxed">
+            <p className="text-on-primary-container leading-relaxed">
               أهلاً بك في عقار سيلز - بوابتك الشاملة لإدارة الوحدات، متابعة العملاء المحتملين لحظياً، وتحقيق أهدافك البيعية بكل سهولة وموثوقية.
             </p>
           </div>
@@ -111,16 +111,16 @@ export default function LoginPage() {
             <div className="bg-primary-container/30 p-4 rounded-xl backdrop-blur-sm border border-white/10">
               <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-secondary-container text-xl">apartment</span>
-                <span className="font-label-lg text-label-lg font-bold text-surface-container-lowest">+1,500</span>
+                <span className="font-bold text-surface-container-lowest">+1,500</span>
               </div>
-              <p className="font-body-sm text-body-sm text-on-primary-container text-xs">وحدة مباعة وموثقة</p>
+              <p className="text-on-primary-container text-xs">وحدة مباعة وموثقة</p>
             </div>
             <div className="bg-primary-container/30 p-4 rounded-xl backdrop-blur-sm border border-white/10">
               <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-tertiary-fixed-dim text-xl">star</span>
-                <span className="font-label-lg text-label-lg font-bold text-surface-container-lowest">4.9 / 5</span>
+                <span className="font-bold text-surface-container-lowest">4.9 / 5</span>
               </div>
-              <p className="font-body-sm text-body-sm text-on-primary-container text-xs">تقييم خبراء المبيعات</p>
+              <p className="text-on-primary-container text-xs">تقييم خبراء المبيعات</p>
             </div>
           </div>
         </div>
@@ -132,12 +132,12 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high text-primary">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="font-label-sm text-label-sm font-semibold text-xs">بوابة مستشاري المبيعات</span>
+                <span className="font-semibold text-xs">بوابة مستشاري المبيعات</span>
               </div>
-              <h2 className="font-headline-lg text-headline-lg font-bold text-on-surface text-xl sm:text-2xl">
+              <h2 className="font-bold text-on-surface text-xl sm:text-2xl">
                 تسجيل الدخول إلى حسابك
               </h2>
-              <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">
+              <p className="text-on-surface-variant text-xs">
                 أدخل اسم المستخدم أو رقم هاتفك المسجل وكلمة المرور للمتابعة للوحة التحكم
               </p>
             </div>
@@ -160,11 +160,11 @@ export default function LoginPage() {
             <form onSubmit={handleLogin} className="space-y-4">
               {/* حقل اسم المستخدم أو رقم الهاتف */}
               <div className="space-y-1.5">
-                <label className="block font-label-md text-label-md text-slate-800 dark:text-slate-200 font-semibold text-sm" htmlFor="sales-id">
+                <label className="block text-on-surface font-semibold text-sm" htmlFor="sales-id">
                   اسم المستخدم أو رقم الهاتف
                 </label>
-                <div className="relative flex items-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary focus-within:border-primary">
-                  <div className="pr-3.5 pl-2 flex items-center text-slate-400 pointer-events-none">
+                <div className="relative flex items-center rounded-xl border border-outline-variant bg-white shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary focus-within:border-primary">
+                  <div className="pr-3.5 pl-2 flex items-center text-on-surface-variant pointer-events-none">
                     <span className="material-symbols-outlined text-xl">badge</span>
                   </div>
                   <input
@@ -178,7 +178,7 @@ export default function LoginPage() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase())}
                     placeholder="أدخل اسم المستخدم أو رقم هاتفك المسجل"
-                    className="w-full py-3.5 pl-4 pr-1 bg-transparent font-body-md text-body-md text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:outline-none"
+                    className="w-full py-3.5 pl-4 pr-1 bg-transparent text-on-surface placeholder:text-outline font-semibold focus:outline-none"
                   />
                 </div>
               </div>
@@ -186,15 +186,15 @@ export default function LoginPage() {
               {/* حقل كلمة المرور */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="block font-label-md text-label-md text-slate-800 dark:text-slate-200 font-semibold text-sm" htmlFor="password-input">
+                  <label className="block text-on-surface font-semibold text-sm" htmlFor="password-input">
                     كلمة المرور
                   </label>
-                  <a href="#" className="font-label-sm text-label-sm text-secondary font-bold hover:underline transition-all text-xs">
+                  <a href="#" className="text-secondary font-bold hover:underline transition-all text-xs">
                     نسيت كلمة المرور؟
                   </a>
                 </div>
-                <div className="relative flex items-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151d2a] shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary focus-within:border-primary">
-                  <div className="pr-3.5 pl-2 flex items-center text-slate-400 pointer-events-none">
+                <div className="relative flex items-center rounded-xl border border-outline-variant bg-white shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary focus-within:border-primary">
+                  <div className="pr-3.5 pl-2 flex items-center text-on-surface-variant pointer-events-none">
                     <span className="material-symbols-outlined text-xl">lock</span>
                   </div>
                   <input
@@ -205,14 +205,14 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full py-3.5 px-2 bg-transparent font-body-md text-body-md text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-semibold focus:outline-none"
+                    className="w-full py-3.5 px-2 bg-transparent text-on-surface placeholder:text-outline font-semibold focus:outline-none"
                   />
                   <button
                     id="toggle-pwd"
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label="إظهار كلمة المرور"
-                    className="pl-3.5 pr-2 flex items-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors focus:outline-none cursor-pointer"
+                    className="pl-3.5 pr-2 flex items-center text-on-surface-variant hover:text-on-surface-variant transition-colors focus:outline-none cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-xl">
                       {showPassword ? 'visibility' : 'visibility_off'}
@@ -231,7 +231,7 @@ export default function LoginPage() {
                     onChange={(e) => setRememberDevice(e.target.checked)}
                     className="w-4 h-4 rounded text-primary focus:ring-0 bg-surface-container-high cursor-pointer"
                   />
-                  <span className="font-body-sm text-body-sm text-on-surface-variant font-medium text-xs">
+                  <span className="text-on-surface-variant font-medium text-xs">
                     حفظ بيانات الدخول على هذا الجهاز
                   </span>
                 </label>
@@ -241,7 +241,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 py-4 px-6 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm font-bold shadow-md hover:shadow-xl hover:bg-primary-container transition-all flex items-center justify-center gap-3 active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+                className="w-full mt-2 py-4 px-6 rounded-xl bg-primary text-on-primary font-bold shadow-md hover:shadow-xl hover:bg-primary-strong transition-all flex items-center justify-center gap-3 active:scale-[0.99] disabled:opacity-50 cursor-pointer"
               >
                 <span>{loading ? 'جاري التحقق...' : 'تسجيل الدخول إلى لوحة التحكم'}</span>
                 <span className="material-symbols-outlined text-xl rotate-180">arrow_forward</span>
@@ -251,7 +251,7 @@ export default function LoginPage() {
 
             {/* الدعم الفني وتذييل البطاقة */}
             <div className="pt-6 mt-6 bg-surface-container-low/50 -mx-5 -mb-5 sm:-mx-8 sm:-mb-8 lg:-mx-14 lg:-mb-14 p-4 sm:p-6 rounded-b-2xl flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-surface-container-high">
-              <div className="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm text-xs">
+              <div className="flex items-center gap-2 text-on-surface-variant text-xs">
                 <span className="material-symbols-outlined text-primary text-lg">headset_mic</span>
                 <span>تواجه مشكلة في الوصول لحسابك؟</span>
               </div>
@@ -259,7 +259,7 @@ export default function LoginPage() {
                 href="https://wa.me/201122334455"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-lowest text-primary hover:bg-primary hover:text-on-primary font-label-md text-label-md font-bold shadow-sm transition-all text-xs"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-lowest text-primary hover:bg-primary hover:text-on-primary font-bold shadow-sm transition-all text-xs"
               >
                 <span className="material-symbols-outlined text-base">chat</span>
                 <span>واتساب المبيعات والدعم</span>

@@ -92,18 +92,18 @@ export default function PublicUnitDetailModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white dark:bg-[#131a26] rounded-3xl shadow-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto"
+        className="card shadow-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto"
       >
         {/* شريط العنوان */}
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 px-5 py-4 bg-white/95 dark:bg-[#131a26]/95 backdrop-blur border-b border-stone-200 dark:border-stone-800">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 px-5 py-4 bg-surface-container-lowest/95 backdrop-blur border-b border-outline-variant">
           <div className="min-w-0">
-            <h3 className="font-bold text-lg text-stone-900 dark:text-stone-100 truncate">
+            <h3 className="font-bold text-lg text-on-surface truncate">
               {UNIT_KIND_LABELS[unit.unitKind]}
             </h3>
-            <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400 font-semibold mt-0.5">
+            <div className="flex items-center gap-2 text-xs text-on-surface-variant font-semibold mt-0.5">
               {unit.zoneName && (
                 <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                  <MapPin className="w-3.5 h-3.5 text-primary" />
                   {unit.zoneName}
                 </span>
               )}
@@ -113,7 +113,7 @@ export default function PublicUnitDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-500 cursor-pointer shrink-0"
+            className="p-2 rounded-xl hover:bg-surface-container-high text-on-surface-variant cursor-pointer shrink-0"
             aria-label="إغلاق"
           >
             <X className="w-5 h-5" />
@@ -163,7 +163,7 @@ export default function PublicUnitDetailModal({
                       }}
                       className={`w-12 h-9 object-cover rounded-md cursor-pointer transition-all border-2 ${
                         i === currentImage
-                          ? 'border-emerald-500 opacity-100'
+                          ? 'border-primary opacity-100'
                           : 'border-transparent opacity-50 hover:opacity-80'
                       }`}
                     />
@@ -178,20 +178,20 @@ export default function PublicUnitDetailModal({
         <div className="p-5 space-y-5">
           {/* السعر */}
           {settings.showPrice && (
-            <div className="flex items-baseline justify-between flex-wrap gap-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl px-4 py-3 border border-emerald-200/60 dark:border-emerald-900">
+            <div className="flex items-baseline justify-between flex-wrap gap-2 bg-success-container rounded-2xl px-4 py-3 border border-success">
               <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-emerald-700 dark:text-emerald-300" />
-                <span className="text-xs font-bold text-emerald-800 dark:text-emerald-200">
+                <Tag className="w-4 h-4 text-success" />
+                <span className="text-xs font-bold text-on-success-container">
                   السعر
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-black text-emerald-700 dark:text-emerald-300">
+                <span className="text-2xl font-black text-success">
                   {unit.price.toLocaleString('ar-EG')}
                 </span>
-                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">ج.م</span>
+                <span className="text-xs font-bold text-success">ج.م</span>
                 {unit.negotiable && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/90 text-emerald-950">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-success text-on-success">
                     قابل للتفاوض
                   </span>
                 )}
@@ -205,13 +205,13 @@ export default function PublicUnitDetailModal({
               {specs.map((s, i) => (
                 <div
                   key={i}
-                  className="rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 px-3 py-2.5 text-center"
+                  className="panel-section px-3 py-2.5 text-center"
                 >
-                  <s.icon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mx-auto mb-1" />
-                  <p className="text-[10px] text-stone-500 dark:text-stone-400 font-bold">
+                  <s.icon className="w-4 h-4 text-primary mx-auto mb-1" />
+                  <p className="text-[10px] text-on-surface-variant font-bold">
                     {s.label}
                   </p>
-                  <p className="text-sm font-black text-stone-900 dark:text-stone-100 mt-0.5">
+                  <p className="text-sm font-black text-on-surface mt-0.5">
                     {s.value}
                   </p>
                 </div>
@@ -223,15 +223,12 @@ export default function PublicUnitDetailModal({
           {settings.showFeatures && unit.features && unit.features.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">المميزات</h4>
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                <h4 className="text-sm font-bold text-on-surface">المميزات</h4>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {unit.features.map((f, i) => (
-                  <span
-                    key={i}
-                    className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300"
-                  >
+                  <span key={i} className="chip">
                     ✓ {f}
                   </span>
                 ))}
@@ -243,10 +240,10 @@ export default function PublicUnitDetailModal({
           {settings.showDescription && unit.description && (
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <FileText className="w-4 h-4 text-emerald-600" />
-                <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">الوصف</h4>
+                <FileText className="w-4 h-4 text-primary" />
+                <h4 className="text-sm font-bold text-on-surface">الوصف</h4>
               </div>
-              <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed whitespace-pre-line">
+              <p className="text-sm text-on-surface-variant leading-relaxed whitespace-pre-line">
                 {unit.description}
               </p>
             </div>
@@ -256,27 +253,27 @@ export default function PublicUnitDetailModal({
           {(settings.showDelivery || settings.showPayment) && (
             <div className="grid sm:grid-cols-2 gap-2.5">
               {settings.showDelivery && unit.deliveryNote && (
-                <div className="rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 px-4 py-3">
+                <div className="panel-section px-4 py-3">
                   <div className="flex items-center gap-2 mb-1">
-                    <CalendarDays className="w-4 h-4 text-emerald-600" />
-                    <span className="text-xs font-bold text-stone-500 dark:text-stone-400">
+                    <CalendarDays className="w-4 h-4 text-primary" />
+                    <span className="text-xs font-bold text-on-surface-variant">
                       التسليم
                     </span>
                   </div>
-                  <p className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                  <p className="text-sm font-bold text-on-surface">
                     {unit.deliveryNote}
                   </p>
                 </div>
               )}
               {settings.showPayment && unit.paymentTerms && (
-                <div className="rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 px-4 py-3">
+                <div className="panel-section px-4 py-3">
                   <div className="flex items-center gap-2 mb-1">
-                    <CreditCard className="w-4 h-4 text-emerald-600" />
-                    <span className="text-xs font-bold text-stone-500 dark:text-stone-400">
+                    <CreditCard className="w-4 h-4 text-primary" />
+                    <span className="text-xs font-bold text-on-surface-variant">
                       نظام السداد
                     </span>
                   </div>
-                  <p className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                  <p className="text-sm font-bold text-on-surface">
                     {unit.paymentTerms}
                   </p>
                 </div>
@@ -288,11 +285,11 @@ export default function PublicUnitDetailModal({
           <button
             type="button"
             onClick={() => onReserve(unit)}
-            className="w-full py-3.5 rounded-2xl bg-primary hover:bg-primary/90 text-on-primary text-sm font-black transition-all active:scale-[0.98] shadow-lg shadow-emerald-600/20 cursor-pointer"
+            className="btn-primary w-full py-3.5 shadow-lg shadow-primary/20"
           >
             احجز هذه الوحدة الآن
           </button>
-          <p className="text-[11px] text-center text-stone-500 dark:text-stone-400">
+          <p className="text-[11px] text-center text-on-surface-variant">
             سيتم إرسال بيانات تواصلك لفريق الشركة ليتواصل معك في أقرب وقت
           </p>
         </div>

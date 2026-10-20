@@ -64,7 +64,7 @@ export default function BuildingCard({
           </div>
           <div>
             <div className="flex items-center flex-wrap gap-2">
-              <h3 className="font-headline-sm text-headline-sm font-extrabold text-on-surface text-base sm:text-lg">
+              <h3 className="font-extrabold text-on-surface text-base sm:text-lg">
                 القطعة {building.plotNo}
               </h3>
               <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center gap-1">
@@ -95,7 +95,7 @@ export default function BuildingCard({
           {canManage && (
             <button
               onClick={() => onAddUnit(building.id)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-on-primary hover:bg-primary-container text-xs font-bold transition shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-on-primary hover:bg-primary-strong text-xs font-bold transition shadow-xs cursor-pointer"
               title="إضافة وحدة جديدة في هذا المبنى"
               type="button"
             >
@@ -124,21 +124,21 @@ export default function BuildingCard({
             <span>إجمالي {units.length} وحدة</span>
           </div>
 
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800/60">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-success-container text-success font-bold border border-success ">
+            <CheckCircle2 className="w-3.5 h-3.5 text-success" />
             <span>{availableUnits.length} متاحة</span>
           </div>
 
           {reservedUnits.length > 0 && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800/60">
-              <Clock className="w-3.5 h-3.5 text-amber-600" />
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-warning-container text-warning font-bold border border-warning ">
+              <Clock className="w-3.5 h-3.5 text-warning" />
               <span>{reservedUnits.length} محجوزة</span>
             </div>
           )}
 
           {soldUnits.length > 0 && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-semibold border border-stone-200 dark:border-stone-700">
-              <CheckCheck className="w-3.5 h-3.5 text-stone-500" />
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant font-semibold border border-outline-variant ">
+              <CheckCheck className="w-3.5 h-3.5 text-on-surface-variant" />
               <span>{soldUnits.length} مباعة</span>
             </div>
           )}
@@ -175,7 +175,7 @@ export default function BuildingCard({
       {isExpanded && (
         <div className="p-4 sm:p-5 bg-surface-container-low/30 space-y-3 animate-in fade-in duration-200">
           <div className="flex items-center justify-between">
-            <span className="font-label-md text-label-md font-bold text-on-surface text-xs flex items-center gap-1.5">
+            <span className="font-bold text-on-surface text-xs flex items-center gap-1.5">
               <Home className="w-4 h-4 text-primary" />
               الوحدات التابعة للقطعة {building.plotNo} ({units.length})
             </span>
@@ -200,7 +200,7 @@ export default function BuildingCard({
               {canManage && (
                 <button
                   onClick={() => onAddUnit(building.id)}
-                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary-container transition cursor-pointer"
+                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary-strong transition cursor-pointer"
                   type="button"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -212,9 +212,9 @@ export default function BuildingCard({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {units.map((unit) => {
                 const statusStyles = {
-                  available: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
-                  reserved: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
-                  sold: 'bg-stone-100 text-stone-600 border-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700',
+                  available: 'bg-success-container text-success border-success   ',
+                  reserved: 'bg-warning-container text-warning border-warning   ',
+                  sold: 'bg-surface-container text-on-surface-variant border-outline-variant   ',
                 }[unit.status];
 
                 const statusLabel = {
@@ -252,7 +252,7 @@ export default function BuildingCard({
                         <div className="flex items-center gap-1 font-semibold text-on-surface">
                           <span>{unit.area} م²</span>
                           {unit.gardenArea ? (
-                            <span className="text-[10px] text-emerald-600 font-bold">
+                            <span className="text-[10px] text-success font-bold">
                               (+{unit.gardenArea} م² حديقة)
                             </span>
                           ) : null}
@@ -285,7 +285,7 @@ export default function BuildingCard({
                         {canManage && (
                           <button
                             onClick={() => onEditUnit(unit)}
-                            className="p-1.5 rounded-lg text-on-surface-variant hover:text-amber-600 hover:bg-surface-container transition cursor-pointer"
+                            className="p-1.5 rounded-lg text-on-surface-variant hover:text-warning hover:bg-surface-container transition cursor-pointer"
                             title="تعديل بيانات الوحدة"
                             type="button"
                           >
@@ -307,7 +307,7 @@ export default function BuildingCard({
                         href={whatsAppUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-xs transition"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-success hover:bg-success text-white text-[11px] font-bold shadow-xs transition"
                         title="مشاركة تفاصيل الوحدة عبر واتساب"
                       >
                         <Share2 className="w-3 h-3" />

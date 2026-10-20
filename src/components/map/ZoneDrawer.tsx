@@ -52,38 +52,38 @@ export default function ZoneDrawer({
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
         onClick={onClose}
       />
-      <div className="fixed inset-y-0 left-0 z-50 w-full sm:w-[480px] lg:w-[520px] bg-white dark:bg-[#131a26] shadow-2xl border-r border-stone-200 dark:border-stone-800 flex flex-col transform transition-transform duration-300 ease-in-out">
+      <div className="fixed inset-y-0 left-0 z-50 w-full sm:w-[480px] lg:w-[520px] bg-white shadow-2xl border-r border-outline-variant flex flex-col transform transition-transform duration-300 ease-in-out">
         {/* Drawer Header */}
-        <div className="p-3.5 sm:p-5 border-b border-amber-100 dark:border-stone-800 bg-gradient-to-l from-amber-50/60 to-transparent dark:from-amber-950/20">
+        <div className="p-3.5 sm:p-5 border-b border-warning/25 bg-gradient-to-l from-warning-container/60 to-transparent ">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white flex items-center justify-center font-black text-xl shadow-md shadow-amber-600/30">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary-strong via-primary to-primary text-white flex items-center justify-center font-black text-xl shadow-md shadow-warning/30">
               {zone.id}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-bold text-[#1c1917] dark:text-[#f5f5f4]">
+                <h3 className="text-xl font-bold text-[#1c1917] ">
                   {zone.name}
                 </h3>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-semibold border border-amber-200 dark:border-amber-800">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-warning-container text-warning font-semibold border border-warning ">
                   {zone.direction}
                 </span>
               </div>
-              <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+              <p className="text-xs text-on-surface-variant mt-0.5">
                 الحي المتميز – إجمالي عروضك: {zoneUnits.length} وحدة
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-stone-400 hover:text-stone-600 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition"
+            className="p-2 rounded-xl text-on-surface-variant hover:text-on-surface-variant hover:bg-surface-container transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Masterplan Location Snippet */}
-        <div className="relative h-24 w-full rounded-2xl overflow-hidden border border-amber-900/30 bg-black mt-3 shadow-inner">
+        <div className="relative h-24 w-full rounded-2xl overflow-hidden border border-warning/30 bg-black mt-3 shadow-inner">
           <img
             src="/preview.webp"
             alt={`موقع ${zone.name} على مخطط الجهاز`}
@@ -93,8 +93,8 @@ export default function ZoneDrawer({
               transform: 'scale(2.2)',
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-2.5">
-            <span className="text-[11px] font-bold text-amber-300 flex items-center gap-1">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2.5">
+            <span className="text-[11px] font-bold text-warning-container flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" />
               موقع {zone.name} على مخطط الجهاز الرسمي
             </span>
@@ -102,7 +102,7 @@ export default function ZoneDrawer({
         </div>
 
         {zone.notes && (
-          <div className="mt-3 p-2.5 rounded-xl bg-stone-100 dark:bg-stone-800/60 text-xs text-stone-600 dark:text-stone-300 border border-stone-200/50 dark:border-stone-700/50">
+          <div className="mt-3 p-2.5 rounded-xl bg-surface-container text-xs text-on-surface-variant border border-outline-variant/50 ">
             {zone.notes}
           </div>
         )}
@@ -111,18 +111,18 @@ export default function ZoneDrawer({
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
         {/* Action: Add Unit to Zone */}
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-warning-container/80 border border-warning ">
           <div>
-            <p className="text-xs font-bold text-amber-950 dark:text-amber-200">
+            <p className="text-xs font-bold text-on-warning-container ">
               هل لديك وحدة جديدة في {zone.name}؟
             </p>
-            <p className="text-[11px] text-amber-700 dark:text-amber-400">
+            <p className="text-[11px] text-warning ">
               سجّل بيانات القطعة ومواصفات الشقة فوراً
             </p>
           </div>
           <button
             onClick={() => onAddUnitInZone(zone.id)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-sm transition"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-warning hover:bg-warning text-white text-xs font-bold shadow-sm transition"
           >
             <Plus className="w-3.5 h-3.5" />
             إضافة وحدة
@@ -132,8 +132,8 @@ export default function ZoneDrawer({
         {/* Plots / Buildings in this Zone */}
         <div>
           <div className="flex items-center justify-between mb-2.5">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5 text-amber-600" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5 text-warning" />
               القطع والمباني المسجلة ({zoneBuildings.length})
             </h4>
             <div className="relative w-36">
@@ -142,13 +142,13 @@ export default function ZoneDrawer({
                 placeholder="بحث برقم القطعة..."
                 value={plotSearch}
                 onChange={(e) => setPlotSearch(e.target.value)}
-                className="w-full text-xs px-2.5 py-1.5 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-white dark:bg-[#151d2a] text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 shadow-xs"
+                className="w-full text-xs px-2.5 py-1.5 rounded-xl border border-outline-variant bg-white text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary shadow-xs"
               />
             </div>
           </div>
 
           {filteredBuildings.length === 0 ? (
-            <div className="text-center py-6 text-xs text-stone-400 bg-stone-50 dark:bg-stone-800/40 rounded-xl border border-dashed border-stone-200 dark:border-stone-800">
+            <div className="text-center py-6 text-xs text-on-surface-variant bg-surface-container-low rounded-xl border border-dashed border-outline-variant ">
               لا توجد قطع مسجلة تطابق بحثك حالياً
             </div>
           ) : (
@@ -158,18 +158,18 @@ export default function ZoneDrawer({
                 return (
                   <div
                     key={b.id}
-                    className="p-3 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/50 hover:border-amber-500 dark:hover:border-amber-500 transition space-y-1.5"
+                    className="p-3 rounded-2xl border border-outline-variant bg-surface-container-low hover:border-warning transition space-y-1.5"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm text-[#1c1917] dark:text-[#f5f5f4]">
+                      <span className="font-bold text-sm text-[#1c1917] ">
                         قطعة {b.plotNo}
                       </span>
-                      <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200">
+                      <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-warning-container text-warning ">
                         {bUnits.length} وحدة
                       </span>
                     </div>
                     {b.landArea && (
-                      <p className="text-[11px] text-stone-500">
+                      <p className="text-[11px] text-on-surface-variant">
                         مساحة الأرض: {b.landArea} م²
                       </p>
                     )}
@@ -178,13 +178,13 @@ export default function ZoneDrawer({
                         {b.features.slice(0, 3).map((f, idx) => (
                           <span
                             key={idx}
-                            className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300"
+                            className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-warning-container text-warning "
                           >
                             {f}
                           </span>
                         ))}
                         {b.features.length > 3 && (
-                          <span className="text-[10px] text-stone-400">+{b.features.length - 3}</span>
+                          <span className="text-[10px] text-on-surface-variant">+{b.features.length - 3}</span>
                         )}
                       </div>
                     )}
@@ -197,20 +197,20 @@ export default function ZoneDrawer({
 
         {/* Units List */}
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-3 flex items-center gap-1.5">
-            <Tag className="w-3.5 h-3.5 text-amber-600" />
+          <h4 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-3 flex items-center gap-1.5">
+            <Tag className="w-3.5 h-3.5 text-warning" />
             عروضك المتاحة بالمنطقة ({zoneUnits.length})
           </h4>
 
           {zoneUnits.length === 0 ? (
-            <div className="text-center py-10 bg-stone-50 dark:bg-stone-800/40 rounded-2xl border border-dashed border-stone-200 dark:border-stone-800 p-6">
-              <Building2 className="w-10 h-10 text-stone-300 dark:text-stone-600 mx-auto mb-2" />
-              <p className="text-xs font-bold text-stone-600 dark:text-stone-300">
+            <div className="text-center py-10 bg-surface-container-low rounded-2xl border border-dashed border-outline-variant p-6">
+              <Building2 className="w-10 h-10 text-on-surface-variant mx-auto mb-2" />
+              <p className="text-xs font-bold text-on-surface-variant ">
                 لا توجد وحدات معروضة لك في {zone.name} بعد
               </p>
               <button
                 onClick={() => onAddUnitInZone(zone.id)}
-                className="mt-3 text-xs font-bold text-amber-600 hover:text-amber-700 underline"
+                className="mt-3 text-xs font-bold text-warning hover:text-warning underline"
               >
                 اضغط هنا لإضافة أول وحدة
               </button>
@@ -223,16 +223,16 @@ export default function ZoneDrawer({
                   <div
                     key={u.id}
                     onClick={() => onSelectUnit(u)}
-                    className="p-3.5 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800/80 hover:shadow-md hover:border-amber-500 dark:hover:border-amber-500 transition cursor-pointer group"
+                    className="p-3.5 rounded-2xl border border-outline-variant bg-white hover:shadow-md hover:border-warning transition cursor-pointer group"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-[#1c1917] dark:text-[#f5f5f4]">
+                          <span className="font-bold text-sm text-[#1c1917] ">
                             قطعة {u.plotNo} – {UNIT_KIND_LABELS[u.unitKind]}
                           </span>
                         </div>
-                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                        <p className="text-xs text-on-surface-variant mt-0.5">
                           {u.area} م² {u.gardenArea ? `+ حديقة ${u.gardenArea} م²` : ''} • {u.side || 'واجهة'}
                         </p>
                       </div>
@@ -243,18 +243,18 @@ export default function ZoneDrawer({
                       </span>
                     </div>
 
-                    <div className="mt-3 flex items-center justify-between pt-2 border-t border-stone-100 dark:border-stone-700/60">
+                    <div className="mt-3 flex items-center justify-between pt-2 border-t border-outline-variant ">
                       <div>
-                        <span className="text-sm font-extrabold text-amber-800 dark:text-amber-400">
+                        <span className="text-sm font-extrabold text-warning ">
                           {u.price.toLocaleString('ar-EG')} ج.م
                         </span>
                         {u.negotiable && (
-                          <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mr-1.5">
+                          <span className="text-[10px] text-warning font-semibold mr-1.5">
                             (قابل للتفاوض)
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-stone-400 group-hover:text-amber-600 flex items-center gap-1 font-semibold">
+                      <span className="text-xs text-on-surface-variant group-hover:text-warning flex items-center gap-1 font-semibold">
                         التفاصيل
                         <ChevronRight className="w-3.5 h-3.5 transform rotate-180" />
                       </span>

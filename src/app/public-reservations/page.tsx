@@ -66,10 +66,10 @@ export default function PublicReservationsPage() {
             <CalendarCheck className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-lg font-black text-stone-900 dark:text-stone-100">
+            <h1 className="text-lg font-black text-on-surface ">
               حجوزات الصفحة العامة
             </h1>
-            <p className="text-xs text-stone-500 dark:text-stone-400 font-semibold">
+            <p className="text-xs text-on-surface-variant font-semibold">
               الطلبات الجديدة من زوار الصفحة العامة — استلم متابعتها قبل زملائك
             </p>
           </div>
@@ -77,7 +77,7 @@ export default function PublicReservationsPage() {
         <button
           type="button"
           onClick={load}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-lowest border border-stone-200 dark:border-stone-700 text-xs font-bold text-on-surface hover:bg-surface-container-low cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-xs font-bold text-on-surface hover:bg-surface-container-low cursor-pointer"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           تحديث
@@ -89,8 +89,8 @@ export default function PublicReservationsPage() {
         <p
           className={`text-xs font-bold rounded-xl px-4 py-3 ${
             message.type === 'success'
-              ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40'
-              : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
+              ? 'text-success  bg-success-container '
+              : 'text-error  bg-error-container '
           }`}
         >
           {message.text}
@@ -131,9 +131,9 @@ export default function PublicReservationsPage() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-16">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-surface-container-low flex items-center justify-center mb-3">
-            <SearchX className="w-7 h-7 text-stone-400" />
+            <SearchX className="w-7 h-7 text-on-surface-variant" />
           </div>
-          <p className="font-bold text-stone-600 dark:text-stone-300">
+          <p className="font-bold text-on-surface-variant ">
             {filter === 'new' ? 'لا توجد طلبات حجز جديدة' : 'لا توجد طلبات تحت المتابعة'}
           </p>
         </div>
@@ -142,12 +142,12 @@ export default function PublicReservationsPage() {
           {filtered.map((r) => (
             <div
               key={r.id}
-              className="bg-surface-container-lowest rounded-2xl border border-stone-200 dark:border-stone-800 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow"
+              className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow"
             >
               {/* بيانات العميل الزائر */}
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-black text-stone-900 dark:text-stone-100 text-sm">
+                  <span className="font-black text-on-surface text-sm">
                     {r.customerName}
                   </span>
                   <a
@@ -158,16 +158,16 @@ export default function PublicReservationsPage() {
                     {r.phone}
                   </a>
                 </div>
-                <p className="text-xs text-stone-500 dark:text-stone-400 font-semibold">
+                <p className="text-xs text-on-surface-variant font-semibold">
                   {r.unitLabel || 'وحدة'} {r.unitArea ? `• ${r.unitArea} م²` : ''}
                 </p>
-                <p className="text-[11px] text-stone-500 dark:text-stone-400 font-semibold">
+                <p className="text-[11px] text-on-surface-variant font-semibold">
                   يرجى التواصل:{' '}
                   {formatArabicFollowupDate(`${r.preferredDate}T12:00:00`).dayName} —{' '}
                   {RESERVATION_PERIOD_LABELS[r.period]}
                 </p>
                 {r.note && (
-                  <p className="text-xs text-stone-600 dark:text-stone-300 bg-stone-100/80 dark:bg-stone-900 rounded-lg px-3 py-2 mt-1 line-clamp-2">
+                  <p className="text-xs text-on-surface-variant bg-surface-container/80 rounded-lg px-3 py-2 mt-1 line-clamp-2">
                     ملاحظة الزائر: {r.note}
                   </p>
                 )}
@@ -190,10 +190,10 @@ export default function PublicReservationsPage() {
                     متابعة العميل (استلام)
                   </button>
                 ) : (
-                  <div className="rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 px-3 py-2.5">
+                  <div className="rounded-xl bg-surface-container border border-outline-variant px-3 py-2.5">
                     <div className="flex items-center justify-between gap-2 text-[11px] font-bold">
-                      <span className="flex items-center gap-1.5 text-stone-700 dark:text-stone-200">
-                        <UserPlus className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="flex items-center gap-1.5 text-on-surface-variant ">
+                        <UserPlus className="w-3.5 h-3.5 text-success" />
                         {r.claimedByName || 'موظف'}
                       </span>
                       {r.claimedCustomerStage && (
@@ -204,7 +204,7 @@ export default function PublicReservationsPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-stone-400 mt-1">
+                    <p className="text-[10px] text-on-surface-variant mt-1">
                       أُضيف العميل إلى CRM الموظف المتابع
                     </p>
                   </div>

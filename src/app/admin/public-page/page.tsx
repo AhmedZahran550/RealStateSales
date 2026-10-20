@@ -186,10 +186,10 @@ export default function PublicPageAdminPage() {
           <Globe className="w-6 h-6" />
         </div>
         <div>
-          <h1 className="text-lg font-black text-stone-900 dark:text-stone-100">
+          <h1 className="text-lg font-black text-on-surface">
             الصفحة العامة للشركة
           </h1>
-          <p className="text-xs text-stone-500 dark:text-stone-400 font-semibold">
+          <p className="text-xs text-on-surface-variant font-semibold">
             شارك الرابط مع عملائك ليستعرضوا الوحدات ويحجزوا موعد معاينة
           </p>
         </div>
@@ -199,8 +199,8 @@ export default function PublicPageAdminPage() {
         <p
           className={`text-xs font-bold rounded-xl px-4 py-3 ${
             message.type === 'success'
-              ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40'
-              : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
+              ? 'text-on-success-container bg-success-container'
+              : 'text-on-error-container bg-error-container'
           }`}
         >
           {message.text}
@@ -208,13 +208,13 @@ export default function PublicPageAdminPage() {
       )}
 
       {/* التفعيل + مشاركة الرابط */}
-      <div className="bg-surface-container-lowest rounded-2xl border border-stone-200 dark:border-stone-800 p-5 space-y-4 shadow-sm">
+      <div className="card card-bordered rounded-2xl p-5 space-y-4 shadow-sm">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h3 className="text-sm font-black text-stone-900 dark:text-stone-100">
+            <h3 className="text-sm font-black text-on-surface">
               حالة الصفحة العامة
             </h3>
-            <p className="text-[11px] text-stone-500 dark:text-stone-400 font-semibold mt-0.5">
+            <p className="text-[11px] text-on-surface-variant font-semibold mt-0.5">
               {settings?.isEnabled ? 'الصفحة ظاهرة للعملاء الآن' : 'الصفحة مخفية عن العملاء'}
             </p>
           </div>
@@ -223,7 +223,7 @@ export default function PublicPageAdminPage() {
             onClick={() => updateSettings({ isEnabled: !settings?.isEnabled })}
             disabled={saving || !settings}
             className={`relative w-14 h-8 rounded-full transition-colors cursor-pointer shrink-0 ${
-              settings?.isEnabled ? 'bg-primary' : 'bg-stone-300 dark:bg-stone-700'
+              settings?.isEnabled ? 'bg-primary' : 'bg-surface-container-highest'
             }`}
             aria-label="تفعيل الصفحة العامة"
           >
@@ -235,10 +235,10 @@ export default function PublicPageAdminPage() {
           </button>
         </div>
 
-        <div className="h-px bg-stone-200 dark:bg-stone-800" />
+        <div className="h-px bg-outline-variant" />
 
         <div>
-          <h3 className="text-sm font-black text-stone-900 dark:text-stone-100 mb-2 flex items-center gap-2">
+          <h3 className="text-sm font-black text-on-surface mb-2 flex items-center gap-2">
             <Link2 className="w-4 h-4 text-primary" />
             رابط المشاركة
           </h3>
@@ -247,12 +247,12 @@ export default function PublicPageAdminPage() {
               readOnly
               value={shareUrl}
               dir="ltr"
-              className="flex-1 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 px-3 py-2.5 text-xs font-bold text-stone-700 dark:text-stone-200 text-left min-w-0"
+              className="input-base flex-1 text-xs text-left min-w-0"
             />
             <button
               type="button"
               onClick={copyLink}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-on-primary text-xs font-black transition-all cursor-pointer shrink-0"
+              className="btn-primary px-4 py-2.5 text-xs shrink-0"
             >
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? 'تم النسخ' : 'نسخ'}
@@ -262,10 +262,10 @@ export default function PublicPageAdminPage() {
       </div>
 
       {/* اختيار الحقول الظاهرة */}
-      <div className="bg-surface-container-lowest rounded-2xl border border-stone-200 dark:border-stone-800 p-5 space-y-3 shadow-sm">
+      <div className="card card-bordered rounded-2xl p-5 space-y-3 shadow-sm">
         <div className="flex items-center gap-2">
           <Save className="w-4 h-4 text-primary" />
-          <h3 className="text-sm font-black text-stone-900 dark:text-stone-100">
+          <h3 className="text-sm font-black text-on-surface">
             تفاصيل الوحدات الظاهرة للعملاء
           </h3>
           {saving && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />}
@@ -281,17 +281,17 @@ export default function PublicPageAdminPage() {
                 onClick={() => updateSettings({ [f.key]: !on } as Partial<CompanyPublicSettings>)}
                 className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-right transition-all cursor-pointer ${
                   on
-                    ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800'
-                    : 'bg-stone-50 dark:bg-stone-900 border-stone-200 dark:border-stone-800'
+                    ? 'bg-surface-container border-primary'
+                    : 'bg-surface-container-lowest border-outline-variant'
                 }`}
               >
                 <div className="min-w-0">
-                  <p className="text-xs font-black text-stone-900 dark:text-stone-100">{f.label}</p>
-                  <p className="text-[10px] text-stone-500 dark:text-stone-400 truncate">{f.hint}</p>
+                  <p className="text-xs font-black text-on-surface">{f.label}</p>
+                  <p className="text-[10px] text-on-surface-variant truncate">{f.hint}</p>
                 </div>
                 <span
                   className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${
-                    on ? 'bg-primary' : 'bg-stone-300 dark:bg-stone-700'
+                    on ? 'bg-primary' : 'bg-surface-container-highest'
                   }`}
                 >
                   <span
@@ -304,19 +304,19 @@ export default function PublicPageAdminPage() {
             );
           })}
         </div>
-        <p className="text-[11px] text-stone-400">
+        <p className="text-[11px] text-on-surface-variant">
           سيظهر كل مربع تم تفعيله على كروت الوحدات في الصفحة العامة مع تفاصيل الوحدة في العرض الكامل
         </p>
       </div>
 
       {/* معرض أعمال سابقة */}
-      <div className="bg-surface-container-lowest rounded-2xl border border-stone-200 dark:border-stone-800 p-5 space-y-4 shadow-sm">
+      <div className="card card-bordered rounded-2xl p-5 space-y-4 shadow-sm">
         <div className="flex items-center gap-2">
           <Images className="w-4 h-4 text-primary" />
-          <h3 className="text-sm font-black text-stone-900 dark:text-stone-100">
+          <h3 className="text-sm font-black text-on-surface">
             معرض أعمال سابقة
           </h3>
-          <p className="text-[11px] text-stone-400">
+          <p className="text-[11px] text-on-surface-variant">
             ({gallery.length} عنصر — الوحدات المباعة تُنقل تلقائياً إلى هنا)
           </p>
         </div>
@@ -327,7 +327,7 @@ export default function PublicPageAdminPage() {
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         ) : gallery.length === 0 ? (
-          <p className="text-xs text-stone-400 text-center py-4">
+          <p className="text-xs text-on-surface-variant text-center py-4">
             لا توجد عناصر بعد — أضف عملاً سابقاً يدوياً أو عدّل حالة وحدة إلى (تم البيع)
           </p>
         ) : (
@@ -335,13 +335,13 @@ export default function PublicPageAdminPage() {
             {gallery.map((g) => (
               <div
                 key={g.id}
-                className="relative group aspect-video rounded-xl overflow-hidden border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-900"
+                className="relative group aspect-video rounded-xl overflow-hidden border border-outline-variant bg-surface-container"
               >
                 {g.images[0] ? (
                   <img src={g.images[0]} alt={g.title || ''} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <ImageOff className="w-5 h-5 text-stone-400" />
+                  <div className="w-full h-full flex items-center justify-center text-on-surface-variant">
+                    <ImageOff className="w-5 h-5" />
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
@@ -352,8 +352,8 @@ export default function PublicPageAdminPage() {
                   <span
                     className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
                       g.source === 'auto_sold'
-                        ? 'bg-emerald-500/90 text-white'
-                        : 'bg-white/80 text-stone-800'
+                        ? 'bg-success text-on-success'
+                        : 'bg-white/90 text-on-surface'
                     }`}
                   >
                     {g.source === 'auto_sold' ? 'تلقائي' : 'يدوي'}
@@ -363,7 +363,7 @@ export default function PublicPageAdminPage() {
                   type="button"
                   onClick={() => handleDeleteItem(g.id)}
                   disabled={deletingId === g.id}
-                  className="absolute top-1.5 left-1.5 p-1.5 rounded-lg bg-red-600/90 text-white opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-all cursor-pointer"
+                  className="absolute top-1.5 left-1.5 p-1.5 rounded-lg bg-error text-on-error opacity-0 group-hover:opacity-100 hover:brightness-90 transition-all cursor-pointer"
                   aria-label="حذف"
                 >
                   {deletingId === g.id ? (
@@ -377,11 +377,11 @@ export default function PublicPageAdminPage() {
           </div>
         )}
 
-        <div className="h-px bg-stone-200 dark:bg-stone-800" />
+        <div className="h-px bg-outline-variant" />
 
         {/* إضافة عنصر جديد */}
         <div className="space-y-3">
-          <h4 className="text-xs font-black text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+          <h4 className="text-xs font-black text-on-surface flex items-center gap-1.5">
             <Plus className="w-3.5 h-3.5 text-primary" />
             إضافة عمل سابق جديد
           </h4>
@@ -393,14 +393,14 @@ export default function PublicPageAdminPage() {
               onChange={(e) => setItemTitle(e.target.value)}
               placeholder="العنوان (اختياري)"
               maxLength={120}
-              className="rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2.5 text-xs text-stone-900 dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="input-base text-xs"
             />
             <input
               type="number"
               value={itemPrice}
               onChange={(e) => setItemPrice(e.target.value)}
               placeholder="السعر (اختياري) ج.م"
-              className="rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2.5 text-xs text-stone-900 dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="input-base text-xs"
             />
           </div>
 
@@ -410,13 +410,13 @@ export default function PublicPageAdminPage() {
             placeholder="وصف قصير (اختياري)"
             rows={2}
             maxLength={1000}
-            className="w-full rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2.5 text-xs text-stone-900 dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+            className="input-base text-xs resize-none"
           />
 
           {/* رفع الصور */}
           <div className="flex flex-wrap items-center gap-2">
             <label
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-dashed border-stone-400 dark:border-stone-600 text-xs font-bold text-stone-600 dark:text-stone-300 hover:border-primary hover:text-primary transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-dashed border-outline text-on-surface-variant text-xs font-bold hover:border-primary hover:text-primary transition-all cursor-pointer ${
                 uploading ? 'opacity-60 pointer-events-none' : ''
               }`}
             >
@@ -431,7 +431,7 @@ export default function PublicPageAdminPage() {
               />
             </label>
             {itemImages.length > 0 && (
-              <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+              <span className="text-[11px] font-bold text-success">
                 {itemImages.length} صورة جاهزة
               </span>
             )}
@@ -441,7 +441,7 @@ export default function PublicPageAdminPage() {
           {itemImages.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {itemImages.map((img, i) => (
-                <div key={i} className="relative w-16 h-12 rounded-lg overflow-hidden border border-stone-300 dark:border-stone-700">
+                <div key={i} className="relative w-16 h-12 rounded-lg overflow-hidden border border-outline-variant">
                   <img src={img} alt={`صورة ${i + 1}`} className="w-full h-full object-cover" />
                   <button
                     type="button"
@@ -460,7 +460,7 @@ export default function PublicPageAdminPage() {
             type="button"
             onClick={handleAddItem}
             disabled={addingItem || uploading || itemImages.length === 0}
-            className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-60 text-on-primary text-xs font-black transition-all cursor-pointer"
+            className="btn-primary w-full sm:w-auto px-6 py-2.5 text-xs"
           >
             {addingItem ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             حفظ في المعرض

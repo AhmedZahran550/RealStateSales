@@ -59,12 +59,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   // حالة انتظار قراءة الجلسة المخزنة في الصفحات المحمية
   if (!isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fbf9f6] dark:bg-[#0b0f17]">
+      <div className="min-h-screen flex items-center justify-center bg-surface ">
         <div className="flex flex-col items-center gap-3 animate-pulse">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white flex items-center justify-center shadow-xl shadow-amber-600/30">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary-strong via-primary to-primary text-white flex items-center justify-center shadow-xl shadow-warning/30">
             <Building2 className="w-6 h-6" />
           </div>
-          <span className="text-xs font-black text-amber-900 dark:text-amber-400">
+          <span className="text-xs font-black text-warning ">
             منظومة الواحة العقارية – جاري التحقق من الجلسة...
           </span>
         </div>
@@ -78,12 +78,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   // إذا كان غير مسجل دخول ومسار غير تسجيل الدخول، نمنع عرض المحتوى حتى يكتمل التوجيه
   if (!currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fbf9f6] dark:bg-[#0b0f17]">
+      <div className="min-h-screen flex items-center justify-center bg-surface ">
         <div className="flex flex-col items-center gap-3 animate-pulse">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white flex items-center justify-center shadow-xl shadow-amber-600/30">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary-strong via-primary to-primary text-white flex items-center justify-center shadow-xl shadow-warning/30">
             <Building2 className="w-6 h-6" />
           </div>
-          <span className="text-xs font-black text-amber-900 dark:text-amber-400">
+          <span className="text-xs font-black text-warning ">
             يرجى تسجيل الدخول أولاً...
           </span>
         </div>
