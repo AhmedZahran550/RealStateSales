@@ -11,9 +11,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const isLoginPage = pathname === '/login';
+  // الصفحة العامة للشركات متاحة للزوار بدون تسجيل دخول
+  const isPublicPage = pathname.startsWith('/p/');
 
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized || isPublicPage) return;
 
     if (!currentUser && !isLoginPage) {
       router.replace('/login');
@@ -47,10 +49,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, [currentUser, isInitialized, isLoginPage, pathname, router]);
+  }, [currentUser, isInitialized, isLoginPage, isPublicPage, pathname, router]);
 
-  // إذا كان المسار هو صفحة تسجيل الدخول، اعرضها مباشرة
-  if (isLoginPage) {
+  // إذا كان المسار هو صفحة تسجيل الدخول أو الصفحة العامة، اعرضها مباشرة
+  if (isLoginPage || isPublicPage) {
     return <>{children}</>;
   }
 

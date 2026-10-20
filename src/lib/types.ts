@@ -239,6 +239,83 @@ export const UNIT_KIND_LABELS: Record<UnitKind, string> = {
   other: 'وحدة أخرى',
 };
 
+// ==========================================================
+// الصفحة العامة للشركات (Public Company Page)
+// ==========================================================
+
+export type ReservationPeriod = 'morning' | 'afternoon' | 'evening';
+
+export const RESERVATION_PERIOD_LABELS: Record<ReservationPeriod, string> = {
+  morning: 'صباحي (9 ص - 12 م)',
+  afternoon: 'بعد الظهر (12 م - 4 م)',
+  evening: 'مسائي (4 م - 9 م)',
+};
+
+export type GalleryItemSource = 'manual' | 'auto_sold';
+
+export interface CompanyPublicSettings {
+  companyId: string;
+  isEnabled: boolean; // تفعيل / إيقاف الصفحة العامة
+  showPrice: boolean;
+  showArea: boolean;
+  showFloor: boolean;
+  showGarden: boolean;
+  showFeatures: boolean;
+  showDescription: boolean;
+  showDelivery: boolean;
+  showPayment: boolean;
+}
+
+export interface GalleryItem {
+  id: string;
+  companyId: string;
+  unitId?: string; // مرتبط بوحدة تم بيعها (اختياري)
+  title?: string;
+  description?: string;
+  price?: number;
+  images: string[];
+  source: GalleryItemSource; // 'manual' (يدوي) | 'auto_sold' (تلقائي عند البيع)
+  createdAt: string;
+}
+
+export interface PublicUnit {
+  id: string;
+  unitKind: UnitKind;
+  plotNo: number;
+  zoneName?: string;
+  floor?: number;
+  side?: string;
+  area: number;
+  gardenArea?: number;
+  price: number;
+  negotiable: boolean;
+  deliveryNote?: string;
+  paymentTerms?: string;
+  description?: string;
+  features?: string[];
+  media: UnitMedia[];
+}
+
+export interface PublicReservation {
+  id: string;
+  companyId: string;
+  unitId: string;
+  unitLabel?: string;
+  unitArea?: number;
+  customerName: string;
+  phone: string;
+  preferredDate: string;
+  period: ReservationPeriod;
+  note?: string;
+  status: 'new' | 'claimed';
+  claimedBy?: string;
+  claimedByName?: string;
+  claimedCustomerId?: string;
+  claimedCustomerStage?: CustomerStage;
+  claimedAt?: string;
+  createdAt: string;
+}
+
 export const UNIT_STATUS_CONFIG: Record<UnitStatus, { label: string; badgeClass: string }> = {
   available: {
     label: 'متاح للبيع',

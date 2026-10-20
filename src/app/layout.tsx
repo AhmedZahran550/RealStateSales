@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { Cairo, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { AppProvider } from '@/context/AppContext';
@@ -44,9 +45,11 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-surface text-on-surface antialiased selection:bg-primary selection:text-white">
         <AppProvider>
-          <AuthGuard>
-            <AppShell>{children}</AppShell>
-          </AuthGuard>
+          <Suspense>
+            <AuthGuard>
+              <AppShell>{children}</AppShell>
+            </AuthGuard>
+          </Suspense>
         </AppProvider>
       </body>
     </html>

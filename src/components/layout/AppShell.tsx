@@ -64,9 +64,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   const isLoginPage = pathname === '/login';
+  // الصفحة العامة تُعرض بدون الهيكل الداخلي (بدون قائمة جانبية أو بحث)
+  const isPublicPage = pathname.startsWith('/p/');
 
   // If login page, render plain without shell
-  if (isLoginPage || !currentUser) {
+  if (isLoginPage || isPublicPage || !currentUser) {
     return <main className="min-h-screen w-full bg-surface">{children}</main>;
   }
 
@@ -133,6 +135,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         badge: `${companyUsers.filter((u) => u.role === 'user').length}`,
       },
       {
+        href: '/public-reservations',
+        label: 'حجوزات الصفحة العامة',
+        icon: 'how_to_reg',
+        active: pathname.startsWith('/public-reservations'),
+      },
+      {
+        href: '/admin/public-page',
+        label: 'الصفحة العامة وأعمال السابقة',
+        icon: 'public',
+        active: pathname.startsWith('/admin/public-page'),
+      },
+      {
         href: '/map',
         label: 'الخريطة التفاعلية',
         icon: 'map',
@@ -174,6 +188,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         label: 'مطابقة العروض السريعة',
         icon: 'handshake',
         active: pathname === '/matching',
+      },
+      {
+        href: '/public-reservations',
+        label: 'حجوزات الصفحة العامة',
+        icon: 'how_to_reg',
+        active: pathname.startsWith('/public-reservations'),
       },
       {
         href: '/map',

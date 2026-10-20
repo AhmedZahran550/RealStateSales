@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, handleApiError } from '@/lib/server/auth';
 import { serverSupabase } from '@/lib/server/supabase';
+import { UNIT_KIND_LABELS } from '@/lib/types';
 
 export async function PATCH(
   request: NextRequest,
@@ -44,6 +45,46 @@ export async function PATCH(
       new_status: newStatus,
       details: `تم تغيير حالة الوحدة من [${oldLabel}] إلى [${newLabel}] بواسطة ${authUser.fullName}`,
     });
+
+    // نقل الوحدة تلقائياً إلى معرض أعمال سابقة عند بيعها
+    if (newStatus === 'sold' && oldStatus !== 'sold') {
+      try {
+        const { data: unit } = await serverSupabase
+          .from('units')
+          .select('id, company_id, unit_kind, plot_no, area, price, unit_media(storage_path, external_url)')
+          .eq('id', id)
+          .single();
+
+        if (unit) {
+          // منع التكرار: لا نضيف الوحدة للمعرض أكثر من مرة
+          const { data: existing } = await serverSupabase
+            .from('company_gallery_items')
+            .select('id')
+            .eq('company_id', unit.company_id)
+            .eq('unit_id', unit.id)
+            .maybeSingle();
+
+          if (!existing) {
+            const images = (unit.unit_media || [])
+              .map((m: any) => m.storage_path || m.external_url)
+              .filter(Boolean);
+
+            await serverSupabase.from('company_gallery_items').insert({
+              company_id: unit.company_id,
+              unit_id: unit.id,
+              title: `${UNIT_KIND_LABELS[unit.unit_kind as keyof typeof UNIT_KIND_LABELS] || 'وحدة'} - قطعة ${unit.plot_no}`,
+              description: null,
+              price: unit.price ? Number(unit.price) : null,
+              images,
+              source: 'auto_sold',
+              created_by: authUser.sub,
+            });
+          }
+        }
+      } catch (galleryErr: any) {
+        console.error('Failed to add sold unit to gallery:', galleryErr);
+      }
+    }
 
     return NextResponse.json({ success: true, message: 'تم تحديث حالة الوحدة بنجاح' });
   } catch (err: any) {
