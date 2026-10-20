@@ -184,9 +184,11 @@ export default function MapPage() {
           setSelectedUnit(null);
           setIsUnitFormOpen(true);
         }}
-        onDelete={(id) => {
-          deleteUnit(id);
-          setSelectedUnit(null);
+        onDelete={async (id) => {
+          const res = await deleteUnit(id);
+          if (res.success) {
+            setSelectedUnit(null);
+          }
         }}
       />
 
@@ -202,15 +204,16 @@ export default function MapPage() {
           setEditingUnit(null);
           setUnitFormPresetZone(undefined);
         }}
-        onSubmit={(unitData) => {
+        onSubmit={async (unitData) => {
+          const res = editingUnit
+            ? await updateUnit(editingUnit.id, unitData)
+            : await addUnit(unitData);
           if (editingUnit) {
-            updateUnit(editingUnit.id, unitData);
-          } else {
-            addUnit(unitData);
+            setIsUnitFormOpen(false);
+            setEditingUnit(null);
+            setUnitFormPresetZone(undefined);
           }
-          setIsUnitFormOpen(false);
-          setEditingUnit(null);
-          setUnitFormPresetZone(undefined);
+          return res;
         }}
       />
     </div>

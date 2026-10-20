@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Unit, UnitKind, UnitStatus, Zone, Building, UNIT_KIND_LABELS, UnitMedia } from '@/lib/types';
 import { zoneDisplayName } from '@/lib/zone-utils';
-import { X, Building2, Plus, Check, Sparkles, Tag, Info } from 'lucide-react';
+import { X, Building2, Plus, Check, Sparkles, Tag, Info, Loader2, AlertCircle } from 'lucide-react';
 import LiveMapPicker from '@/components/LiveMapPicker';
 import MediaUploader from '@/components/MediaUploader';
 import { useApp } from '@/context/AppContext';
@@ -11,7 +11,8 @@ import { useApp } from '@/context/AppContext';
 export interface UnitFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (unitData: any) => void;
+  /** إن أعادت الكلّية { success: false, message } يبقى النموذج مفتوحاً ويعرض الرسالة */
+  onSubmit: (unitData: any) => void | Promise<{ success?: boolean; message?: string } | void>;
   initialUnit?: Unit | null;
   defaultZoneId?: number;
   defaultPlotNo?: number;
@@ -19,7 +20,7 @@ export interface UnitFormModalProps {
   zones?: Zone[];
   buildings?: Building[];
   services?: any;
-  onAddBuilding?: (b: Omit<Building, 'id'>) => Building;
+  onAddBuilding?: (b: Omit<Building, 'id'>) => Building | Promise<Building>;
 }
 
 const COMMON_FEATURE_SUGGESTIONS = [
@@ -57,8 +58,10 @@ export default function UnitFormModal({
     ? propsBuildings
     : (contextApp?.buildings || []);
 
-  const onAddBuilding = propsOnAddBuilding || contextApp?.addBuilding || ((b: any) => ({ ...b, id: Date.now() }));
-  const [zoneId, setZoneId] = useState<number>(defaultZoneId || initialUnit?.zoneId || 1);
+  const onAddBuilding = propsOnAddBuilding || contextApp?.addBuildingAsync || (async (b: any) => ({ ...b, id: Date.now() }));
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [zoneId, setZoneId] = useState<number>(defaultZoneId || initialUnit?.zoneId || zones[0]?.id || 1);
   const [plotNo, setPlotNo] = useState<number>(defaultPlotNo || initialUnit?.plotNo || 1);
   const [unitKind, setUnitKind] = useState<UnitKind>(initialUnit?.unitKind || 'floor_1');
   const [floor, setFloor] = useState<number>(initialUnit?.floor ?? 1);
@@ -88,6 +91,8 @@ export default function UnitFormModal({
   );
 
   useEffect(() => {
+    if (!isOpen) return;
+    setSubmitError(null);
     if (initialUnit) {
       setSelectedBuildingId(initialUnit.buildingId);
       setZoneId(initialUnit.zoneId);
@@ -117,7 +122,8 @@ export default function UnitFormModal({
           setPlotNo(b.plotNo);
         }
       } else {
-        setZoneId(defaultZoneId || 1);
+        // المنطقة الافتراضية = أول منطقة للشركة الحالي (وليس الرقم 1 الثابت)
+        setZoneId(defaultZoneId || zones[0]?.id || 1);
         setPlotNo(defaultPlotNo || 1);
       }
       setUnitKind('floor_1');
@@ -136,7 +142,7 @@ export default function UnitFormModal({
       setUnitMedia([]);
       setUnitFeatures([]);
     }
-  }, [initialUnit, defaultZoneId, defaultPlotNo, defaultBuildingId, buildings]);
+  }, [initialUnit, defaultZoneId, defaultPlotNo, defaultBuildingId, buildings, zones, isOpen]);
 
   if (!isOpen) return null;
 
@@ -163,46 +169,64 @@ export default function UnitFormModal({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    setSubmitError(null);
 
-    // التأكد من وجود المبنى أو إنشاؤه عند الحاجة
-    let building = selectedBuildingId
-      ? buildings.find((b) => b.id === Number(selectedBuildingId))
-      : currentBuilding;
+    try {
+      // التأكد من وجود المبنى أو إنشاؤه عند الحاجة (بانتظار الـ API لضمان الحفظ الفعلي)
+      let building = selectedBuildingId
+        ? buildings.find((b) => b.id === Number(selectedBuildingId))
+        : currentBuilding;
 
-    if (!building) {
-      building = onAddBuilding({
+      if (!building) {
+        building = await onAddBuilding({
+          zoneId,
+          plotNo: Number(plotNo),
+          landArea: 600,
+          features: [],
+        });
+      }
+
+      if (!building || !building.id) {
+        setSubmitError('فشل تجهيز بيانات المبنى التابع للوحدة — حاول اختيار مبنى موجود أو أعد المحاولة');
+        return;
+      }
+
+      const payload = {
+        buildingId: building.id,
         zoneId,
         plotNo: Number(plotNo),
-        landArea: 600,
-        features: [],
-      });
+        unitKind,
+        floor: Number(floor),
+        side,
+        area: Number(area),
+        gardenArea: Number(gardenArea),
+        price: Number(price),
+        negotiable,
+        deliveryNote,
+        paymentTerms,
+        description,
+        status,
+        lat: lat ? Number(lat) : undefined,
+        lng: lng ? Number(lng) : undefined,
+        features: unitFeatures,
+        media: unitMedia,
+      };
+
+      const result = await onSubmit(payload);
+      if (result && result.success === false) {
+        setSubmitError(result.message || 'فشل حفظ الوحدة — راجع البيانات وحاول مرة أخرى');
+        return;
+      }
+      onClose();
+    } catch (err: any) {
+      setSubmitError(err?.message || 'حدث خطأ غير متوقع أثناء حفظ الوحدة');
+    } finally {
+      setSubmitting(false);
     }
-
-    const payload = {
-      buildingId: building.id,
-      zoneId,
-      plotNo: Number(plotNo),
-      unitKind,
-      floor: Number(floor),
-      side,
-      area: Number(area),
-      gardenArea: Number(gardenArea),
-      price: Number(price),
-      negotiable,
-      deliveryNote,
-      paymentTerms,
-      description,
-      status,
-      lat: lat ? Number(lat) : undefined,
-      lng: lng ? Number(lng) : undefined,
-      features: unitFeatures,
-      media: unitMedia,
-    };
-
-    onSubmit(payload);
-    onClose();
   };
 
   return (
@@ -646,6 +670,12 @@ export default function UnitFormModal({
           </div>
 
           {/* Submit Buttons */}
+          {submitError && (
+            <div className="p-3 rounded-xl bg-error-container text-on-error-container border border-error text-xs font-bold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{submitError}</span>
+            </div>
+          )}
           <div className="pt-4 border-t border-outline-variant flex items-center justify-end gap-3">
             <button
               type="button"
@@ -656,9 +686,15 @@ export default function UnitFormModal({
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-warning hover:bg-warning text-white font-bold cursor-pointer shadow-md shadow-warning/30 transition"
+              disabled={submitting}
+              className="px-6 py-2.5 rounded-xl bg-warning hover:bg-warning text-white font-bold cursor-pointer shadow-md shadow-warning/30 transition disabled:opacity-60 disabled:cursor-wait flex items-center gap-2"
             >
-              {initialUnit ? 'حفظ التعديلات' : 'إضافة الوحدة للمخزون'}
+              {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {submitting
+                ? 'جاري الحفظ...'
+                : initialUnit
+                  ? 'حفظ التعديلات'
+                  : 'إضافة الوحدة للمخزون'}
             </button>
           </div>
         </form>

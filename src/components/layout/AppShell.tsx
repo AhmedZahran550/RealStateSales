@@ -663,20 +663,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         buildings={buildings}
         onAddBuilding={addBuilding}
         onClose={() => setIsAddUnitOpen(false)}
-        onSubmit={(unitData) => {
-          addUnit(unitData);
-          setIsAddUnitOpen(false);
-        }}
+        onSubmit={(unitData) => addUnit(unitData)}
       />
 
       <CustomerModal
         isOpen={isAddCustomerOpen}
         units={myUnits}
         onClose={() => setIsAddCustomerOpen(false)}
-        onSubmit={(customerData) => {
-          addCustomer(customerData);
-          setIsAddCustomerOpen(false);
-        }}
+        onSubmit={(customerData) => addCustomer(customerData)}
       />
 
       <ProfileModal

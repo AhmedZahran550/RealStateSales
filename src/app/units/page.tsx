@@ -835,9 +835,14 @@ export default function UnitsPage() {
           setSelectedUnit(null);
           setIsUnitFormOpen(true);
         }}
-        onDelete={(id) => {
-          deleteUnit(id);
-          setSelectedUnit(null);
+        onDelete={async (id) => {
+          const res = await deleteUnit(id);
+          if (res.success) {
+            setSelectedUnit(null);
+            showToast('تم حذف الوحدة بنجاح');
+          } else {
+            showToast(res.message || 'فشل حذف الوحدة');
+          }
         }}
       />
 
@@ -853,15 +858,16 @@ export default function UnitsPage() {
           setEditingUnit(null);
           setTargetBuildingIdForUnit(undefined);
         }}
-        onSubmit={(unitData) => {
+        onSubmit={async (unitData) => {
+          const res = editingUnit
+            ? await updateUnit(editingUnit.id, unitData)
+            : await addUnit(unitData);
           if (editingUnit) {
-            updateUnit(editingUnit.id, unitData);
-          } else {
-            addUnit(unitData);
+            setIsUnitFormOpen(false);
+            setEditingUnit(null);
+            setTargetBuildingIdForUnit(undefined);
           }
-          setIsUnitFormOpen(false);
-          setEditingUnit(null);
-          setTargetBuildingIdForUnit(undefined);
+          return res;
         }}
       />
 

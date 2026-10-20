@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { Unit, Customer, CustomerStage, ActivityType } from '@/lib/types';
@@ -37,6 +37,12 @@ export default function DashboardPage() {
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isUnitFormOpen, setIsUnitFormOpen] = useState(false);
+  const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const showToast = (text: string) => {
+    setToastMessage(text);
+    window.setTimeout(() => setToastMessage(null), 3500);
+  };
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [completedFollowups, setCompletedFollowups] = useState<Record<string, boolean>>({});
 
@@ -71,6 +77,13 @@ export default function DashboardPage() {
 
     return (
       <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
+      {/* Toast */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-inverse-surface text-inverse-on-surface shadow-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
+          <span className="material-symbols-outlined text-[18px] text-primary-fixed">check_circle</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
         {/* 1. Header Banner */}
         <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-4 sm:p-6 lg:p-space-lg shadow-sm border border-surface-container-high/40">
           <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-warning-container blur-3xl pointer-events-none" />
@@ -100,7 +113,10 @@ export default function DashboardPage() {
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-space-sm w-full sm:w-auto shrink-0">
               <button
-                onClick={() => setIsUnitFormOpen(true)}
+                onClick={() => {
+                  setEditingUnit(null);
+                  setIsUnitFormOpen(true);
+                }}
                 className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-white font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
                 type="button"
               >
@@ -430,8 +446,20 @@ export default function DashboardPage() {
         <UnitDetailModal
           unit={selectedUnit}
           onClose={() => setSelectedUnit(null)}
-          onEdit={() => {}}
-          onDelete={() => {}}
+          onEdit={(unit) => {
+            setSelectedUnit(null);
+            setEditingUnit(unit);
+            setIsUnitFormOpen(true);
+          }}
+          onDelete={async (id) => {
+            const res = await deleteUnit(id);
+            if (res.success) {
+              setSelectedUnit(null);
+              showToast('تم حذف الوحدة بنجاح');
+            } else {
+              showToast(res.message || 'فشل حذف الوحدة');
+            }
+          }}
         />
       </div>
     );
@@ -480,6 +508,13 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
+      {/* Toast */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-inverse-surface text-inverse-on-surface shadow-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
+          <span className="material-symbols-outlined text-[18px] text-primary-fixed">check_circle</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
       {/* 1. Greeting & Quick Actions Header Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-4 sm:p-6 lg:p-space-lg shadow-sm border border-surface-container-high/40">
         <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
@@ -999,11 +1034,17 @@ export default function DashboardPage() {
         onClose={() => setSelectedUnit(null)}
         onEdit={(unit) => {
           setSelectedUnit(null);
+          setEditingUnit(unit);
           setIsUnitFormOpen(true);
         }}
-        onDelete={(id) => {
-          deleteUnit(id);
-          setSelectedUnit(null);
+        onDelete={async (id) => {
+          const res = await deleteUnit(id);
+          if (res.success) {
+            setSelectedUnit(null);
+            showToast('تم حذف الوحدة بنجاح');
+          } else {
+            showToast(res.message || 'فشل حذف الوحدة');
+          }
         }}
       />
 
@@ -1014,21 +1055,36 @@ export default function DashboardPage() {
         onUpdateStage={(id, stage, note) => updateCustomerStage(id, stage, note)}
         onAddActivity={(id, type, note) => addCustomerActivity(id, type, note)}
         onUpdateCustomer={(id, data) => updateCustomer(id, data)}
-        onDeleteCustomer={(id) => {
-          deleteCustomer(id);
-          setSelectedCustomer(null);
+        onDeleteCustomer={async (id) => {
+          const res = await deleteCustomer(id);
+          if (res.success) {
+            setSelectedCustomer(null);
+            showToast('تم حذف العميل بنجاح');
+          } else {
+            showToast(res.message || 'فشل حذف العميل');
+          }
         }}
       />
 
       <UnitFormModal
         isOpen={isUnitFormOpen}
+        initialUnit={editingUnit || undefined}
         zones={zones}
         buildings={buildings}
         onAddBuilding={addBuilding}
-        onClose={() => setIsUnitFormOpen(false)}
-        onSubmit={(unitData) => {
-          addUnit(unitData);
+        onClose={() => {
           setIsUnitFormOpen(false);
+          setEditingUnit(null);
+        }}
+        onSubmit={async (unitData) => {
+          const res = editingUnit
+            ? await updateUnit(editingUnit.id, unitData)
+            : await addUnit(unitData);
+          if (res.success) {
+            showToast(editingUnit ? 'تم تحديث الوحدة بنجاح' : 'تمت إضافة الوحدة بنجاح');
+            setEditingUnit(null);
+          }
+          return res;
         }}
       />
 
@@ -1036,10 +1092,7 @@ export default function DashboardPage() {
         isOpen={isCustomerModalOpen}
         units={myUnits}
         onClose={() => setIsCustomerModalOpen(false)}
-        onSubmit={(customerData) => {
-          addCustomer(customerData);
-          setIsCustomerModalOpen(false);
-        }}
+        onSubmit={(customerData) => addCustomer(customerData)}
       />
     </div>
   );

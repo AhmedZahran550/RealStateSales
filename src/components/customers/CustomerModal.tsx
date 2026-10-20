@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { Customer, CustomerStage, Unit, STAGE_CONFIG, UNIT_KIND_LABELS } from '@/lib/types';
-import { X, UserPlus, Phone, Calendar, DollarSign, Check, Trash2, Save, Edit3, MessageCircle } from 'lucide-react';
+import { X, UserPlus, Phone, Calendar, DollarSign, Check, Trash2, Save, Edit3, MessageCircle, Loader2, AlertCircle } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { zoneDisplayName } from '@/lib/zone-utils';
 
 export interface CustomerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (customerData: any) => void;
+  /** إن أعادت الكلّية { success: false, message } يبقى النموذج مفتوحاً ويعرض سبب الفشل */
+  onSubmit: (customerData: any) => void | Promise<{ success?: boolean; message?: string } | void>;
   onDelete?: (customerId: string) => void;
   initialCustomer?: Customer | null;
   units?: Unit[];
@@ -38,6 +39,8 @@ export default function CustomerModal({
     ? propsUnits
     : (contextApp?.myUnits && contextApp.myUnits.length > 0 ? contextApp.myUnits : (contextApp?.units || []));
   const [name, setName] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [phone, setPhone] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [budget, setBudget] = useState<number | undefined>(undefined);
@@ -76,6 +79,9 @@ export default function CustomerModal({
   };
 
   useEffect(() => {
+    if (!isOpen) return;
+    setSubmitting(false);
+    setSubmitError(null);
     if (initialCustomer) {
       setName(initialCustomer.name);
       setPhone(initialCustomer.phone);
@@ -105,23 +111,36 @@ export default function CustomerModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    setSubmitError(null);
 
-    const payload = {
-      name: name.trim(),
-      phone: phone.trim(),
-      whatsapp: whatsapp.trim() || undefined,
-      budget: budget ? Number(budget) : undefined,
-      source,
-      stage,
-      nextFollowupAt: nextFollowupAt ? new Date(nextFollowupAt).toISOString() : undefined,
-      notes: notes.trim() || undefined,
-      interestedUnitIds,
-    };
+    try {
+      const payload = {
+        name: name.trim(),
+        phone: phone.trim(),
+        whatsapp: whatsapp.trim() || undefined,
+        budget: budget ? Number(budget) : undefined,
+        source,
+        stage,
+        nextFollowupAt: nextFollowupAt ? new Date(nextFollowupAt).toISOString() : undefined,
+        notes: notes.trim() || undefined,
+        interestedUnitIds,
+      };
 
-    onSubmit(payload);
-    onClose();
+      const result = await onSubmit(payload);
+      if (result && result.success === false) {
+        setSubmitError(result.message || 'فشل حفظ بيانات العميل — حاول مرة أخرى');
+        return;
+      }
+      onClose();
+    } catch (err: any) {
+      setSubmitError(err?.message || 'حدث خطأ غير متوقع أثناء حفظ بيانات العميل');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const toggleUnit = (uId: string) => {
@@ -397,6 +416,12 @@ export default function CustomerModal({
             )}
 
             {/* Cancel & Update / Submit Buttons */}
+            {submitError && (
+              <div className="p-3 rounded-xl bg-error-container text-on-error-container border border-error text-xs font-bold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{submitError}</span>
+              </div>
+            )}
             <div className="flex items-center gap-2.5">
               <button
                 type="button"
@@ -407,9 +432,15 @@ export default function CustomerModal({
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 rounded-xl bg-warning hover:bg-warning active:bg-warning text-white font-extrabold text-xs shadow-md shadow-warning/30 hover:shadow-lg hover:shadow-warning/40 transition-all flex items-center gap-2 cursor-pointer"
+                disabled={submitting}
+                className="px-5 py-2.5 rounded-xl bg-warning hover:bg-warning active:bg-warning text-white font-extrabold text-xs shadow-md shadow-warning/30 hover:shadow-lg hover:shadow-warning/40 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-wait"
               >
-                {initialCustomer ? (
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>جاري الحفظ...</span>
+                  </>
+                ) : initialCustomer ? (
                   <>
                     <Save className="w-4 h-4" />
                     <span>تحديث بيانات العميل</span>

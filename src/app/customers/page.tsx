@@ -638,10 +638,14 @@ function CustomersContent() {
                       {/* زر الحذف */}
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={async () => {
                           if (confirm(`هل أنت متأكد من حذف العميل "${lead.name}" نهائياً؟`)) {
-                            deleteCustomer(lead.id);
-                            showToast(`تم حذف العميل "${lead.name}" بنجاح`);
+                            const res = await deleteCustomer(lead.id);
+                            if (res.success) {
+                              showToast(`تم حذف العميل "${lead.name}" بنجاح`);
+                            } else {
+                              showToast(res.message || 'فشل حذف العميل');
+                            }
                           }
                         }}
                         className="px-3 py-2 rounded-xl bg-error-container text-error border border-error hover:bg-error hover:text-white transition-all flex items-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[38px]"
@@ -682,10 +686,14 @@ function CustomersContent() {
           updateCustomer(id, data);
           showToast('تم تحديث بيانات العميل');
         }}
-        onDeleteCustomer={(id) => {
-          deleteCustomer(id);
-          setSelectedCustomer(null);
-          showToast('تم حذف العميل بنجاح');
+        onDeleteCustomer={async (id) => {
+          const res = await deleteCustomer(id);
+          if (res.success) {
+            setSelectedCustomer(null);
+            showToast('تم حذف العميل بنجاح');
+          } else {
+            showToast(res.message || 'فشل حذف العميل');
+          }
         }}
         onEdit={(cust) => {
           setSelectedCustomer(null);
@@ -702,22 +710,26 @@ function CustomersContent() {
           setIsCustomerModalOpen(false);
           setEditingCustomer(null);
         }}
-        onDelete={(customerId) => {
-          deleteCustomer(customerId);
-          setIsCustomerModalOpen(false);
-          setEditingCustomer(null);
-          showToast('تم حذف العميل بنجاح');
-        }}
-        onSubmit={(customerData) => {
-          if (editingCustomer) {
-            updateCustomer(editingCustomer.id, customerData);
-            showToast('تم حفظ تعديلات العميل بنجاح');
+        onDelete={async (customerId) => {
+          const res = await deleteCustomer(customerId);
+          if (res.success) {
+            setIsCustomerModalOpen(false);
+            setEditingCustomer(null);
+            showToast('تم حذف العميل بنجاح');
           } else {
-            addCustomer(customerData);
-            showToast('تمت إضافة العميل الجديد بنجاح');
+            showToast(res.message || 'فشل حذف العميل');
           }
-          setIsCustomerModalOpen(false);
-          setEditingCustomer(null);
+        }}
+        onSubmit={async (customerData) => {
+          const res = editingCustomer
+            ? await updateCustomer(editingCustomer.id, customerData)
+            : await addCustomer(customerData);
+          if (res.success) {
+            showToast(editingCustomer ? 'تم حفظ تعديلات العميل بنجاح' : 'تمت إضافة العميل الجديد بنجاح');
+            setIsCustomerModalOpen(false);
+            setEditingCustomer(null);
+          }
+          return res;
         }}
       />
 
