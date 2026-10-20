@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { Customer, CustomerStage, ActivityType, Unit, STAGE_CONFIG, UNIT_KIND_LABELS } from '@/lib/types';
 import { formatArabicFollowupDate } from '@/lib/date-utils';
+import { zoneDisplayName } from '@/lib/zone-utils';
+import { useApp } from '@/context/AppContext';
 import {
   X,
   Phone,
@@ -43,6 +45,7 @@ export default function CustomerDetailModal({
   onSelectUnit,
   onEdit,
 }: CustomerDetailModalProps) {
+  const { zones } = useApp();
   const [newNote, setNewNote] = useState('');
   const [activityType, setActivityType] = useState<ActivityType>('call');
   const [newFollowupDate, setNewFollowupDate] = useState('');
@@ -385,7 +388,7 @@ export default function CustomerDetailModal({
                   >
                     <div>
                       <p className="font-bold text-xs text-on-surface ">
-                        منطقة {u.zoneId} – قطعة {u.plotNo} ({UNIT_KIND_LABELS[u.unitKind]})
+                        {zoneDisplayName(u.zoneId, zones)} – قطعة {u.plotNo} ({UNIT_KIND_LABELS[u.unitKind]})
                       </p>
                       <p className="text-[11px] text-warning font-bold mt-0.5">
                         {u.price.toLocaleString('ar-EG')} ج.م • {u.area} م²

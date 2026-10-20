@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { downloadMediaFile } from '@/lib/cloudinary';
 import { formatUnitFullDetails, createUnitWhatsAppUrl } from '@/lib/shareUtils';
+import { zoneDisplayName } from '@/lib/zone-utils';
 import { unitService } from '@/services/unitService';
 
 export interface UnitDetailModalProps {
@@ -48,7 +49,7 @@ export default function UnitDetailModal({
   onEdit,
   onDelete,
 }: UnitDetailModalProps) {
-  const { currentUser, isCompanyAdmin, isSuperAdmin, updateUnitStatus, buildings } = useApp();
+  const { currentUser, isCompanyAdmin, isSuperAdmin, updateUnitStatus, buildings, zones } = useApp();
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -126,11 +127,11 @@ export default function UnitDetailModal({
     loadHistory(unit.id);
   };
 
-  // توليد نص التفاصيل الشامل متضمناً روابط الصور والفيديوهات
-  const plainShareContent = formatUnitFullDetails(unit, currentUser);
+  // توليد نص التفاصيل الشامل متضمناً روابط الصور والفيديوهات (باسم المنطقة بدل رقمها)
+  const plainShareContent = formatUnitFullDetails(unit, currentUser, zones);
 
   // رابط مشاركة الواتساب المتضمن لكافة الروابط
-  const waShareUrl = createUnitWhatsAppUrl(unit, currentUser);
+  const waShareUrl = createUnitWhatsAppUrl(unit, currentUser, undefined, zones);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
@@ -144,7 +145,7 @@ export default function UnitDetailModal({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base sm:text-lg font-black text-on-surface ">
-                  منطقة {unit.zoneId} - قطعة {unit.plotNo}
+                  {zoneDisplayName(unit.zoneId, zones)} - قطعة {unit.plotNo}
                 </h3>
                 {unit.companyName && (
                   <span className="text-[11px] px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-semibold border border-outline-variant ">

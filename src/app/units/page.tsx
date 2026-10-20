@@ -10,6 +10,7 @@ import AddBuildingWithUnitsModal from '@/components/buildings/AddBuildingWithUni
 import { Building2, Home, Plus } from 'lucide-react';
 import { exportUnitsToExcel } from '@/lib/excel';
 import { formatUnitFullDetails, createUnitWhatsAppUrl } from '@/lib/shareUtils';
+import { zoneDisplayName } from '@/lib/zone-utils';
 
 export default function UnitsPage() {
   const {
@@ -89,7 +90,7 @@ export default function UnitsPage() {
       if (searchTerm) {
         const q = searchTerm.toLowerCase();
         const matchPlot = unit.plotNo.toString().includes(q);
-        const matchZone = `منطقة ${unit.zoneId}`.toLowerCase().includes(q);
+        const matchZone = zoneDisplayName(unit.zoneId, zones).toLowerCase().includes(q);
         const matchDesc = unit.description?.toLowerCase().includes(q);
         const matchCode = `bd-${unit.zoneId}-${unit.plotNo}`.toLowerCase().includes(q);
         const matchCompany = unit.companyName?.toLowerCase().includes(q);
@@ -98,7 +99,7 @@ export default function UnitsPage() {
 
       return true;
     });
-  }, [myUnits, statusFilter, zoneFilter, typeFilter, searchTerm]);
+  }, [myUnits, zones, statusFilter, zoneFilter, typeFilter, searchTerm]);
 
   // حساب بيانات المباني وإحصائيات وحداتها
   const buildingsWithStats = useMemo(() => {
@@ -140,7 +141,7 @@ export default function UnitsPage() {
       if (searchTerm) {
         const q = searchTerm.toLowerCase();
         const matchPlot = b.plotNo.toString().includes(q);
-        const matchZone = `منطقة ${b.zoneId}`.toLowerCase().includes(q);
+        const matchZone = zoneDisplayName(b.zoneId, zones).toLowerCase().includes(q);
         const matchNotes = b.notes?.toLowerCase().includes(q);
         const matchCompany = b.companyName?.toLowerCase().includes(q);
         const matchFeat = b.features?.some((f) => f.toLowerCase().includes(q));
@@ -148,10 +149,10 @@ export default function UnitsPage() {
       }
       return true;
     });
-  }, [buildingsWithStats, zoneFilter, statusFilter, searchTerm]);
+  }, [buildingsWithStats, zones, zoneFilter, statusFilter, searchTerm]);
 
   const copyUnitDetails = (unit: Unit) => {
-    const text = formatUnitFullDetails(unit, currentUser);
+    const text = formatUnitFullDetails(unit, currentUser, zones);
     navigator.clipboard.writeText(text);
     showToast(`تم نسخ تفاصيل الوحدة #BD-${unit.zoneId}-${unit.plotNo} وروابط الوسائط بنجاح!`);
   };
@@ -465,7 +466,7 @@ export default function UnitsPage() {
             <span className="text-outline text-xs">الفلاتر المطبقة:</span>
             {zoneFilter !== 'all' && (
               <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface text-xs">
-                المنطقة: منطقة {zoneFilter}
+                المنطقة: {zoneDisplayName(Number(zoneFilter), zones)}
                 <button onClick={() => setZoneFilter('all')} className="hover:text-error cursor-pointer">
                   ✕
                 </button>
@@ -499,13 +500,12 @@ export default function UnitsPage() {
         <div className="space-y-4">
           {filteredBuildings.length > 0 ? (
             filteredBuildings.map((building) => {
-              const zone = zones.find((z) => z.id === building.zoneId);
               return (
                 <BuildingCard
                   key={building.id}
                   building={building}
                   units={building.units}
-                  zoneName={zone ? `${zone.name} - ${zone.direction}` : undefined}
+                  zones={zones}
                   canManage={isCompanyAdmin || isSuperAdmin}
                   onAddUnit={(buildingId) => {
                     setTargetBuildingIdForUnit(buildingId);
@@ -600,7 +600,7 @@ export default function UnitsPage() {
                     <div className="absolute bottom-space-sm right-space-sm text-surface-container-lowest flex items-center gap-space-xs">
                       <span className="material-symbols-outlined text-[16px] text-tertiary-fixed">location_on</span>
                       <span className="font-bold text-surface-container-lowest drop-shadow text-xs">
-                        الحي المتميز • منطقة {unit.zoneId}
+                        الحي المتميز • {zoneDisplayName(unit.zoneId, zones)}
                       </span>
                     </div>
                   </div>
@@ -713,7 +713,7 @@ export default function UnitsPage() {
                         </button>
                         <a
                           className="flex items-center justify-center gap-1 py-space-sm px-space-xs rounded-xl bg-primary-container hover:bg-primary text-on-primary transition-colors font-bold text-xs"
-                          href={createUnitWhatsAppUrl(unit, currentUser)}
+                          href={createUnitWhatsAppUrl(unit, currentUser, undefined, zones)}
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -766,7 +766,7 @@ export default function UnitsPage() {
                     <td className="p-3.5 font-bold text-on-surface ">
                       {u.companyName || 'محفظة الشركة'}
                     </td>
-                    <td className="p-3.5">منطقة {u.zoneId} • قطعة {u.plotNo}</td>
+                    <td className="p-3.5">{zoneDisplayName(u.zoneId, zones)} • قطعة {u.plotNo}</td>
                     <td className="p-3.5">{UNIT_KIND_LABELS[u.unitKind] || 'شقة'}</td>
                     <td className="p-3.5 font-bold">{u.area} م²</td>
                     <td className="p-3.5 font-bold text-on-surface">{u.price.toLocaleString()} ج.م</td>
@@ -808,7 +808,7 @@ export default function UnitsPage() {
                           <span className="material-symbols-outlined text-[18px]">content_copy</span>
                         </button>
                         <a
-                          href={createUnitWhatsAppUrl(u, currentUser)}
+                          href={createUnitWhatsAppUrl(u, currentUser, undefined, zones)}
                           target="_blank"
                           rel="noreferrer"
                           className="p-1 rounded-lg hover:bg-surface-container text-primary cursor-pointer"

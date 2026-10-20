@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { Zone, Building, Unit, Service } from '@/lib/types';
+import { zoneDisplayName } from '@/lib/zone-utils';
 import {
   ZoomIn,
   ZoomOut,
@@ -449,7 +450,7 @@ export default function MapViewer({
                           transform: 'translate(-50%, -50%)',
                         }}
                         className="absolute z-10 cursor-pointer group"
-                        title={`قطعة رقم ${b.plotNo} - المنطقة ${b.zoneId}`}
+                        title={`قطعة رقم ${b.plotNo} - ${zoneDisplayName(b.zoneId, zones)}`}
                       >
                         <div className="flex items-center gap-1 bg-black/90 text-warning-container border border-warning/60 rounded-lg px-2 py-0.5 text-[10px] font-bold shadow-lg group-hover:scale-125 group-hover:border-warning group-hover:bg-warning transition">
                           <Building2 className="w-3 h-3 text-warning-container" />

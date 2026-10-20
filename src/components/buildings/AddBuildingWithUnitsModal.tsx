@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Building, Zone, UnitKind, UnitStatus, UNIT_KIND_LABELS } from '@/lib/types';
+import { zoneDisplayName } from '@/lib/zone-utils';
 import {
   Building2,
   X,
@@ -671,7 +672,7 @@ export default function AddBuildingWithUnitsModal({
                   >
                     {buildings.map((b) => (
                       <option key={b.id} value={b.id}>
-                        المنطقة {b.zoneId} — القطعة {b.plotNo}{' '}
+                        {zoneDisplayName(b.zoneId, zones)} — القطعة {b.plotNo}{' '}
                         {b.landArea ? `(أرض: ${b.landArea}م²)` : ''}{' '}
                         {b.companyName ? `• ${b.companyName}` : ''}
                       </option>
@@ -684,7 +685,7 @@ export default function AddBuildingWithUnitsModal({
                 <div className="p-3.5 rounded-xl bg-surface-container-low/60 border border-surface-container-high flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <span className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary font-bold">
-                      منطقة {selectedBuildingObj.zoneId} - قطعة {selectedBuildingObj.plotNo}
+                      {zoneDisplayName(selectedBuildingObj.zoneId, zones)} - قطعة {selectedBuildingObj.plotNo}
                     </span>
                     {selectedBuildingObj.landArea && (
                       <span className="text-on-surface-variant font-medium">

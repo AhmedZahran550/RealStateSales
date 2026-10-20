@@ -1,9 +1,13 @@
 import { Unit, UNIT_KIND_LABELS } from '@/lib/types';
+import { zoneDisplayName } from '@/lib/zone-utils';
 
 export interface ConsultantInfo {
   fullName?: string;
   phone?: string;
 }
+
+/** مناطق الشركة — لعرض اسم المنطقة بدل رقمها في النصوص المشتركة */
+export type ZoneList = Parameters<typeof zoneDisplayName>[1];
 
 /**
  * تنسيق قسم روابط الصور والفيديوهات للرسائل
@@ -36,7 +40,7 @@ export function formatMediaLinksSection(unit: Unit): string {
 /**
  * إنشاء النص التفصيلي الكامل للوحدة لنسخه للحافظة أو مشاركته
  */
-export function formatUnitFullDetails(unit: Unit, consultant?: ConsultantInfo | null): string {
+export function formatUnitFullDetails(unit: Unit, consultant?: ConsultantInfo | null, zones?: ZoneList): string {
   const consultantName = consultant?.fullName || 'المستشار العقاري';
   const consultantPhone = consultant?.phone
     ? `\n📞 للتواصل والاستفسار (هاتف / واتساب): ${consultant.phone}`
@@ -54,10 +58,11 @@ export function formatUnitFullDetails(unit: Unit, consultant?: ConsultantInfo | 
 
   const floorText = unit.floor === 0 ? 'الأرضي' : unit.floor ? `الدور ${unit.floor}` : 'متكرر';
   const sideText = unit.side ? ` (${unit.side})` : '';
+  const areaText = zones ? zoneDisplayName(unit.zoneId, zones) : `منطقة ${unit.zoneId}`;
 
   return `🏡 *عقار مميز بالحي المتميز (مدينة بدر)*:
 كود الوحدة: #BD-${unit.zoneId}-${unit.plotNo}
-المنطقة: منطقة ${unit.zoneId} | قطعة رقم ${unit.plotNo}
+المنطقة: ${areaText} | قطعة رقم ${unit.plotNo}
 النوع: ${UNIT_KIND_LABELS[unit.unitKind] || 'شقة سكنية'} - ${floorText}${sideText}
 المساحة: ${unit.area} م² ${unit.gardenArea ? `+ حديقة خاصة ${unit.gardenArea} م²` : ''}
 السعر: ${unit.price.toLocaleString('ar-EG')} جنيه مصري${unit.negotiable ? ' (قابل للتفاوض)' : ''}
@@ -73,9 +78,10 @@ export function formatUnitFullDetails(unit: Unit, consultant?: ConsultantInfo | 
 export function createUnitWhatsAppUrl(
   unit: Unit,
   consultant?: ConsultantInfo | null,
-  targetPhone?: string
+  targetPhone?: string,
+  zones?: ZoneList
 ): string {
-  const text = formatUnitFullDetails(unit, consultant);
+  const text = formatUnitFullDetails(unit, consultant, zones);
   const cleanPhone = targetPhone ? targetPhone.replace(/[^0-9]/g, '') : '';
   const baseUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : 'https://wa.me/';
   return `${baseUrl}?text=${encodeURIComponent(text)}`;
@@ -88,13 +94,16 @@ export function formatCustomerProposalMessage(
   customerName: string,
   unit: Unit,
   consultant?: ConsultantInfo | null,
-  customerBudget?: number
+  customerBudget?: number,
+  zones?: ZoneList
 ): string {
   const consultantName = consultant?.fullName || 'المستشار العقاري';
   const consultantPhone = consultant?.phone || '';
   const budgetStr = customerBudget
     ? `في حدود ميزانية ${(customerBudget / 1000000).toFixed(1)} مليون ج.م`
     : 'بمدينة بدر';
+
+  const locationText = zones ? zoneDisplayName(unit.zoneId, zones) : `منطقة ${unit.zoneId}`;
 
   const locationFeatures =
     unit.features && unit.features.length > 0
@@ -113,7 +122,7 @@ export function formatCustomerProposalMessage(
 لقيت لحضرتك فرصة استثنائية مطابقة تماماً لطلبك:
 
 🏡 *كود الوحدة:* #BD-${unit.zoneId}-${unit.plotNo}
-📍 *الموقع:* الحي المتميز - منطقة ${unit.zoneId} (قطعة ${unit.plotNo})
+📍 *الموقع:* الحي المتميز - ${locationText} (قطعة ${unit.plotNo})
 📐 *المساحة:* ${unit.area} م² ${unit.gardenArea ? `+ حديقة خاصة ${unit.gardenArea} م²` : ''}
 🏗 *نوع الوحدة:* ${UNIT_KIND_LABELS[unit.unitKind] || 'شقة سكنية'}
 💰 *السعر الإجمالي:* ${unit.price.toLocaleString('ar-EG')} ج.م${unit.negotiable ? ' (قابل للتفاوض)' : ''}

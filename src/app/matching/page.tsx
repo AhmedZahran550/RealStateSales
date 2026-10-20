@@ -6,9 +6,10 @@ import { useSearchParams } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { Customer, Unit, UNIT_KIND_LABELS } from '@/lib/types';
 import { formatCustomerProposalMessage } from '@/lib/shareUtils';
+import { zoneDisplayName } from '@/lib/zone-utils';
 
 function MatchingContent() {
-  const { currentUser, myCustomers, myUnits } = useApp();
+  const { currentUser, myCustomers, myUnits, zones } = useApp();
   const searchParams = useSearchParams();
   const customerIdParam = searchParams.get('customerId');
 
@@ -134,9 +135,10 @@ function MatchingContent() {
       currentCustomer.name,
       activeUnit,
       currentUser,
-      currentCustomer.budget
+      currentCustomer.budget,
+      zones
     );
-  }, [currentCustomer, activeUnit, currentUser]);
+  }, [currentCustomer, activeUnit, currentUser, zones]);
 
   const handleCopyProposal = () => {
     if (!whatsappProposalText) return;
@@ -347,7 +349,7 @@ function MatchingContent() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <span className="text-secondary font-bold text-xs">
-                            الحي المتميز • منطقة {unit.zoneId}
+                            الحي المتميز • {zoneDisplayName(unit.zoneId, zones)}
                           </span>
                           <h3 className="text-on-surface font-bold text-base">
                             {unit.description || `وحدة فاخرة قطعة ${unit.plotNo}`}

@@ -10,6 +10,7 @@ import CustomerModal from '@/components/CustomerModal';
 import CustomerDetailModal from '@/components/CustomerDetailModal';
 import { formatArabicFollowupDate } from '@/lib/date-utils';
 import { createUnitWhatsAppUrl } from '@/lib/shareUtils';
+import { zoneDisplayName } from '@/lib/zone-utils';
 
 export default function DashboardPage() {
   const {
@@ -392,7 +393,7 @@ export default function DashboardPage() {
                     <img src={img} alt={`قطعة ${unit.plotNo}`} className="w-full h-full object-cover" />
                     <div className="absolute top-2 right-2 flex flex-col gap-1">
                       <span className="px-2 py-0.5 rounded-lg bg-surface-container-lowest/90 font-bold text-[11px] text-primary shadow-xs">
-                        منطقة {unit.zoneId} • قطعة {unit.plotNo}
+                        {zoneDisplayName(unit.zoneId, zones)} • قطعة {unit.plotNo}
                       </span>
                     </div>
                     <div className="absolute top-2 left-2">
@@ -931,7 +932,7 @@ export default function DashboardPage() {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-primary font-bold text-xs">
-                        الحي المتميز • منطقة {unit.zoneId}
+                        الحي المتميز • {zoneDisplayName(unit.zoneId, zones)}
                       </span>
                       <span className="text-on-surface-variant text-xs">
                         قطعة {unit.plotNo}
@@ -975,7 +976,7 @@ export default function DashboardPage() {
                         تفاصيل
                       </button>
                       <a
-                        href={createUnitWhatsAppUrl(unit, currentUser)}
+                        href={createUnitWhatsAppUrl(unit, currentUser, undefined, zones)}
                         target="_blank"
                         rel="noreferrer"
                         className="p-2 rounded-xl bg-primary-container text-on-primary hover:bg-primary transition-all flex items-center justify-center shadow-sm cursor-pointer"

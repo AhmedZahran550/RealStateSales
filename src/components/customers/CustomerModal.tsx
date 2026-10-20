@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Customer, CustomerStage, Unit, STAGE_CONFIG, UNIT_KIND_LABELS } from '@/lib/types';
 import { X, UserPlus, Phone, Calendar, DollarSign, Check, Trash2, Save, Edit3, MessageCircle } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { zoneDisplayName } from '@/lib/zone-utils';
 
 export interface CustomerModalProps {
   isOpen: boolean;
@@ -361,7 +362,7 @@ export default function CustomerModal({
                     }`}
                   >
                     <div>
-                      <span className="font-bold">منطقة {u.zoneId} – ق {u.plotNo}</span>
+                      <span className="font-bold">{zoneDisplayName(u.zoneId, contextApp?.zones || [])} – ق {u.plotNo}</span>
                       <span className="block text-[10px] text-on-surface-variant font-medium">
                         {UNIT_KIND_LABELS[u.unitKind]} ({u.area} م²)
                       </span>

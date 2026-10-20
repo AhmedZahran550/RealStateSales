@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Building, Unit, UnitStatus, UNIT_KIND_LABELS } from '@/lib/types';
+import { Building, Unit, UnitStatus, UNIT_KIND_LABELS, Zone } from '@/lib/types';
+import { zoneDisplayName } from '@/lib/zone-utils';
 import {
   Building2,
   ChevronDown,
@@ -25,6 +26,8 @@ interface BuildingCardProps {
   building: Building;
   units: Unit[];
   zoneName?: string;
+  /** مناطق الشركة — لعرض اسم المنطقة بدل رقمها */
+  zones?: Zone[];
   canManage: boolean;
   onAddUnit: (buildingId: number) => void;
   onSelectUnit: (unit: Unit) => void;
@@ -38,6 +41,7 @@ export default function BuildingCard({
   building,
   units,
   zoneName,
+  zones,
   canManage,
   onAddUnit,
   onSelectUnit,
@@ -69,7 +73,7 @@ export default function BuildingCard({
               </h3>
               <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center gap-1">
                 <MapPin className="w-3 h-3" />
-                {zoneName || `المنطقة ${building.zoneId}`}
+                {zoneDisplayName(building.zoneId, zones || [])}
               </span>
               {building.landArea && (
                 <span className="px-2 py-0.5 rounded-md bg-surface-container text-on-surface-variant font-medium text-xs">
@@ -223,7 +227,7 @@ export default function BuildingCard({
                   sold: 'تم البيع',
                 }[unit.status];
 
-                const whatsAppUrl = createUnitWhatsAppUrl(unit);
+                const whatsAppUrl = createUnitWhatsAppUrl(unit, null, undefined, zones);
 
                 return (
                   <div

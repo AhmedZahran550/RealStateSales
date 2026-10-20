@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Unit, UnitKind, UnitStatus, Zone, Building, UNIT_KIND_LABELS, UnitMedia } from '@/lib/types';
+import { zoneDisplayName } from '@/lib/zone-utils';
 import { X, Building2, Plus, Check, Sparkles, Tag, Info } from 'lucide-react';
 import LiveMapPicker from '@/components/LiveMapPicker';
 import MediaUploader from '@/components/MediaUploader';
@@ -255,7 +256,7 @@ export default function UnitFormModal({
               <option value="">-- إدخال قطعة وعمارة جديدة يدوياً --</option>
               {buildings.map((b) => (
                 <option key={b.id} value={b.id}>
-                  المنطقة {b.zoneId} — القطعة {b.plotNo} {b.landArea ? `(أرض: ${b.landArea}م²)` : ''} {b.companyName ? `• ${b.companyName}` : ''}
+                  {zoneDisplayName(b.zoneId, zones)} — القطعة {b.plotNo} {b.landArea ? `(أرض: ${b.landArea}م²)` : ''} {b.companyName ? `• ${b.companyName}` : ''}
                 </option>
               ))}
             </select>
@@ -272,11 +273,25 @@ export default function UnitFormModal({
                 onChange={(e) => setZoneId(Number(e.target.value))}
                 className="w-full p-2.5 rounded-xl border border-outline-variant bg-white text-on-surface font-bold focus:border-primary focus:ring-2 focus:ring-primary/25 focus:outline-none transition-all shadow-xs"
               >
-                {zones.map((z) => (
-                  <option key={z.id} value={z.id}>
-                    {z.name} - {z.direction}
-                  </option>
-                ))}
+                {(() => {
+                  const mains = zones.filter((z) => z.parentId == null);
+                  const subsOf = (id: number) => zones.filter((z) => z.parentId === id);
+                  return mains.map((mz) =>
+                    subsOf(mz.id).length > 0 ? (
+                      <optgroup key={mz.id} label={mz.name}>
+                        {subsOf(mz.id).map((sz) => (
+                          <option key={sz.id} value={sz.id}>
+                            {sz.name} - {sz.direction}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ) : (
+                      <option key={mz.id} value={mz.id}>
+                        {mz.name} - {mz.direction}
+                      </option>
+                    )
+                  );
+                })()}
               </select>
             </div>
 
