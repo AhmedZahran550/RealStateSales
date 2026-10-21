@@ -112,17 +112,6 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-space-sm w-full sm:w-auto shrink-0">
-              <button
-                onClick={() => {
-                  setEditingUnit(null);
-                  setIsUnitFormOpen(true);
-                }}
-                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-white font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
-                type="button"
-              >
-                <span className="material-symbols-outlined text-[20px]">add_home_work</span>
-                <span>+ إضافة وحدة عقارية للشركة</span>
-              </button>
               <Link
                 href="/admin/users"
                 className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-warning hover:bg-warning text-white font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
@@ -459,6 +448,29 @@ export default function DashboardPage() {
             } else {
               showToast(res.message || 'فشل حذف الوحدة');
             }
+          }}
+        />
+
+        {/* نموذج تعديل الوحدة (يعمل الآن في لوحة المدير أيضًا) */}
+        <UnitFormModal
+          isOpen={isUnitFormOpen}
+          initialUnit={editingUnit || undefined}
+          zones={zones}
+          buildings={buildings}
+          onAddBuilding={addBuilding}
+          onClose={() => {
+            setIsUnitFormOpen(false);
+            setEditingUnit(null);
+          }}
+          onSubmit={async (unitData) => {
+            const res = editingUnit
+              ? await updateUnit(editingUnit.id, unitData)
+              : await addUnit(unitData);
+            if (res.success) {
+              showToast(editingUnit ? 'تم تحديث الوحدة بنجاح' : 'تمت إضافة الوحدة بنجاح');
+              setEditingUnit(null);
+            }
+            return res;
           }}
         />
       </div>

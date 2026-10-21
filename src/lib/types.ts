@@ -5,7 +5,7 @@ export interface Company {
   id: string;
   name: string; // اسم الشركة العقارية
   commercialName?: string; // السجل التجاري أو الاسم التجاري
-  logoUrl?: string; // رابط الشعار
+  logoUrl?: string | null; // رابط الشعار (null = تم إزالة الشعار)
   phone?: string; // هاتف التواصل
   email?: string; // البريد الإلكتروني
   address?: string; // العنوان أو المقر

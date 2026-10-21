@@ -38,6 +38,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
+  // اسم الشركة (الاسم التجاري إن وجد) وشعارها لتخصيص الهوية البصرية لكل شركة
+  const companyBrandName =
+    currentCompany?.commercialName?.trim() ||
+    currentCompany?.name?.trim() ||
+    currentUser?.companyName?.trim() ||
+    'عقار سيلز';
+  const [companyLogoUrl, setCompanyLogoUrl] = useState<string | undefined>(currentCompany?.logoUrl ?? undefined);
+  const [companyLogoFailed, setCompanyLogoFailed] = useState(false);
+
+  // مزامنة الشعار عند تحميل/تحديث بيانات الشركة
+  useEffect(() => {
+    setCompanyLogoUrl(currentCompany?.logoUrl ?? undefined);
+    setCompanyLogoFailed(false);
+  }, [currentCompany?.logoUrl]);
 
   // Global Quick Action Modals
   const [isAddUnitOpen, setIsAddUnitOpen] = useState(false);
@@ -240,17 +254,26 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               onClick={() => setMobileSidebarOpen(false)}
               className="flex items-center gap-space-md group"
             >
-              <div className="w-11 h-11 rounded-xl bg-primary-container text-on-primary flex items-center justify-center shadow-md group-hover:scale-105 transition-transform shrink-0">
-                <span className="material-symbols-outlined text-[24px]">
-                  {isSuperAdmin ? 'shield_person' : isCompanyAdmin ? 'domain' : 'real_estate_agent'}
-                </span>
-              </div>
+              {companyLogoUrl && !companyLogoFailed ? (
+                <img
+                  src={companyLogoUrl}
+                  alt={companyBrandName}
+                  onError={() => setCompanyLogoFailed(true)}
+                  className="w-11 h-11 rounded-xl object-cover bg-surface-container-lowest border border-outline-variant shadow-md group-hover:scale-105 transition-transform shrink-0"
+                />
+              ) : (
+                <div className="w-11 h-11 rounded-xl bg-primary-container text-on-primary flex items-center justify-center shadow-md group-hover:scale-105 transition-transform shrink-0">
+                  <span className="material-symbols-outlined text-[24px]">
+                    {isSuperAdmin ? 'shield_person' : isCompanyAdmin ? 'domain' : 'real_estate_agent'}
+                  </span>
+                </div>
+              )}
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-space-xs">
-                  <span className="text-primary font-bold tracking-tight">
-                    عقار سيلز
+                  <span className="text-primary font-bold tracking-tight truncate max-w-[130px]">
+                    {isSuperAdmin ? 'عقار سيلز' : companyBrandName}
                   </span>
-                  <span className="text-on-surface-variant font-normal">
+                  <span className="text-on-surface-variant font-normal shrink-0">
                     {isSuperAdmin ? 'Super' : 'AqarSales'}
                   </span>
                 </div>
@@ -258,8 +281,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   {isSuperAdmin
                     ? 'مدير المنصة العام'
                     : isCompanyAdmin
-                    ? `مدير: ${currentCompany?.name || currentUser.companyName || 'الشركة'}`
-                    : `وسيط: ${currentCompany?.name || currentUser.companyName || 'الشركة'}`}
+                    ? `مدير: ${companyBrandName}`
+                    : `وسيط: ${companyBrandName}`}
                 </span>
               </div>
             </Link>
@@ -362,7 +385,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className="bg-surface-container-low rounded-xl p-space-md shadow-sm border border-primary/20">
               <div className="flex items-center justify-between mb-space-xs">
                 <span className="text-on-surface font-bold text-xs truncate max-w-[140px]">
-                  {currentCompany?.name || currentUser.companyName || 'إدارة الشركة'}
+                  {currentCompany?.commercialName?.trim() || currentCompany?.name || currentUser.companyName || 'إدارة الشركة'}
                 </span>
                 <span className="text-primary font-bold text-xs">
                   {myUnits.length} وحدة

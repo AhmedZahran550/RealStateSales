@@ -32,6 +32,7 @@ import {
   UserCheck,
   Filter,
 } from 'lucide-react';
+import LogoUploader from '@/components/common/LogoUploader';
 
 export default function SuperAdminDashboardPage() {
   const {
@@ -111,7 +112,7 @@ export default function SuperAdminDashboardPage() {
   const [companyPhone, setCompanyPhone] = useState('');
   const [companyEmail, setCompanyEmail] = useState('');
   const [companyAddress, setCompanyAddress] = useState('');
-  const [companyLogoUrl, setCompanyLogoUrl] = useState('');
+  const [companyLogoNew, setCompanyLogoNew] = useState<string | undefined>(undefined);
   const [createAdminNow, setCreateAdminNow] = useState(true);
   const [adminFullName, setAdminFullName] = useState('');
   const [adminUsername, setAdminUsername] = useState('');
@@ -223,7 +224,7 @@ export default function SuperAdminDashboardPage() {
       phone: companyPhone.trim() || undefined,
       email: companyEmail.trim() || undefined,
       address: companyAddress.trim() || undefined,
-      logoUrl: companyLogoUrl.trim() || undefined,
+      logoUrl: companyLogoNew,
       isActive: true,
     });
 
@@ -253,7 +254,7 @@ export default function SuperAdminDashboardPage() {
       setCompanyPhone('');
       setCompanyEmail('');
       setCompanyAddress('');
-      setCompanyLogoUrl('');
+      setCompanyLogoNew(undefined);
       setAdminFullName('');
       setAdminUsername('');
       setAdminPhone('');
@@ -1167,16 +1168,15 @@ export default function SuperAdminDashboardPage() {
                       className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
-                  <div>
-                    <label className="text-xs font-bold text-on-surface block mb-1">رابط الشعار (Logo URL)</label>
-                    <input
-                      type="url"
-                      value={companyLogoUrl}
-                      onChange={(e) => setCompanyLogoUrl(e.target.value)}
-                      placeholder="https://example.com/logo.png"
-                      className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary/40"
-                    />
-                  </div>
+                </div>
+
+                <div className="pt-1 border-t border-surface-container-high/40">
+                  <label className="text-xs font-bold text-on-surface block mb-2">شعار الشركة (Logo)</label>
+                  <LogoUploader
+                    logoUrl={companyLogoNew}
+                    onChange={setCompanyLogoNew}
+                    fallbackInitial={companyName.trim() || commercialName.trim()}
+                  />
                 </div>
               </div>
 
@@ -1345,6 +1345,20 @@ export default function SuperAdminDashboardPage() {
                   value={selectedCompany.address || ''}
                   onChange={(e) => setSelectedCompany({ ...selectedCompany, address: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-surface-container-high/40">
+                <label className="text-xs font-bold text-on-surface block mb-2">شعار الشركة (Logo)</label>
+                <LogoUploader
+                  logoUrl={selectedCompany.logoUrl ?? undefined}
+                  onChange={(url) =>
+                    setSelectedCompany({
+                      ...selectedCompany,
+                      logoUrl: url || null,
+                    })
+                  }
+                  fallbackInitial={selectedCompany.name || selectedCompany.commercialName || ''}
                 />
               </div>
 
