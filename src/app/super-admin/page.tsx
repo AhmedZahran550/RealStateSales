@@ -1351,6 +1351,7 @@ export default function SuperAdminDashboardPage() {
               <div className="pt-3 border-t border-surface-container-high/40">
                 <label className="text-xs font-bold text-on-surface block mb-2">شعار الشركة (Logo)</label>
                 <LogoUploader
+                  companyId={selectedCompany.id}
                   logoUrl={selectedCompany.logoUrl ?? undefined}
                   onChange={(url) =>
                     setSelectedCompany({

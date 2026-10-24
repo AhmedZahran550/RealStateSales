@@ -4,8 +4,12 @@ import React, { useRef, useState } from 'react';
 import { uploadMediaToCloudinary } from '@/lib/cloudinary';
 import { Store, Trash2, Loader2, AlertCircle } from 'lucide-react';
 
+import { apiClient } from '@/services/apiClient';
+
 export interface LogoUploaderProps {
   logoUrl?: string;
+  /** المعرف الفريد للشركة لضمان تسمية ثابتة واستبدال الشعار القديم بالجديد في التخزين */
+  companyId?: string;
   /** يُستدعى برابط الشعار الجديد أو undefined عند الإزالة */
   onChange: (logoUrl: string | undefined) => void;
   /** أول حرف من اسم الشركة للعرض كاحتياط عند غياب الشعار */
@@ -17,9 +21,15 @@ const MAX_LOGO_SIZE_MB = 5;
 
 /**
  * رافع شعار الشركة: يرفع الملف إلى Cloudinary (مجلد el-waha/logos)
- * ويعيد الرابط عبر onChange مع معاينة مباشرة وإمكانية الإزالة.
+ * مع استبدال الملف القديم ومسحه من مساحة التخزين تلقائياً.
  */
-export default function LogoUploader({ logoUrl, onChange, fallbackInitial, disabled }: LogoUploaderProps) {
+export default function LogoUploader({
+  logoUrl,
+  companyId,
+  onChange,
+  fallbackInitial,
+  disabled,
+}: LogoUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -50,7 +60,13 @@ export default function LogoUploader({ logoUrl, onChange, fallbackInitial, disab
     setIsUploading(true);
     setProgress(0);
     try {
-      const result = await uploadMediaToCloudinary(file, 'el-waha/logos', (percent) => setProgress(percent));
+      const customPublicId = companyId ? `company_logo_${companyId}` : undefined;
+      const result = await uploadMediaToCloudinary(
+        file,
+        'el-waha/logos',
+        (percent) => setProgress(percent),
+        { publicId: customPublicId, overwrite: true }
+      );
       if (result.url) {
         onChange(result.url);
       } else {
@@ -62,6 +78,20 @@ export default function LogoUploader({ logoUrl, onChange, fallbackInitial, disab
     } finally {
       setIsUploading(false);
       setProgress(0);
+    }
+  };
+
+  const handleRemove = async () => {
+    if (disabled || isUploading) return;
+    setError(null);
+    const oldUrl = logoUrl;
+    onChange(undefined);
+    if (oldUrl) {
+      try {
+        await apiClient.delete('/upload', { url: oldUrl });
+      } catch (err) {
+        console.warn('تنبيه: فشل الحذف المباشر للشعار من التخزين السحابي:', err);
+      }
     }
   };
 
@@ -113,10 +143,7 @@ export default function LogoUploader({ logoUrl, onChange, fallbackInitial, disab
           {logoUrl && !isUploading && (
             <button
               type="button"
-              onClick={() => {
-                setError(null);
-                onChange(undefined);
-              }}
+              onClick={handleRemove}
               disabled={disabled}
               className="px-3 py-2 rounded-xl bg-error-container hover:bg-error-container/70 text-on-error-container text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >

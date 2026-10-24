@@ -82,8 +82,12 @@ export const apiClient = {
     });
   },
 
-  delete<T = any>(endpoint: string, headers?: HeadersInit) {
-    return this.request<T>(endpoint, { method: 'DELETE', headers });
+  delete<T = any>(endpoint: string, body?: any, headers?: HeadersInit) {
+    return this.request<T>(endpoint, {
+      method: 'DELETE',
+      body: body ? JSON.stringify(body) : undefined,
+      headers,
+    });
   },
 };
 

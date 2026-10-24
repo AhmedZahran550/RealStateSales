@@ -15,6 +15,9 @@ if (cloudName && apiKey && apiSecret) {
   });
 }
 
+import { requireAuth, handleApiError } from '@/lib/server/auth';
+import { extractCloudinaryPublicId } from '@/lib/cloudinary';
+
 export async function POST(req: NextRequest) {
   try {
     if (!cloudName || !apiKey || !apiSecret) {
@@ -27,10 +30,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    await requireAuth(req);
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const folder = (formData.get('folder') as string) || 'el-waha/units';
     const kind = (formData.get('kind') as string) || 'image';
+    const customPublicId = (formData.get('publicId') as string) || undefined;
+    const shouldOverwrite = formData.get('overwrite') === 'true' || Boolean(customPublicId);
 
     if (!file) {
       return NextResponse.json({ error: 'لم يتم إرسال أي ملف للرفع' }, { status: 400 });
@@ -47,10 +54,12 @@ export async function POST(req: NextRequest) {
       const stream = cloudinary.uploader.upload_stream(
         {
           folder,
+          public_id: customPublicId,
           resource_type: resourceType,
-          use_filename: true,
-          unique_filename: true,
-          overwrite: false,
+          use_filename: !customPublicId,
+          unique_filename: !customPublicId,
+          overwrite: shouldOverwrite,
+          invalidate: true,
         },
         (error, result) => {
           if (error || !result) return reject(error || new Error('فشل استلام نتيجة الرفع'));
@@ -74,13 +83,48 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: unknown) {
     console.error('خطأ أثناء رفع الملف إلى Cloudinary:', error);
-    const message = error instanceof Error ? error.message : 'حدث خطأ غير متوقع أثناء معالجة رفع الملف';
-    return NextResponse.json(
-      {
-        error: message,
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    if (!cloudName || !apiKey || !apiSecret) {
+      return NextResponse.json(
+        {
+          error: 'إعدادات Cloudinary غير مكتملة في الخادم',
+        },
+        { status: 400 }
+      );
+    }
+
+    await requireAuth(req);
+
+    const body = await req.json().catch(() => ({}));
+    let publicId = body.publicId;
+    if (!publicId && body.url) {
+      publicId = extractCloudinaryPublicId(body.url);
+    }
+
+    if (!publicId) {
+      return NextResponse.json(
+        { error: 'لم يتم تحديد معرف الملف (publicId) أو الرابط للحذف' },
+        { status: 400 }
+      );
+    }
+
+    const result = await cloudinary.uploader.destroy(publicId, {
+      invalidate: true,
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'تم حذف الملف من التخزين بنجاح',
+      result,
+    });
+  } catch (error: unknown) {
+    console.error('خطأ أثناء حذف الملف من Cloudinary:', error);
+    return handleApiError(error);
   }
 }
 

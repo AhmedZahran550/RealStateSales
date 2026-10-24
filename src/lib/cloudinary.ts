@@ -51,6 +51,33 @@ export function getCloudinaryDownloadUrl(url: string, filename?: string): string
   return url;
 }
 
+export interface UploadOptions {
+  publicId?: string;
+  overwrite?: boolean;
+}
+
+/**
+ * استخراج المعرف العام (public_id) من رابط Cloudinary لاستخدامه في الحذف أو التعديل
+ */
+export function extractCloudinaryPublicId(url: string): string | null {
+  if (!url || !url.includes('res.cloudinary.com')) return null;
+  try {
+    const uploadIndex = url.indexOf('/upload/');
+    if (uploadIndex === -1) return null;
+    let pathAfterUpload = url.substring(uploadIndex + '/upload/'.length);
+    // تجاوز أي transformations أو بادئة النسخة مثل v1234567890/ أو fl_attachment
+    pathAfterUpload = pathAfterUpload.replace(/^(?:[a-zA-Z0-9_:,.-]+\/)*v\d+\//, '');
+    // إزالة الامتداد مثل .jpg, .png, .webp
+    const lastDotIndex = pathAfterUpload.lastIndexOf('.');
+    if (lastDotIndex !== -1) {
+      pathAfterUpload = pathAfterUpload.substring(0, lastDotIndex);
+    }
+    return pathAfterUpload || null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * تنزيل وحفظ الصورة أو الفيديو في جهاز المستخدم مباشرة
  */
@@ -111,7 +138,8 @@ export async function downloadMediaFile(url: string, suggestedFilename?: string)
 export async function uploadMediaToCloudinary(
   file: File,
   folder: string = 'el-waha/units',
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  options?: UploadOptions
 ): Promise<CloudinaryUploadResult> {
   const isVideo = file.type.startsWith('video/');
   const kind: 'image' | 'video' = isVideo ? 'video' : 'image';
@@ -119,8 +147,11 @@ export async function uploadMediaToCloudinary(
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
-  // الخيار الأول: الرفع المباشر Unsigned إذا تم تحديد Preset و Cloud Name
-  if (cloudName && uploadPreset) {
+  // إذا تم تحديد publicId أو overwrite مخصص، نفضل مسار السيرفر الداخلي لضمان التحكم الكامل في الاستبدال والتسمية
+  const preferServerUpload = Boolean(options?.publicId || options?.overwrite);
+
+  // الخيار الأول: الرفع المباشر Unsigned إذا تم تحديد Preset و Cloud Name ولم يُطلب publicId مخصص
+  if (cloudName && uploadPreset && !preferServerUpload) {
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -176,6 +207,12 @@ export async function uploadMediaToCloudinary(
   formData.append('file', file);
   formData.append('folder', folder);
   formData.append('kind', kind);
+  if (options?.publicId) {
+    formData.append('publicId', options.publicId);
+  }
+  if (options?.overwrite !== undefined) {
+    formData.append('overwrite', options.overwrite ? 'true' : 'false');
+  }
 
   return new Promise<CloudinaryUploadResult>((resolve, reject) => {
     const xhr = new XMLHttpRequest();

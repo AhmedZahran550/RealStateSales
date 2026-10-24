@@ -149,6 +149,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         badge: `${companyUsers.filter((u) => u.role === 'user').length}`,
       },
       {
+        href: '/admin/company',
+        label: 'ملف الشركة وإعداداتها',
+        icon: 'store',
+        active: pathname.startsWith('/admin/company'),
+      },
+      {
         href: '/public-reservations',
         label: 'حجوزات الصفحة العامة',
         icon: 'how_to_reg',

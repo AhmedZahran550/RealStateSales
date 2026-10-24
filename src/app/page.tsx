@@ -11,6 +11,10 @@ import CustomerDetailModal from '@/components/CustomerDetailModal';
 import { formatArabicFollowupDate } from '@/lib/date-utils';
 import { createUnitWhatsAppUrl } from '@/lib/shareUtils';
 import { zoneDisplayName } from '@/lib/zone-utils';
+import BrokerStatsBento from '@/components/dashboard/BrokerStatsBento';
+import BrokerAgendaTab from '@/components/dashboard/BrokerAgendaTab';
+import BrokerPipelineTab from '@/components/dashboard/BrokerPipelineTab';
+import BrokerQuickShareTab from '@/components/dashboard/BrokerQuickShareTab';
 
 export default function DashboardPage() {
   const {
@@ -45,6 +49,7 @@ export default function DashboardPage() {
   };
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [completedFollowups, setCompletedFollowups] = useState<Record<string, boolean>>({});
+  const [brokerTab, setBrokerTab] = useState<'agenda' | 'pipeline' | 'share'>('agenda');
 
   if (!currentUser) return null;
 
@@ -113,8 +118,15 @@ export default function DashboardPage() {
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-space-sm w-full sm:w-auto shrink-0">
               <Link
+                href="/admin/company"
+                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+              >
+                <span className="material-symbols-outlined text-[20px]">store</span>
+                <span>ملف الشركة والشعار</span>
+              </Link>
+              <Link
                 href="/admin/users"
-                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-warning hover:bg-warning text-white font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px] border border-surface-container-high"
               >
                 <span className="material-symbols-outlined text-[20px]">manage_accounts</span>
                 <span>إدارة وسطاء الشركة</span>
@@ -519,7 +531,7 @@ export default function DashboardPage() {
   const recentUnits = myUnits.slice(0, 3);
 
   return (
-    <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
+    <div className="flex flex-col w-full space-y-space-md animate-in fade-in duration-300 pb-12">
       {/* Toast */}
       {toastMessage && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-inverse-surface text-inverse-on-surface shadow-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
@@ -527,517 +539,173 @@ export default function DashboardPage() {
           <span>{toastMessage}</span>
         </div>
       )}
-      {/* 1. Greeting & Quick Actions Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-4 sm:p-6 lg:p-space-lg shadow-sm border border-surface-container-high/40">
-        <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 -right-16 w-56 h-56 rounded-full bg-secondary-container/15 blur-2xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-md">
-          <div className="flex flex-col gap-space-xs">
-            <div className="flex items-center gap-space-sm">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-primary font-bold">
+      {/* 1. Greeting & Quick Command Actions Bar */}
+      <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-4 sm:p-6 shadow-sm border border-surface-container-high/40">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-xs">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                متابعة فورية
+                لوحة عمليات الوسيط
               </span>
               <span className="text-on-surface-variant flex items-center gap-1 text-xs">
                 <span className="material-symbols-outlined text-[16px]">calendar_today</span>
                 {todayArabic}
               </span>
             </div>
-            <h1 className="text-on-surface font-extrabold tracking-tight text-xl sm:text-2xl lg:text-3xl">
+            <h1 className="text-on-surface font-black text-xl sm:text-2xl mt-1">
               مرحباً {currentUser.fullName}، لديك{' '}
-              <span className="text-primary font-black">
-                {myCustomers.length} عملاء مسجلين
-              </span>{' '}
-              و <span className="text-secondary font-black">{negotiatingCustomers.length} صفقات</span> قيد التفاوض والحجز
+              <span className="text-primary font-black">{myCustomers.length} عملاء</span> و{' '}
+              <span className="text-secondary font-black">{negotiatingCustomers.length} صفقات</span> قيد التفاوض
             </h1>
             <p className="text-on-surface-variant text-xs sm:text-sm">
-              إدارة المخزون العقاري ومتابعة العملاء المحتملين لمدينة بدر والحي المتميز لحظياً.
+              إدارة سريعة للمخزون العقاري، متابعة مواعيد الاتصال، ومشاركة عروض الحي المتميز فورياً.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-space-sm w-full sm:w-auto shrink-0">
+          {/* Quick Action Commands */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               onClick={() => setIsCustomerModalOpen(true)}
-              className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+              className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[40px] inline-flex items-center gap-1.5"
               type="button"
             >
               <span className="material-symbols-outlined text-[20px]">person_add</span>
               <span>+ تسجيل عميل جديد</span>
             </button>
+
+            <Link
+              href="/matching"
+              className="px-3.5 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition shadow-xs text-xs min-h-[40px] inline-flex items-center gap-1.5 border border-surface-container-high"
+            >
+              <span className="material-symbols-outlined text-[18px] text-primary">handshake</span>
+              <span>مطابقة سريعة</span>
+            </Link>
+
+            <Link
+              href="/map"
+              className="px-3.5 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition shadow-xs text-xs min-h-[40px] inline-flex items-center gap-1.5 border border-surface-container-high"
+            >
+              <span className="material-symbols-outlined text-[18px] text-primary">map</span>
+              <span>الخريطة</span>
+            </Link>
+
             <Link
               href="/units"
-              className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-secondary-container hover:bg-secondary text-on-secondary font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+              className="px-3.5 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition shadow-xs text-xs min-h-[40px] inline-flex items-center gap-1.5 border border-surface-container-high"
             >
-              <span className="material-symbols-outlined text-[20px]">apartment</span>
-              <span>استعراض ومشاركة الوحدات</span>
+              <span className="material-symbols-outlined text-[18px] text-primary">apartment</span>
+              <span>كل المحفظة</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* 2. Key Metrics Row (4 Stat Bento Tiles) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
-        {/* Stat 1: Total Units */}
-        <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between border border-surface-container-high/40">
-          <div className="flex items-start justify-between mb-space-sm">
-            <div className="w-12 h-12 rounded-xl bg-surface-container-high text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-[26px]">apartment</span>
-            </div>
-            <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-bold text-xs">
-              <span className="material-symbols-outlined text-[14px]">inventory_2</span>
-              المخزون
-            </span>
-          </div>
-          <div>
-            <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
-              إجمالي الوحدات المسجلة
-            </span>
-            <div className="flex items-baseline gap-space-xs">
-              <span className="text-on-surface font-extrabold tracking-tight text-3xl">
-                {myUnits.length}
-              </span>
-              <span className="text-on-surface-variant font-bold text-xs">وحدة</span>
-            </div>
-          </div>
-          <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2">
-            <span className="text-xs">
-              منها <strong className="text-primary font-bold">{availableUnitsCount} وحدة متاحة</strong>
-            </span>
-            <span className="material-symbols-outlined text-primary text-[18px]">verified</span>
-          </div>
-        </div>
+      {/* 2. Key Metrics Row (4 Smart Bento Tiles) */}
+      <BrokerStatsBento
+        urgentFollowupsCount={myCustomers.filter((c) => c.nextFollowupAt).length}
+        totalCustomersCount={myCustomers.length}
+        negotiatingCustomersCount={negotiatingCustomers.length}
+        negotiatingSumFormatted={formattedNegotiatingSum}
+        negotiatingSumUnit={negotiatingSumUnit}
+        expectedCommissionFormatted={expectedCommission.toLocaleString()}
+        availableUnitsCount={availableUnitsCount}
+        onSelectTab={setBrokerTab}
+      />
 
-        {/* Stat 2: Active Clients */}
-        <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between border border-surface-container-high/40">
-          <div className="flex items-start justify-between mb-space-sm">
-            <div className="w-12 h-12 rounded-xl bg-primary-fixed text-on-primary-fixed-variant flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-[26px]">groups</span>
-            </div>
-            <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-bold text-xs">
-              قاعدة العملاء
+      {/* 3. Streamlined Operation Hub (Navigation Tabs) */}
+      <div className="card p-4 sm:p-5 space-y-4">
+        {/* Tab Buttons */}
+        <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-surface-container-high/40">
+          <button
+            type="button"
+            onClick={() => setBrokerTab('agenda')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+              brokerTab === 'agenda'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">alarm</span>
+            <span>متابعات ومواعيد اليوم</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                brokerTab === 'agenda'
+                  ? 'bg-primary-container text-on-primary-container'
+                  : 'bg-surface-container-high text-primary'
+              }`}
+            >
+              {myCustomers.filter((c) => c.nextFollowupAt).length}
             </span>
-          </div>
-          <div>
-            <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
-              العملاء المسجلين
-            </span>
-            <div className="flex items-baseline gap-space-xs">
-              <span className="text-primary font-extrabold tracking-tight text-3xl">
-                {myCustomers.length}
-              </span>
-              <span className="text-on-surface-variant font-bold text-xs">عميل</span>
-            </div>
-          </div>
-          <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2">
-            <span className="text-xs">جاري المتابعة والتنسيق</span>
-            <span className="material-symbols-outlined text-primary-container text-[18px]">support_agent</span>
-          </div>
-        </div>
+          </button>
 
-        {/* Stat 3: Ongoing Pipeline Deals */}
-        <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between border border-surface-container-high/40">
-          <div className="flex items-start justify-between mb-space-sm">
-            <div className="w-12 h-12 rounded-xl bg-secondary-fixed text-on-secondary-fixed-variant flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-[26px]">handshake</span>
-            </div>
-            <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-bold text-xs">
+          <button
+            type="button"
+            onClick={() => setBrokerTab('pipeline')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+              brokerTab === 'pipeline'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">view_kanban</span>
+            <span>مسار الصفقات (Pipeline)</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                brokerTab === 'pipeline'
+                  ? 'bg-primary-container text-on-primary-container'
+                  : 'bg-surface-container-high text-secondary'
+              }`}
+            >
               {negotiatingCustomers.length} صفقات
             </span>
-          </div>
-          <div>
-            <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
-              حجم الصفقات قيد التفاوض
-            </span>
-            <div className="flex items-baseline gap-space-xs">
-              <span className="text-secondary font-extrabold tracking-tight text-3xl">
-                {formattedNegotiatingSum}
-              </span>
-              <span className="text-on-surface-variant font-bold text-xs">{negotiatingSumUnit}</span>
-            </div>
-          </div>
-          <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2">
-            <span className="text-xs">
-              {negotiatingCustomers.length > 0 ? 'مراحل تفاوض وحجز جارية' : 'لا توجد مفاوضات حالياً'}
-            </span>
-            <span className="material-symbols-outlined text-secondary text-[18px]">hourglass_top</span>
-          </div>
-        </div>
+          </button>
 
-        {/* Stat 4: Expected Commission */}
-        <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between border border-surface-container-high/40">
-          <div className="flex items-start justify-between mb-space-sm">
-            <div className="w-12 h-12 rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-[26px]">payments</span>
-            </div>
-            <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-tertiary-fixed-dim text-on-tertiary-fixed font-bold text-xs">
-              عمولة 2.5%
-            </span>
-          </div>
-          <div>
-            <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
-              العمولات المتوقعة
-            </span>
-            <div className="flex items-baseline gap-space-xs">
-              <span className="text-tertiary font-extrabold tracking-tight text-3xl">
-                {expectedCommission.toLocaleString()}
-              </span>
-              <span className="text-on-surface-variant font-bold text-xs">ج.م</span>
-            </div>
-          </div>
-          <div className="mt-space-sm pt-space-xs">
-            <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
-              <div
-                className="bg-tertiary h-full rounded-full transition-all duration-700"
-                style={{ width: negotiatingCustomers.length > 0 ? '100%' : '0%' }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Main Grid: Urgent Follow-ups (2 Cols) + Sales Pipeline Funnel (1 Col) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-space-lg">
-        {/* Urgent Follow-ups List (2 Columns on large screens) */}
-        <div className="lg:col-span-2 flex flex-col bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm border border-surface-container-high/40">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-xs mb-space-md pb-space-sm border-b border-surface-container-high/30">
-            <div className="flex items-center gap-space-xs">
-              <span className="w-3 h-3 rounded-full bg-secondary animate-ping" />
-              <h2 className="text-on-surface font-bold text-xl">
-                متابعات اليوم العاجلة
-              </h2>
-              <span className="px-2.5 py-0.5 rounded-lg bg-surface-container-high text-primary font-bold text-xs">
-                {urgentFollowups.length} مستحقة
-              </span>
-            </div>
-            <span className="text-on-surface-variant text-xs">
-              الترتيب حسب موعد الاتصال المحدد
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-space-md" id="followups-container">
-            {urgentFollowups.length > 0 ? (
-              urgentFollowups.map((lead, idx) => {
-                const isDone = completedFollowups[lead.id];
-                const initialLetter = lead.name.charAt(0);
-                const tagColor =
-                  idx % 3 === 0
-                    ? 'bg-secondary-fixed text-on-secondary-fixed-variant'
-                    : idx % 3 === 1
-                    ? 'bg-surface-container text-primary'
-                    : 'bg-secondary-fixed text-on-secondary-fixed-variant';
-
-                return (
-                  <div
-                    key={lead.id}
-                    className={`followup-card bg-surface-container-low rounded-xl p-space-md hover:bg-surface-container transition-all shadow-sm ${
-                      isDone ? 'opacity-40' : ''
-                    }`}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-space-sm mb-space-sm">
-                      <div className="flex items-center gap-space-sm">
-                        <div className="w-11 h-11 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-bold shrink-0">
-                          {initialLetter}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-space-xs">
-                            <h3 className="text-on-surface font-bold text-base">
-                              {lead.name}
-                            </h3>
-                            <span className={`px-2 py-0.5 rounded-md font-bold text-xs ${tagColor}`}>
-                              {lead.budget ? 'مستثمر' : 'متابعة'}
-                            </span>
-                          </div>
-                          <span className="text-on-surface-variant text-xs">
-                            {lead.notes || 'اهتمام بوحدات الحي المتميز والموقع الاستراتيجي'} • الميزانية:{' '}
-                            {lead.budget ? `${(lead.budget / 1000000).toFixed(1)}M ج.م` : 'غير محددة'}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 self-start sm:self-auto bg-surface-container-lowest px-2.5 py-1 rounded-lg border border-surface-container-high/40 shadow-xs">
-                        <span className="material-symbols-outlined text-secondary text-[16px]">alarm</span>
-                        <span className="text-on-surface font-bold text-xs">
-                          {lead.nextFollowupAt
-                            ? (() => {
-                                const f = formatArabicFollowupDate(lead.nextFollowupAt);
-                                return `${f.dayName} • ${f.formattedTime}`;
-                              })()
-                            : 'غير محدد'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="bg-surface-container-lowest rounded-lg p-space-sm mb-space-md">
-                      <p className="text-on-surface-variant flex items-center gap-space-xs text-xs">
-                        <span className="material-symbols-outlined text-primary text-[16px]">history</span>
-                        <strong>آخر تحديث:</strong>{' '}
-                        {lead.activities?.[0]?.note || lead.notes || 'عميل مسجل في قاعدة البيانات'}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-space-xs">
-                      <div className="flex items-center gap-space-xs w-full sm:w-auto">
-                        <a
-                          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-bold transition-colors text-xs min-h-[38px]"
-                          href={`tel:${lead.phone}`}
-                        >
-                          <span className="material-symbols-outlined text-[16px] text-primary">call</span>
-                          <span dir="ltr">{lead.phone}</span>
-                        </a>
-                        <a
-                          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-primary-container text-on-primary font-bold hover:bg-primary transition-colors text-xs min-h-[38px]"
-                          href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">chat</span>
-                          واتساب مباشر
-                        </a>
-                      </div>
-
-                      <button
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1 px-3.5 py-2 rounded-lg bg-surface-container hover:bg-primary hover:text-on-primary text-primary font-bold transition-all text-xs cursor-pointer min-h-[38px]"
-                        disabled={isDone}
-                        onClick={() => markFollowupDone(lead.id)}
-                        type="button"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">
-                          {isDone ? 'check_circle' : 'check'}
-                        </span>
-                        {isDone ? 'تم بنجاح وتحديث المرحلة' : 'تم التواصل وتحديد موعد'}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="text-sm text-on-surface-variant text-center py-6">لا توجد متابعات مسجلة لليوم.</p>
-            )}
-          </div>
-        </div>
-
-        {/* Sales Pipeline Funnel & Stage Distribution (1 Col) */}
-        <div className="flex flex-col bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm border border-surface-container-high/40">
-          <div className="flex items-center justify-between mb-space-sm">
-            <h2 className="text-on-surface font-bold text-xl">
-              قمع المبيعات (Pipeline)
-            </h2>
-            <span className="material-symbols-outlined text-primary text-[24px]">filter_alt</span>
-          </div>
-          <p className="text-on-surface-variant mb-space-md text-xs">
-            توزيع مراحل العملاء المحتملين ونسب التحويل الفعلية
-          </p>
-
-          {/* Visual Funnel Graphic with Stages */}
-          <div className="flex flex-col gap-space-sm mb-space-md">
-            <div className="relative bg-surface-container-low rounded-xl p-space-sm transition-all hover:bg-surface-container">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-space-xs">
-                  <span className="w-3 h-3 rounded-full bg-primary-container" />
-                  <span className="text-on-surface font-bold text-xs">
-                    1. استفسارات وعملاء جدد
-                  </span>
-                </div>
-                <span className="text-primary font-extrabold text-sm">{newLeadsCount}</span>
-              </div>
-              <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-                <div className="bg-primary h-full rounded-full" style={{ width: `${leadPct}%` }} />
-              </div>
-              <div className="flex items-center justify-between mt-1 text-on-surface-variant text-[11px]">
-                <span>المرحلة الأولى</span>
-                <span className="font-bold">{leadPct}%</span>
-              </div>
-            </div>
-
-            <div className="relative bg-surface-container-low rounded-xl p-space-sm transition-all hover:bg-surface-container">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-space-xs">
-                  <span className="w-3 h-3 rounded-full bg-surface-tint" />
-                  <span className="text-on-surface font-bold text-xs">
-                    2. معاينات وزيارات ميدانية
-                  </span>
-                </div>
-                <span className="text-primary-container font-extrabold text-sm">{viewedCount}</span>
-              </div>
-              <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-                <div className="bg-primary-container h-full rounded-full" style={{ width: `${viewedPct}%` }} />
-              </div>
-              <div className="flex items-center justify-between mt-1 text-on-surface-variant text-[11px]">
-                <span>معدل تحويل للمعاينة</span>
-                <span className="font-bold">{viewedPct}%</span>
-              </div>
-            </div>
-
-            <div className="relative bg-surface-container-low rounded-xl p-space-sm transition-all hover:bg-surface-container">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-space-xs">
-                  <span className="w-3 h-3 rounded-full bg-tertiary-container" />
-                  <span className="text-on-surface font-bold text-xs">
-                    3. مرحلة التفاوض والعروض
-                  </span>
-                </div>
-                <span className="text-tertiary font-extrabold text-sm">{inNegotiationCount}</span>
-              </div>
-              <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-                <div className="bg-tertiary-container h-full rounded-full" style={{ width: `${negPct}%` }} />
-              </div>
-              <div className="flex items-center justify-between mt-1 text-on-surface-variant text-[11px]">
-                <span>معدل تقديم عروض أسعار</span>
-                <span className="font-bold">{negPct}%</span>
-              </div>
-            </div>
-
-            <div className="relative bg-surface-container-low rounded-xl p-space-sm transition-all hover:bg-surface-container">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-space-xs">
-                  <span className="w-3 h-3 rounded-full bg-secondary" />
-                  <span className="text-on-surface font-bold text-xs">
-                    4. حجز وإبرام عقود
-                  </span>
-                </div>
-                <span className="text-secondary font-extrabold text-sm">{closedCount}</span>
-              </div>
-              <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-                <div className="bg-secondary-container h-full rounded-full" style={{ width: `${closedPct}%` }} />
-              </div>
-              <div className="flex items-center justify-between mt-1 text-on-surface-variant text-[11px]">
-                <span>نسبة الإغلاق الكلية (Closing)</span>
-                <span className="font-bold text-secondary">{closedPct}%</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-auto bg-surface-container rounded-xl p-space-md border border-surface-container-high/40">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-space-xs">
-                <span className="material-symbols-outlined text-primary text-[22px]">insights</span>
-                <span className="text-on-surface font-bold text-xs">
-                  إجمالي العملاء في المسار
-                </span>
-              </div>
-              <span className="text-primary font-black text-sm">{myCustomers.length} عملاء</span>
-            </div>
-            <p className="text-on-surface-variant mt-1 text-[11px]">
-              مزامنة فورية مع قاعدة بيانات سحابية لحظياً.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Recently Added Units Showcase */}
-      <div className="flex flex-col bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm border border-surface-container-high/40">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs mb-space-lg">
-          <div>
-            <div className="flex items-center gap-space-xs">
-              <span className="material-symbols-outlined text-primary text-[24px]">domain_add</span>
-              <h2 className="text-on-surface font-bold text-xl">
-                أحدث الوحدات المضافة للمخزون
-              </h2>
-            </div>
-            <p className="text-on-surface-variant text-xs">
-              عروض جديدة جاهزة للترويج الفوري مع تفاصيل الأسعار والموقع
-            </p>
-          </div>
-          <Link
-            href="/units"
-            className="flex items-center gap-1 text-primary hover:text-primary-container font-bold self-start sm:self-auto text-sm"
+          <button
+            type="button"
+            onClick={() => setBrokerTab('share')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+              brokerTab === 'share'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+            }`}
           >
-            عرض جميع الوحدات ({myUnits.length})
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          </Link>
+            <span className="material-symbols-outlined text-[18px]">share</span>
+            <span>عروض سريعة للمشاركة بالواتساب</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                brokerTab === 'share'
+                  ? 'bg-primary-container text-on-primary-container'
+                  : 'bg-surface-container-high text-success'
+              }`}
+            >
+              {availableUnitsCount} متاح
+            </span>
+          </button>
         </div>
 
-        {/* 3 Unit Showcase Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
-          {recentUnits.map((unit) => {
-            const img =
-              unit.media?.[0]?.externalUrl ||
-              unit.media?.[0]?.storagePath ||
-              'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+        {/* Tab Content */}
+        {brokerTab === 'agenda' && (
+          <BrokerAgendaTab
+            customers={myCustomers}
+            completedFollowups={completedFollowups}
+            onMarkDone={markFollowupDone}
+            onSelectCustomer={setSelectedCustomer}
+            onNewCustomer={() => setIsCustomerModalOpen(true)}
+          />
+        )}
 
-            return (
-              <div
-                key={unit.id}
-                className="group bg-surface-container-low rounded-2xl overflow-hidden hover:shadow-lg transition-all flex flex-col border border-surface-container-high/40"
-              >
-                <div className="relative h-48 w-full overflow-hidden bg-surface-container">
-                  <img
-                    src={img}
-                    alt={`وحدة ${unit.plotNo}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <span className="absolute top-space-sm right-space-sm px-2.5 py-1 rounded-lg bg-primary text-on-primary font-bold shadow-md text-xs">
-                    {unit.status === 'available' ? 'متاح حصرياً' : unit.status === 'reserved' ? 'حجز مؤقت' : 'تم البيع'}
-                  </span>
-                  <span className="absolute bottom-space-sm right-space-sm px-2 py-0.5 rounded-md bg-inverse-surface/80 backdrop-blur-sm text-inverse-on-surface text-xs">
-                    كود: BD-{unit.zoneId}-{unit.plotNo}
-                  </span>
-                </div>
+        {brokerTab === 'pipeline' && <BrokerPipelineTab customers={myCustomers} />}
 
-                <div className="p-space-md flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-primary font-bold text-xs">
-                        الحي المتميز • {zoneDisplayName(unit.zoneId, zones)}
-                      </span>
-                      <span className="text-on-surface-variant text-xs">
-                        قطعة {unit.plotNo}
-                      </span>
-                    </div>
-                    <h3 className="text-on-surface font-bold mb-space-xs line-clamp-1 text-base">
-                      {unit.description || `وحدة فاخرة قطعة ${unit.plotNo}`}
-                    </h3>
-
-                    <div className="flex items-center gap-space-md my-space-sm text-on-surface-variant text-xs">
-                      <div className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[16px] text-primary">square_foot</span>
-                        <span>{unit.area} م²</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[16px] text-primary">layers</span>
-                        <span>{unit.deliveryNote || 'فوري'}</span>
-                      </div>
-                    </div>
-
-                    <div className="bg-surface-container-lowest rounded-lg p-space-xs mb-space-sm text-[11px] text-on-surface-variant">
-                      <strong>نظام السداد:</strong> {unit.paymentTerms || 'كاش أو تقسيط ميسر'}
-                    </div>
-                  </div>
-
-                  <div className="pt-space-xs flex items-center justify-between">
-                    <div>
-                      <span className="text-on-surface-variant block text-[11px]">
-                        السعر الإجمالي
-                      </span>
-                      <span className="text-on-surface font-black text-base">
-                        {unit.price.toLocaleString()} ج.م
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setSelectedUnit(unit)}
-                        className="px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-variant text-on-surface text-xs font-bold transition-all cursor-pointer"
-                      >
-                        تفاصيل
-                      </button>
-                      <a
-                        href={createUnitWhatsAppUrl(unit, currentUser, undefined, zones)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-2 rounded-xl bg-primary-container text-on-primary hover:bg-primary transition-all flex items-center justify-center shadow-sm cursor-pointer"
-                        title="مشاركة العرض عبر واتساب"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">share</span>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        {brokerTab === 'share' && (
+          <BrokerQuickShareTab
+            units={myUnits}
+            zones={zones}
+            currentUser={currentUser}
+            onSelectUnit={setSelectedUnit}
+          />
+        )}
       </div>
 
       {/* Global Modals */}
