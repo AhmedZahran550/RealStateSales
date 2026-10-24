@@ -64,6 +64,18 @@ interface AppContextType {
     bData: Omit<Building, 'id'>,
     unitsList: Array<Omit<Unit, 'id' | 'createdAt' | 'updatedAt' | 'buildingId' | 'zoneId' | 'plotNo'>>
   ) => Promise<{ success: boolean; message?: string; building?: Building }>;
+  updateBuilding: (
+    id: number,
+    payload: {
+      zoneId?: number;
+      plotNo?: number;
+      landArea?: number;
+      features?: string[];
+      notes?: string;
+      mapX?: number;
+      mapY?: number;
+    }
+  ) => Promise<{ success: boolean; message?: string; data?: Building }>;
   updateBuildingCoords: (id: number, mapX: number, mapY: number) => void;
   addService: (service: Omit<Service, 'id'>) => void;
   addUser: (user: Omit<UserProfile, 'id' | 'createdAt'>) => Promise<{ success: boolean; message?: string }>;
@@ -472,6 +484,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   };
 
+  const updateBuilding = async (
+    id: number,
+    payload: {
+      zoneId?: number;
+      plotNo?: number;
+      landArea?: number;
+      features?: string[];
+      notes?: string;
+      mapX?: number;
+      mapY?: number;
+    }
+  ): Promise<{ success: boolean; message?: string; data?: Building }> => {
+    const res = await buildingService.updateBuilding(id, payload);
+    if (res.success) {
+      setBuildings((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, ...payload, ...(res.data || {}) } : b))
+      );
+      if (payload.plotNo !== undefined || payload.zoneId !== undefined) {
+        setUnits((prev) =>
+          prev.map((u) => {
+            if (u.buildingId === id) {
+              return {
+                ...u,
+                plotNo: payload.plotNo !== undefined ? payload.plotNo : u.plotNo,
+                zoneId: payload.zoneId !== undefined ? payload.zoneId : u.zoneId,
+              };
+            }
+            return u;
+          })
+        );
+      }
+      await refreshFromDatabase(undefined, true);
+      return { success: true, message: res.message, data: res.data };
+    }
+    return { success: false, message: res.message || res.error || 'فشل تحديث بيانات المبنى' };
+  };
+
   const updateBuildingCoords = (id: number, mapX: number, mapY: number) => {
     setBuildings((prev) =>
       prev.map((b) => (b.id === id ? { ...b, mapX, mapY } : b))
@@ -600,6 +649,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addBuilding,
         addBuildingAsync,
         addBuildingWithUnits,
+        updateBuilding,
         updateBuildingCoords,
         addService,
         addUser,

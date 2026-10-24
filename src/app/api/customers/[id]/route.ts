@@ -2,6 +2,64 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, handleApiError } from '@/lib/server/auth';
 import { serverSupabase } from '@/lib/server/supabase';
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const authUser = await requireAuth(request);
+
+    const { data: c, error } = await serverSupabase
+      .from('customers')
+      .select(`
+        *,
+        customer_activities (*),
+        customer_units (unit_id),
+        profiles:owner_id (full_name)
+      `)
+      .eq('id', id)
+      .eq('owner_id', authUser.sub)
+      .is('deleted_at', null)
+      .single();
+
+    if (error || !c) {
+      return NextResponse.json({ success: false, error: 'العميل غير موجود أو غير مصرح بالوصول إليه' }, { status: 404 });
+    }
+
+    const customer = {
+      id: c.id,
+      ownerId: c.owner_id,
+      ownerName: c.profiles?.full_name || authUser.fullName,
+      name: c.name,
+      phone: c.phone,
+      whatsapp: c.whatsapp || undefined,
+      budget: c.budget ? Number(c.budget) : undefined,
+      source: c.source || undefined,
+      stage: c.stage,
+      nextFollowupAt: c.next_followup_at || undefined,
+      notes: c.notes || undefined,
+      interestedUnitIds: (c.customer_units || []).map((cu: any) => cu.unit_id),
+      activities: (c.customer_activities || [])
+        .map((act: any) => ({
+          id: act.id,
+          customerId: act.customer_id,
+          type: act.type,
+          note: act.note,
+          createdAt: act.created_at,
+          authorName: c.profiles?.full_name || authUser.fullName,
+        }))
+        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+      createdAt: c.created_at,
+      updatedAt: c.updated_at,
+    };
+
+    return NextResponse.json({ success: true, data: customer });
+  } catch (err: any) {
+    return handleApiError(err);
+  }
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

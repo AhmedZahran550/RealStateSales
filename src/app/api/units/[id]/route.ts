@@ -2,6 +2,74 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, handleApiError } from '@/lib/server/auth';
 import { serverSupabase } from '@/lib/server/supabase';
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const authUser = await requireAuth(request);
+
+    let query = serverSupabase
+      .from('units')
+      .select(`
+        *,
+        companies (name),
+        buildings (zone_id, plot_no, features),
+        unit_media (*)
+      `)
+      .eq('id', id);
+
+    if (authUser.role !== 'super_admin' && authUser.companyId) {
+      query = query.eq('company_id', authUser.companyId);
+    }
+
+    const { data: dbUnit, error } = await query.single();
+
+    if (error || !dbUnit) {
+      return NextResponse.json({ success: false, error: 'الوحدة غير موجودة أو غير مصرح بالوصول إليها' }, { status: 404 });
+    }
+
+    const unit = {
+      id: dbUnit.id,
+      companyId: dbUnit.company_id || undefined,
+      companyName: dbUnit.companies?.name || undefined,
+      buildingId: Number(dbUnit.building_id),
+      zoneId: dbUnit.buildings?.zone_id || 1,
+      plotNo: dbUnit.buildings?.plot_no || 1,
+      unitKind: dbUnit.unit_kind,
+      floor: dbUnit.floor !== null && dbUnit.floor !== undefined ? Number(dbUnit.floor) : undefined,
+      side: dbUnit.side || undefined,
+      area: Number(dbUnit.area),
+      gardenArea: dbUnit.garden_area ? Number(dbUnit.garden_area) : undefined,
+      price: Number(dbUnit.price),
+      negotiable: Boolean(dbUnit.negotiable),
+      deliveryNote: dbUnit.delivery_note || '',
+      paymentTerms: dbUnit.payment_terms || '',
+      description: dbUnit.description || '',
+      status: dbUnit.status || 'available',
+      lat: dbUnit.lat ? Number(dbUnit.lat) : undefined,
+      lng: dbUnit.lng ? Number(dbUnit.lng) : undefined,
+      media: (dbUnit.unit_media || []).map((m: any) => ({
+        id: m.id,
+        unitId: m.unit_id,
+        ownerId: m.owner_id,
+        kind: m.kind || 'image',
+        externalUrl: m.external_url,
+        caption: m.caption || '',
+        createdAt: m.created_at,
+      })),
+      features: dbUnit.features || [],
+      createdAt: dbUnit.created_at,
+      updatedAt: dbUnit.updated_at,
+    };
+
+    return NextResponse.json({ success: true, data: unit });
+  } catch (err: any) {
+    return handleApiError(err);
+  }
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

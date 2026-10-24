@@ -1,18 +1,27 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { Unit, UnitKind, UnitStatus, UNIT_KIND_LABELS } from '@/lib/types';
-import UnitDetailModal from '@/components/UnitDetailModal';
-import UnitFormModal from '@/components/UnitFormModal';
 import BuildingCard from '@/components/buildings/BuildingCard';
-import AddBuildingWithUnitsModal from '@/components/buildings/AddBuildingWithUnitsModal';
-import { Building2, Home, Plus } from 'lucide-react';
+import UnitCard from '@/components/units/UnitCard';
+import { Building2, Home, Plus, Edit, ArrowUpDown } from 'lucide-react';
 import { exportUnitsToExcel } from '@/lib/excel';
 import { formatUnitFullDetails, createUnitWhatsAppUrl } from '@/lib/shareUtils';
 import { zoneDisplayName } from '@/lib/zone-utils';
 
+function getZoneSortKey(zoneId: number, zones: any[]): number {
+  const z = zones.find((item) => item.id === zoneId);
+  if (!z) return zoneId;
+  const match = z.name.match(/\d+/);
+  if (match) return parseInt(match[0], 10);
+  return z.id;
+}
+
 export default function UnitsPage() {
+  const router = useRouter();
   const {
     currentUser,
     isCompanyAdmin,
@@ -31,17 +40,13 @@ export default function UnitsPage() {
   } = useApp();
 
   const [inventoryView, setInventoryView] = useState<'units' | 'buildings'>('units');
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
+  const [sortBy, setSortBy] = useState<'zone_asc' | 'plot_asc' | 'price_asc' | 'price_desc' | 'area_asc' | 'area_desc' | 'newest'>('zone_asc');
   const [statusFilter, setStatusFilter] = useState<'all' | 'available' | 'reserved' | 'sold'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [zoneFilter, setZoneFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
 
-  const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
-  const [isUnitFormOpen, setIsUnitFormOpen] = useState(false);
-  const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
-  const [targetBuildingIdForUnit, setTargetBuildingIdForUnit] = useState<number | undefined>(undefined);
-  const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,6 +55,10 @@ export default function UnitsPage() {
       if (saved === 'buildings' || saved === 'units') {
         setInventoryView(saved);
       }
+      const savedViewMode = localStorage.getItem('brokers_units_view_mode');
+      if (savedViewMode === 'grid' || savedViewMode === 'table') {
+        setViewMode(savedViewMode);
+      }
     } catch {}
   }, []);
 
@@ -57,6 +66,13 @@ export default function UnitsPage() {
     setInventoryView(mode);
     try {
       localStorage.setItem('brokers_inventory_view_mode', mode);
+    } catch {}
+  };
+
+  const handleToggleViewMode = (mode: 'grid' | 'table') => {
+    setViewMode(mode);
+    try {
+      localStorage.setItem('brokers_units_view_mode', mode);
     } catch {}
   };
 
@@ -74,9 +90,9 @@ export default function UnitsPage() {
     .filter((u) => u.status === 'available')
     .reduce((acc, u) => acc + (u.price || 0), 0);
 
-  // Filtered units
+  // Filtered & sorted units (default order: per areas numbers, then plotNo, then floor)
   const filteredUnits = useMemo(() => {
-    return myUnits.filter((unit) => {
+    const list = myUnits.filter((unit) => {
       // Status
       if (statusFilter !== 'all' && unit.status !== statusFilter) return false;
 
@@ -99,7 +115,29 @@ export default function UnitsPage() {
 
       return true;
     });
-  }, [myUnits, zones, statusFilter, zoneFilter, typeFilter, searchTerm]);
+
+    return list.sort((a, b) => {
+      if (sortBy === 'zone_asc') {
+        const zoneA = getZoneSortKey(a.zoneId, zones);
+        const zoneB = getZoneSortKey(b.zoneId, zones);
+        if (zoneA !== zoneB) return zoneA - zoneB;
+        if (a.plotNo !== b.plotNo) return a.plotNo - b.plotNo;
+        return (a.floor ?? 0) - (b.floor ?? 0);
+      }
+      if (sortBy === 'plot_asc') {
+        if (a.plotNo !== b.plotNo) return a.plotNo - b.plotNo;
+        return a.zoneId - b.zoneId;
+      }
+      if (sortBy === 'price_asc') return a.price - b.price;
+      if (sortBy === 'price_desc') return b.price - a.price;
+      if (sortBy === 'area_desc') return b.area - a.area;
+      if (sortBy === 'area_asc') return a.area - b.area;
+      if (sortBy === 'newest') {
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      }
+      return 0;
+    });
+  }, [myUnits, zones, statusFilter, zoneFilter, typeFilter, searchTerm, sortBy]);
 
   // حساب بيانات المباني وإحصائيات وحداتها
   const buildingsWithStats = useMemo(() => {
@@ -130,9 +168,9 @@ export default function UnitsPage() {
     });
   }, [buildings, myUnits, isSuperAdmin, currentUser?.companyId]);
 
-  // تصفية المباني بناءً على معايير البحث والمنطقة والحالة
+  // تصفية المباني بناءً على معايير البحث والمنطقة والحالة مع ترتيب افتراضي حسب أرقام المناطق
   const filteredBuildings = useMemo(() => {
-    return buildingsWithStats.filter((b) => {
+    const list = buildingsWithStats.filter((b) => {
       if (zoneFilter !== 'all' && b.zoneId.toString() !== zoneFilter) return false;
       if (statusFilter === 'available' && b.availableCount === 0) return false;
       if (statusFilter === 'reserved' && b.reservedCount === 0) return false;
@@ -148,6 +186,13 @@ export default function UnitsPage() {
         if (!matchPlot && !matchZone && !matchNotes && !matchCompany && !matchFeat) return false;
       }
       return true;
+    });
+
+    return list.sort((a, b) => {
+      const zoneA = getZoneSortKey(a.zoneId, zones);
+      const zoneB = getZoneSortKey(b.zoneId, zones);
+      if (zoneA !== zoneB) return zoneA - zoneB;
+      return a.plotNo - b.plotNo;
     });
   }, [buildingsWithStats, zones, zoneFilter, statusFilter, searchTerm]);
 
@@ -194,27 +239,21 @@ export default function UnitsPage() {
           </button>
           {(isCompanyAdmin || isSuperAdmin) && (
             <>
-              <button
-                onClick={() => setIsBuildingModalOpen(true)}
+              <Link
+                href="/admin/buildings/new"
                 className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface transition-all shadow-xs font-bold text-xs border border-surface-container-high cursor-pointer min-h-[42px]"
-                type="button"
               >
                 <Building2 className="w-4 h-4 text-primary" />
                 <span>+ إضافة عمارة وقطع</span>
-              </button>
+              </Link>
 
-              <button
-                onClick={() => {
-                  setEditingUnit(null);
-                  setTargetBuildingIdForUnit(undefined);
-                  setIsUnitFormOpen(true);
-                }}
+              <Link
+                href="/units/new"
                 className="flex items-center justify-center gap-space-xs px-space-md sm:px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all shadow-md font-bold text-xs sm:text-sm cursor-pointer min-h-[42px]"
-                type="button"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ إضافة وحدة عقارية</span>
-              </button>
+              </Link>
             </>
           )}
         </div>
@@ -371,23 +410,11 @@ export default function UnitsPage() {
               </button>
             </div>
 
-            {/* عرض شبكة / جدول (خاص بنمط الوحدات فقط) */}
+            {/* عرض جدول / شبكة (خاص بنمط الوحدات فقط — الجدول هو العرض الافتراضي) */}
             {inventoryView === 'units' && (
               <div className="flex items-center gap-space-xs bg-surface-container-low p-1 rounded-xl">
                 <button
-                  onClick={() => setViewMode('grid')}
-                  className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-bold transition-all text-xs cursor-pointer ${
-                    viewMode === 'grid'
-                      ? 'bg-surface-container-lowest text-primary shadow-sm'
-                      : 'text-on-surface-variant hover:text-on-surface'
-                  }`}
-                  type="button"
-                >
-                  <span className="material-symbols-outlined text-[18px]">grid_view</span>
-                  شبكة
-                </button>
-                <button
-                  onClick={() => setViewMode('table')}
+                  onClick={() => handleToggleViewMode('table')}
                   className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-bold transition-all text-xs cursor-pointer ${
                     viewMode === 'table'
                       ? 'bg-surface-container-lowest text-primary shadow-sm'
@@ -398,13 +425,25 @@ export default function UnitsPage() {
                   <span className="material-symbols-outlined text-[18px]">table_rows</span>
                   جدول
                 </button>
+                <button
+                  onClick={() => handleToggleViewMode('grid')}
+                  className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-bold transition-all text-xs cursor-pointer ${
+                    viewMode === 'grid'
+                      ? 'bg-surface-container-lowest text-primary shadow-sm'
+                      : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[18px]">grid_view</span>
+                  شبكة
+                </button>
               </div>
             )}
           </div>
         </div>
 
         {/* Filter Inputs Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm">
           {/* Search */}
           <div className="relative">
             <span className="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">
@@ -426,9 +465,9 @@ export default function UnitsPage() {
               onChange={(e) => setZoneFilter(e.target.value)}
               className="w-full border border-outline-variant bg-white rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
             >
-              <option value="all" className="bg-white text-on-surface ">كافة المناطق</option>
+              <option value="all" className="bg-white text-on-surface">كافة المناطق</option>
               {zones.map((z) => (
-                <option key={z.id} value={z.id.toString()} className="bg-white text-on-surface ">
+                <option key={z.id} value={z.id.toString()} className="bg-white text-on-surface">
                   منطقة {z.name}
                 </option>
               ))}
@@ -445,17 +484,37 @@ export default function UnitsPage() {
               onChange={(e) => setTypeFilter(e.target.value)}
               className="w-full border border-outline-variant bg-white rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
             >
-              <option value="all" className="bg-white text-on-surface ">نوع الوحدة (الكل)</option>
-              <option value="duplex" className="bg-white text-on-surface ">دوبلكس</option>
-              <option value="ground_garden" className="bg-white text-on-surface ">أرضي بحديقة</option>
-              <option value="floor_1" className="bg-white text-on-surface ">دور أول متكرر</option>
-              <option value="floor_2" className="bg-white text-on-surface ">دور ثاني</option>
-              <option value="floor_3" className="bg-white text-on-surface ">دور ثالث</option>
-              <option value="roof" className="bg-white text-on-surface ">رووف</option>
-              <option value="other" className="bg-white text-on-surface ">أخرى</option>
+              <option value="all" className="bg-white text-on-surface">نوع الوحدة (الكل)</option>
+              <option value="duplex" className="bg-white text-on-surface">دوبلكس</option>
+              <option value="ground_garden" className="bg-white text-on-surface">أرضي بحديقة</option>
+              <option value="floor_1" className="bg-white text-on-surface">دور أول متكرر</option>
+              <option value="floor_2" className="bg-white text-on-surface">دور ثاني</option>
+              <option value="floor_3" className="bg-white text-on-surface">دور ثالث</option>
+              <option value="roof" className="bg-white text-on-surface">رووف</option>
+              <option value="other" className="bg-white text-on-surface">أخرى</option>
             </select>
             <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">
               expand_more
+            </span>
+          </div>
+
+          {/* Sort Selector */}
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="w-full border border-outline-variant bg-white rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
+            >
+              <option value="zone_asc" className="bg-white text-on-surface">أرقام المناطق (منطقة 1، 2...) — الافتراضي</option>
+              <option value="plot_asc" className="bg-white text-on-surface">رقم القطعة (تصاعدي)</option>
+              <option value="price_asc" className="bg-white text-on-surface">السعر (من الأقل للأعلى)</option>
+              <option value="price_desc" className="bg-white text-on-surface">السعر (من الأعلى للأقل)</option>
+              <option value="area_desc" className="bg-white text-on-surface">المساحة (من الأكبر للأصغر)</option>
+              <option value="area_asc" className="bg-white text-on-surface">المساحة (من الأصغر للأكبر)</option>
+              <option value="newest" className="bg-white text-on-surface">الأحدث تسجيلاً</option>
+            </select>
+            <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">
+              sort
             </span>
           </div>
         </div>
@@ -507,16 +566,9 @@ export default function UnitsPage() {
                   units={building.units}
                   zones={zones}
                   canManage={isCompanyAdmin || isSuperAdmin}
-                  onAddUnit={(buildingId) => {
-                    setTargetBuildingIdForUnit(buildingId);
-                    setEditingUnit(null);
-                    setIsUnitFormOpen(true);
-                  }}
-                  onSelectUnit={(unit) => setSelectedUnit(unit)}
-                  onEditUnit={(unit) => {
-                    setEditingUnit(unit);
-                    setIsUnitFormOpen(true);
-                  }}
+                  onAddUnit={(buildingId) => router.push(`/units/new?buildingId=${buildingId}`)}
+                  onSelectUnit={(unit) => router.push(`/units/${unit.id}`)}
+                  onEditUnit={(unit) => router.push(`/units/${unit.id}/edit`)}
                   onStatusChange={(unitId, newStatus) => updateUnitStatus(unitId, newStatus)}
                   onCopyUnit={copyUnitDetails}
                   defaultExpanded={filteredBuildings.length <= 4}
@@ -533,14 +585,13 @@ export default function UnitsPage() {
                 لم يتم العثور على أي عمارة تطابق معايير البحث الحالية. يمكنك إعادة تعيين الفلاتر أو إضافة عمارة جديدة.
               </p>
               {(isCompanyAdmin || isSuperAdmin) && (
-                <button
-                  onClick={() => setIsBuildingModalOpen(true)}
+                <Link
+                  href="/admin/buildings/new"
                   className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs shadow-sm hover:bg-primary-strong transition cursor-pointer"
-                  type="button"
                 >
                   <Plus className="w-4 h-4" />
                   + إضافة عمارة وقطع جديدة الآن
-                </button>
+                </Link>
               )}
             </div>
           )}
@@ -548,192 +599,16 @@ export default function UnitsPage() {
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
           {filteredUnits.length > 0 ? (
-            filteredUnits.map((unit) => {
-              const img =
-                unit.media?.[0]?.externalUrl ||
-                unit.media?.[0]?.storagePath ||
-                'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
-
-              const statusBadge =
-                unit.status === 'available'
-                  ? { text: 'متاح للبيع', class: 'bg-primary text-on-primary' }
-                  : unit.status === 'reserved'
-                  ? { text: 'حجز مؤقت', class: 'bg-tertiary-container text-on-tertiary-container' }
-                  : { text: 'تم البيع', class: 'bg-secondary text-on-secondary' };
-
-              return (
-                <div
-                  key={unit.id}
-                  className="bg-surface-container-lowest rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden group border border-surface-container-high/40"
-                >
-                  {/* Image & Tags Banner */}
-                  <div className="relative h-52 w-full overflow-hidden">
-                    <img
-                      src={img}
-                      alt={`قطعة ${unit.plotNo}`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-inverse-surface/70 via-transparent to-transparent" />
-
-                    <div className="absolute top-space-sm right-space-sm flex flex-col gap-1">
-                      <span className={`px-space-sm py-1 rounded-lg font-bold shadow-sm text-xs ${statusBadge.class}`}>
-                        {statusBadge.text}
-                      </span>
-                      <span className="px-space-sm py-0.5 rounded-lg bg-surface-container-lowest/90 backdrop-blur-md text-primary font-bold shadow-sm text-xs">
-                        {UNIT_KIND_LABELS[unit.unitKind] || 'شقة سكنية'}
-                      </span>
-                    </div>
-
-                    <div className="absolute top-space-sm left-space-sm flex flex-col gap-1 items-end">
-                      <span className="px-space-sm py-0.5 rounded-lg bg-surface-container-lowest/95 backdrop-blur-md text-on-surface font-bold shadow-sm flex items-center gap-1 text-xs">
-                        <span className="material-symbols-outlined text-[14px] text-tertiary">schedule</span>
-                        {unit.deliveryNote || 'استلام فوري'}
-                      </span>
-                      {unit.companyName && (
-                        <span className="px-2 py-0.5 rounded-lg bg-surface-container-low/90 text-white font-bold shadow-sm flex items-center gap-1 text-[11px]">
-                          <span className="material-symbols-outlined text-[13px] text-warning">corporate_fare</span>
-                          {unit.companyName}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="absolute bottom-space-sm right-space-sm text-surface-container-lowest flex items-center gap-space-xs">
-                      <span className="material-symbols-outlined text-[16px] text-tertiary-fixed">location_on</span>
-                      <span className="font-bold text-surface-container-lowest drop-shadow text-xs">
-                        الحي المتميز • {zoneDisplayName(unit.zoneId, zones)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Body Details */}
-                  <div className="p-space-md flex flex-col flex-1 justify-between gap-space-md">
-                    <div className="flex flex-col">
-                      <div className="flex items-center justify-between gap-space-xs mb-1">
-                        <span className="text-primary font-bold text-xs">
-                          كود: #BD-{unit.zoneId}-{unit.plotNo}
-                        </span>
-                        <span className="text-outline text-xs">
-                          قطعة {unit.plotNo}
-                        </span>
-                      </div>
-
-                      <h3 className="text-on-surface font-bold leading-snug line-clamp-1 text-base">
-                        {unit.description || `وحدة فاخرة بالمنطقة ${unit.zoneId}`}
-                      </h3>
-
-                      {/* Quick Spec Grid */}
-                      <div className="grid grid-cols-2 gap-space-xs bg-surface-container-low rounded-xl p-space-sm mt-space-sm text-center">
-                        <div className="flex flex-col items-center">
-                          <span className="material-symbols-outlined text-[18px] text-primary">square_foot</span>
-                          <span className="text-on-surface font-bold mt-0.5 text-xs">
-                            {unit.area} م²
-                          </span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <span className="material-symbols-outlined text-[18px] text-primary">layers</span>
-                          <span className="text-on-surface font-bold mt-0.5 text-xs">
-                            {UNIT_KIND_LABELS[unit.unitKind] || 'سكنية'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Price Breakdown */}
-                      <div className="mt-space-md bg-surface-container-lowest flex flex-col gap-1">
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-on-surface-variant text-xs">
-                            السعر الإجمالي:
-                          </span>
-                          <span className="text-primary font-extrabold text-lg">
-                            {unit.price.toLocaleString()}{' '}
-                            <span className="text-on-surface-variant font-normal text-xs">
-                              ج.م
-                            </span>
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-on-surface-variant text-[11px]">
-                          <span>
-                            المقدم (10%):{' '}
-                            <strong className="text-on-surface">
-                              {(unit.price * 0.1).toLocaleString()} ج.م
-                            </strong>
-                          </span>
-                          <span>
-                            نظام السداد:{' '}
-                            <strong className="text-on-surface">
-                              {unit.paymentTerms || 'كاش أو تقسيط'}
-                            </strong>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Quick Status Switcher (Brokers & Admins) */}
-                    <div className="flex items-center justify-between gap-1 p-1.5 rounded-xl bg-surface-container-low/80 border border-surface-container-high/40 text-[11px]">
-                      <span className="font-bold text-on-surface-variant flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">tune</span>
-                        الحالة:
-                      </span>
-                      <div className="flex items-center gap-1">
-                        {(['available', 'reserved', 'sold'] as const).map((st) => (
-                          <button
-                            key={st}
-                            type="button"
-                            onClick={() => {
-                              updateUnitStatus(unit.id, st);
-                              showToast(`تم تغيير حالة الوحدة #BD-${unit.zoneId}-${unit.plotNo} إلى ${st === 'available' ? 'متاح للبيع' : st === 'reserved' ? 'حجز مؤقت' : 'تم البيع'}`);
-                            }}
-                            className={`px-2 py-0.5 rounded-lg font-bold transition cursor-pointer text-[10px] ${
-                              unit.status === st
-                                ? st === 'available'
-                                  ? 'bg-success text-white shadow-xs'
-                                  : st === 'reserved'
-                                  ? 'bg-warning text-white shadow-xs'
-                                  : 'bg-error text-white shadow-xs'
-                                : 'text-on-surface-variant hover:bg-surface-container-high'
-                            }`}
-                          >
-                            {st === 'available' ? 'متاح' : st === 'reserved' ? 'حجز' : 'مباع'}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Quick Action Buttons */}
-                    <div className="pt-space-sm flex flex-col gap-space-xs border-t border-surface-container-low pt-2">
-                      <div className="grid grid-cols-2 gap-space-xs">
-                        <button
-                          onClick={() => copyUnitDetails(unit)}
-                          className="copy-unit-btn flex items-center justify-center gap-1 py-space-sm px-space-xs rounded-xl bg-surface-container-low hover:bg-surface-container-high text-on-surface transition-colors font-bold text-xs cursor-pointer"
-                          type="button"
-                        >
-                          <span className="material-symbols-outlined text-[16px] text-on-surface-variant">
-                            content_copy
-                          </span>
-                          نسخ التفاصيل
-                        </button>
-                        <a
-                          className="flex items-center justify-center gap-1 py-space-sm px-space-xs rounded-xl bg-primary-container hover:bg-primary text-on-primary transition-colors font-bold text-xs"
-                          href={createUnitWhatsAppUrl(unit, currentUser, undefined, zones)}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">chat</span>
-                          واتساب للعميل
-                        </a>
-                      </div>
-
-                      <button
-                        onClick={() => setSelectedUnit(unit)}
-                        className="w-full py-space-xs text-center text-primary hover:text-primary-container font-bold transition-colors text-xs cursor-pointer"
-                        type="button"
-                      >
-                        {isCompanyAdmin || isSuperAdmin ? 'تفاصيل كاملة وتعديل مواصفات الوحدة ←' : 'عرض كافة تفاصيل ومشاركة الوحدة ←'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
+            filteredUnits.map((unit) => (
+              <UnitCard
+                key={unit.id}
+                unit={unit}
+                zones={zones}
+                currentUser={currentUser}
+                onStatusChange={(unitId, newStatus) => updateUnitStatus(unitId, newStatus)}
+                onCopy={copyUnitDetails}
+              />
+            ))
           ) : (
             <div className="col-span-full p-12 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high">
               <span className="material-symbols-outlined text-4xl text-outline mb-2">apartment</span>
@@ -745,152 +620,206 @@ export default function UnitsPage() {
       ) : (
         /* Table View */
         <div className="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden border border-surface-container-high/40">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-right text-xs">
-              <thead className="bg-surface-container-low text-on-surface-variant font-bold border-b border-surface-container-high">
-                <tr>
-                  <th className="p-3.5">كود الوحدة</th>
-                  <th className="p-3.5">الشركة العقارية</th>
-                  <th className="p-3.5">المنطقة والقطعة</th>
-                  <th className="p-3.5">نوع الوحدة</th>
-                  <th className="p-3.5">المساحة</th>
-                  <th className="p-3.5">السعر</th>
-                  <th className="p-3.5">الحالة</th>
-                  <th className="p-3.5 text-center">الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-surface-container-low">
-                {filteredUnits.map((u) => (
-                  <tr key={u.id} className="hover:bg-surface-container-low/50 transition-colors">
-                    <td className="p-3.5 font-bold text-primary">#BD-{u.zoneId}-{u.plotNo}</td>
-                    <td className="p-3.5 font-bold text-on-surface ">
-                      {u.companyName || 'محفظة الشركة'}
-                    </td>
-                    <td className="p-3.5">{zoneDisplayName(u.zoneId, zones)} • قطعة {u.plotNo}</td>
-                    <td className="p-3.5">{UNIT_KIND_LABELS[u.unitKind] || 'شقة'}</td>
-                    <td className="p-3.5 font-bold">{u.area} م²</td>
-                    <td className="p-3.5 font-bold text-on-surface">{u.price.toLocaleString()} ج.م</td>
-                    <td className="p-3.5">
-                      <select
-                        value={u.status}
-                        onChange={(e) => {
-                          const newSt = e.target.value as UnitStatus;
-                          updateUnitStatus(u.id, newSt);
-                          showToast(`تم تغيير حالة الوحدة #BD-${u.zoneId}-${u.plotNo} إلى ${newSt === 'available' ? 'متاح للبيع' : newSt === 'reserved' ? 'حجز مؤقت' : 'تم البيع'}`);
-                        }}
-                        className={`px-2 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer ${
-                          u.status === 'available'
-                            ? 'bg-success-container  text-success  border-success '
-                            : u.status === 'reserved'
-                            ? 'bg-warning-container  text-warning  border-warning '
-                            : 'bg-error-container  text-on-error-container  border-error '
-                        }`}
-                      >
-                        <option value="available">متاحة للبيع</option>
-                        <option value="reserved">حجز مؤقت</option>
-                        <option value="sold">تم البيع</option>
-                      </select>
-                    </td>
-                    <td className="p-3.5 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <button
-                          onClick={() => setSelectedUnit(u)}
-                          className="p-1 rounded-lg hover:bg-surface-container text-primary cursor-pointer"
-                          title="عرض التفاصيل"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">visibility</span>
-                        </button>
-                        <button
-                          onClick={() => copyUnitDetails(u)}
-                          className="p-1 rounded-lg hover:bg-surface-container text-on-surface-variant cursor-pointer"
-                          title="نسخ التفاصيل"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">content_copy</span>
-                        </button>
-                        <a
-                          href={createUnitWhatsAppUrl(u, currentUser, undefined, zones)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="p-1 rounded-lg hover:bg-surface-container text-primary cursor-pointer"
-                          title="مشاركة عبر واتساب"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">chat</span>
-                        </a>
+          {filteredUnits.length === 0 ? (
+            <div className="p-12 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high space-y-2">
+              <span className="material-symbols-outlined text-4xl text-outline mb-1">apartment</span>
+              <p className="text-on-surface font-bold text-base">لا توجد وحدات تطابق هذه المحددات.</p>
+              <p className="text-xs text-on-surface-variant">جرّب تغيير فلاتر البحث أو اختيار منطقة أخرى.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-right text-xs">
+                <thead className="bg-surface-container-low text-on-surface-variant font-bold border-b border-surface-container-high">
+                  <tr>
+                    <th className="p-3.5">الوحدة</th>
+                    <th
+                      onClick={() => setSortBy(sortBy === 'zone_asc' ? 'plot_asc' : 'zone_asc')}
+                      className="p-3.5 cursor-pointer hover:text-primary transition select-none"
+                      title="اضغط للترتيب حسب المنطقة أو القطعة"
+                    >
+                      <div className="flex items-center gap-1">
+                        <span>المنطقة والقطعة</span>
+                        {sortBy === 'zone_asc' ? (
+                          <span className="text-[10px] text-primary font-bold">↑ منطقة</span>
+                        ) : sortBy === 'plot_asc' ? (
+                          <span className="text-[10px] text-primary font-bold">↑ قطعة</span>
+                        ) : (
+                          <ArrowUpDown className="w-3 h-3 text-outline" />
+                        )}
                       </div>
-                    </td>
+                    </th>
+                    <th className="p-3.5">نوع الوحدة والدور</th>
+                    <th
+                      onClick={() => setSortBy(sortBy === 'area_desc' ? 'area_asc' : 'area_desc')}
+                      className="p-3.5 cursor-pointer hover:text-primary transition select-none"
+                      title="اضغط للترتيب حسب المساحة"
+                    >
+                      <div className="flex items-center gap-1">
+                        <span>المساحة</span>
+                        {sortBy === 'area_desc' ? (
+                          <span className="text-[10px] text-primary font-bold">↓</span>
+                        ) : sortBy === 'area_asc' ? (
+                          <span className="text-[10px] text-primary font-bold">↑</span>
+                        ) : (
+                          <ArrowUpDown className="w-3 h-3 text-outline" />
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => setSortBy(sortBy === 'price_asc' ? 'price_desc' : 'price_asc')}
+                      className="p-3.5 cursor-pointer hover:text-primary transition select-none"
+                      title="اضغط للترتيب حسب السعر"
+                    >
+                      <div className="flex items-center gap-1">
+                        <span>السعر الإجمالي</span>
+                        {sortBy === 'price_asc' ? (
+                          <span className="text-[10px] text-primary font-bold">↑</span>
+                        ) : sortBy === 'price_desc' ? (
+                          <span className="text-[10px] text-primary font-bold">↓</span>
+                        ) : (
+                          <ArrowUpDown className="w-3 h-3 text-outline" />
+                        )}
+                      </div>
+                    </th>
+                    <th className="p-3.5">الشركة</th>
+                    <th className="p-3.5">الحالة</th>
+                    <th className="p-3.5 text-center">الإجراءات</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-surface-container-low">
+                  {filteredUnits.map((u) => {
+                    const firstMedia = u.media && u.media[0];
+                    return (
+                      <tr key={u.id} className="hover:bg-surface-container-low/50 transition-colors">
+                        <td className="p-3.5">
+                          <div className="flex items-center gap-2.5">
+                            {firstMedia ? (
+                              <img
+                                src={firstMedia.externalUrl || firstMedia.storagePath}
+                                alt=""
+                                className="w-10 h-10 rounded-lg object-cover border border-outline-variant shrink-0"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0 border border-outline-variant">
+                                <Home className="w-4 h-4 text-primary" />
+                              </div>
+                            )}
+                            <div>
+                              <Link
+                                href={`/units/${u.id}`}
+                                className="font-bold text-primary hover:underline block font-mono"
+                              >
+                                #BD-{u.zoneId}-{u.plotNo}
+                              </Link>
+                              <span className="text-[10px] text-on-surface-variant">
+                                {u.deliveryNote || 'استلام فوري'}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3.5">
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-5 h-5 rounded-md bg-primary text-on-primary text-[10px] font-black flex items-center justify-center shrink-0">
+                                {u.zoneId}
+                              </span>
+                              <span className="font-bold text-on-surface">{zoneDisplayName(u.zoneId, zones)}</span>
+                            </div>
+                            <span className="text-[11px] text-on-surface-variant mt-0.5">قطعة {u.plotNo}</span>
+                          </div>
+                        </td>
+                        <td className="p-3.5">
+                          <span className="font-bold text-on-surface block">
+                            {UNIT_KIND_LABELS[u.unitKind] || 'شقة'}
+                          </span>
+                          <span className="text-[11px] text-on-surface-variant">
+                            {u.floor === 0 ? 'الأرضي' : u.floor ? `الدور ${u.floor}` : 'متكرر'} {u.side ? `• ${u.side}` : ''}
+                          </span>
+                        </td>
+                        <td className="p-3.5">
+                          <span className="font-bold text-on-surface block font-mono">{u.area} م²</span>
+                          {u.gardenArea ? (
+                            <span className="text-[10px] text-success font-semibold block">+ {u.gardenArea} م² حديقة</span>
+                          ) : null}
+                        </td>
+                        <td className="p-3.5">
+                          <span className="font-black text-on-surface block font-mono">{u.price.toLocaleString('ar-EG')} ج</span>
+                          {u.area > 0 && (
+                            <span className="text-[10px] text-on-surface-variant font-semibold block">
+                              {Math.round(u.price / u.area).toLocaleString('ar-EG')} ج/م²
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-3.5 font-bold text-on-surface">
+                          {u.companyName || 'محفظة الشركة'}
+                        </td>
+                        <td className="p-3.5">
+                          <select
+                            value={u.status}
+                            onChange={(e) => {
+                              const newSt = e.target.value as UnitStatus;
+                              updateUnitStatus(u.id, newSt);
+                              showToast(`تم تغيير حالة الوحدة #BD-${u.zoneId}-${u.plotNo} إلى ${newSt === 'available' ? 'متاح للبيع' : newSt === 'reserved' ? 'حجز مؤقت' : 'تم البيع'}`);
+                            }}
+                            className={`px-2 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer ${
+                              u.status === 'available'
+                                ? 'bg-success-container text-success border-success'
+                                : u.status === 'reserved'
+                                ? 'bg-warning-container text-warning border-warning'
+                                : 'bg-error-container text-on-error-container border-error'
+                            }`}
+                          >
+                            <option value="available">متاحة للبيع</option>
+                            <option value="reserved">حجز مؤقت</option>
+                            <option value="sold">تم البيع</option>
+                          </select>
+                        </td>
+                        <td className="p-3.5 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <Link
+                              href={`/units/${u.id}`}
+                              className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition"
+                              title="عرض التفاصيل الكاملة"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">visibility</span>
+                            </Link>
+                            {(isCompanyAdmin || isSuperAdmin) && (
+                              <Link
+                                href={`/units/${u.id}/edit`}
+                                className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant transition"
+                                title="تعديل بيانات الوحدة"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Link>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => copyUnitDetails(u)}
+                              className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant transition cursor-pointer"
+                              title="نسخ التفاصيل"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">content_copy</span>
+                            </button>
+                            <a
+                              href={createUnitWhatsAppUrl(u, currentUser, undefined, zones)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition cursor-pointer"
+                              title="مشاركة عبر واتساب"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">chat</span>
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
-
-      {/* Global Modals */}
-      <UnitDetailModal
-        unit={myUnits.find((u) => u.id === selectedUnit?.id) || selectedUnit}
-        onClose={() => setSelectedUnit(null)}
-        onEdit={(unit) => {
-          setEditingUnit(unit);
-          setSelectedUnit(null);
-          setIsUnitFormOpen(true);
-        }}
-        onDelete={async (id) => {
-          const res = await deleteUnit(id);
-          if (res.success) {
-            setSelectedUnit(null);
-            showToast('تم حذف الوحدة بنجاح');
-          } else {
-            showToast(res.message || 'فشل حذف الوحدة');
-          }
-        }}
-      />
-
-      <UnitFormModal
-        isOpen={isUnitFormOpen}
-        initialUnit={editingUnit || undefined}
-        defaultBuildingId={targetBuildingIdForUnit}
-        zones={zones}
-        buildings={buildings}
-        onAddBuilding={addBuilding}
-        onClose={() => {
-          setIsUnitFormOpen(false);
-          setEditingUnit(null);
-          setTargetBuildingIdForUnit(undefined);
-        }}
-        onSubmit={async (unitData) => {
-          const res = editingUnit
-            ? await updateUnit(editingUnit.id, unitData)
-            : await addUnit(unitData);
-          if (editingUnit) {
-            setIsUnitFormOpen(false);
-            setEditingUnit(null);
-            setTargetBuildingIdForUnit(undefined);
-          }
-          return res;
-        }}
-      />
-
-      <AddBuildingWithUnitsModal
-        isOpen={isBuildingModalOpen}
-        onClose={() => setIsBuildingModalOpen(false)}
-        zones={zones}
-        buildings={buildings}
-        onAddBuildingWithUnits={async (bData, unitsList) => {
-          const res = await addBuildingWithUnits(bData, unitsList);
-          if (res.success) {
-            showToast(res.message || 'تم حفظ المبنى والوحدات بنجاح!');
-          }
-          return res;
-        }}
-        onAddUnitToExisting={async (unitData) => {
-          const res = await addUnit(unitData);
-          if (res.success) {
-            showToast('تمت إضافة الوحدة للعمارة بنجاح!');
-          }
-          return res;
-        }}
-      />
     </div>
   );
 }

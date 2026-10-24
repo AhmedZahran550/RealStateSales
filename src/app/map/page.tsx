@@ -1,32 +1,25 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { Zone, Unit } from '@/lib/types';
 import MapViewer from '@/components/MapViewer';
 import ZoneDrawer from '@/components/ZoneDrawer';
-import UnitDetailModal from '@/components/UnitDetailModal';
-import UnitFormModal from '@/components/UnitFormModal';
 import LiveUnitsMap from '@/components/LiveUnitsMap';
 
 export default function MapPage() {
+  const router = useRouter();
   const {
     currentUser,
     zones,
     buildings,
     myUnits,
     services,
-    addBuilding,
-    addUnit,
-    updateUnit,
-    deleteUnit,
   } = useApp();
 
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
-  const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
-  const [isUnitFormOpen, setIsUnitFormOpen] = useState(false);
-  const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
-  const [unitFormPresetZone, setUnitFormPresetZone] = useState<number | undefined>(undefined);
   const [mapMode, setMapMode] = useState<'blueprint' | 'live_gps'>('blueprint');
 
   // فتح مخطط منطقة معينة عند القدوم برابط مثل ‎/map?zoneId=3‎ (زر «معاينة على الخريطة»)
@@ -38,9 +31,7 @@ export default function MapPage() {
   }, [zones]);
 
   const handleAddUnitInZone = (zoneId: number) => {
-    setUnitFormPresetZone(zoneId);
-    setEditingUnit(null);
-    setIsUnitFormOpen(true);
+    router.push(`/units/new?zoneId=${zoneId}`);
   };
 
   if (!currentUser) return null;
@@ -89,17 +80,13 @@ export default function MapPage() {
             </button>
           </div>
 
-          <button
-            onClick={() => {
-              setEditingUnit(null);
-              setUnitFormPresetZone(undefined);
-              setIsUnitFormOpen(true);
-            }}
+          <Link
+            href="/units/new"
             className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold text-xs shadow-md transition cursor-pointer w-full sm:w-auto min-h-[40px]"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             <span>إضافة وحدة</span>
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -112,14 +99,14 @@ export default function MapPage() {
           services={services}
           onSelectZone={(z) => setSelectedZone(z)}
           selectedZone={selectedZone}
-          onSelectUnit={(u) => setSelectedUnit(u)}
+          onSelectUnit={(u) => router.push(`/units/${u.id}`)}
           isAdmin={currentUser.role === 'admin'}
         />
       ) : (
         <LiveUnitsMap
           units={myUnits}
-          onSelectUnit={(u) => setSelectedUnit(u)}
-          selectedUnit={selectedUnit}
+          onSelectUnit={(u) => router.push(`/units/${u.id}`)}
+          selectedUnit={null}
           height="620px"
         />
       )}
@@ -172,49 +159,8 @@ export default function MapPage() {
         buildings={buildings}
         services={services}
         onClose={() => setSelectedZone(null)}
-        onSelectUnit={(u) => setSelectedUnit(u)}
+        onSelectUnit={(u) => router.push(`/units/${u.id}`)}
         onAddUnitInZone={handleAddUnitInZone}
-      />
-
-      <UnitDetailModal
-        unit={selectedUnit}
-        onClose={() => setSelectedUnit(null)}
-        onEdit={(unit) => {
-          setEditingUnit(unit);
-          setSelectedUnit(null);
-          setIsUnitFormOpen(true);
-        }}
-        onDelete={async (id) => {
-          const res = await deleteUnit(id);
-          if (res.success) {
-            setSelectedUnit(null);
-          }
-        }}
-      />
-
-      <UnitFormModal
-        isOpen={isUnitFormOpen}
-        initialUnit={editingUnit || undefined}
-        defaultZoneId={unitFormPresetZone}
-        zones={zones}
-        buildings={buildings}
-        onAddBuilding={addBuilding}
-        onClose={() => {
-          setIsUnitFormOpen(false);
-          setEditingUnit(null);
-          setUnitFormPresetZone(undefined);
-        }}
-        onSubmit={async (unitData) => {
-          const res = editingUnit
-            ? await updateUnit(editingUnit.id, unitData)
-            : await addUnit(unitData);
-          if (editingUnit) {
-            setIsUnitFormOpen(false);
-            setEditingUnit(null);
-            setUnitFormPresetZone(undefined);
-          }
-          return res;
-        }}
       />
     </div>
   );

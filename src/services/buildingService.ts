@@ -14,6 +14,17 @@ export const buildingService = {
   },
 
   /**
+   * جلب تفاصيل مبنى بالمعرف
+   */
+  async getBuildingById(id: number): Promise<Building | null> {
+    const res = await apiClient.get<Building>(`/buildings/${id}`);
+    if (res.success && res.data) {
+      return res.data;
+    }
+    return null;
+  },
+
+  /**
    * إضافة مبنى جديد
    */
   async createBuilding(
@@ -28,7 +39,7 @@ export const buildingService = {
   },
 
   /**
-   * تعديل مبنى (نقله لمنطقة أخرى / رقم القطعة / مساحة الأرض / المميزات / الملاحظات)
+   * تعديل مبنى (نقله لمنطقة أخرى / رقم القطعة / مساحة الأرض / المميزات / الملاحظات / الإحداثيات)
    */
   async updateBuilding(
     id: number,
@@ -38,9 +49,11 @@ export const buildingService = {
       landArea?: number;
       features?: string[];
       notes?: string;
+      mapX?: number;
+      mapY?: number;
     }
-  ): Promise<ServiceResult> {
-    return apiClient.patch(`/buildings/${id}`, payload);
+  ): Promise<ServiceResult<Building>> {
+    return apiClient.patch<Building>(`/buildings/${id}`, payload);
   },
 
   /**

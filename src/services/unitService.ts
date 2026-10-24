@@ -14,6 +14,17 @@ export const unitService = {
   },
 
   /**
+   * جلب تفاصيل وحدة عقارية واحدة بالمعرف
+   */
+  async getUnitById(id: string): Promise<Unit | null> {
+    const res = await apiClient.get<Unit>(`/units/${id}`);
+    if (res.success && res.data) {
+      return res.data;
+    }
+    return null;
+  },
+
+  /**
    * إضافة وحدة عقارية جديدة
    */
   async createUnit(

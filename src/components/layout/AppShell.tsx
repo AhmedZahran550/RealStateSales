@@ -4,8 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import UnitFormModal from '@/components/UnitFormModal';
-import CustomerModal from '@/components/CustomerModal';
 import ProfileModal from '@/components/ProfileModal';
 import { formatArabicFollowupDate } from '@/lib/date-utils';
 
@@ -53,9 +51,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setCompanyLogoFailed(false);
   }, [currentCompany?.logoUrl]);
 
-  // Global Quick Action Modals
-  const [isAddUnitOpen, setIsAddUnitOpen] = useState(false);
-  const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Tab synchronization for Super Admin
@@ -400,17 +395,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <p className="text-on-surface-variant mb-space-sm text-[11px]">
                 فريق الوسطاء: {companyUsers.filter((u) => u.role === 'user').length} وسيط معتمد
               </p>
-              <button
-                onClick={() => {
-                  setMobileSidebarOpen(false);
-                  setIsAddUnitOpen(true);
-                }}
+              <Link
+                href="/units/new"
+                onClick={() => setMobileSidebarOpen(false)}
                 className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all flex items-center justify-center gap-space-xs font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
-                type="button"
               >
                 <span className="material-symbols-outlined text-[18px]">add</span>
                 إضافة وحدة جديدة للشركة
-              </button>
+              </Link>
             </div>
           ) : (
             /* Broker Follow-ups Widget */
@@ -428,17 +420,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   ? `لديك ${myCustomers.filter((c) => c.nextFollowupAt).length} مواعيد متابعة مستحقة اليوم`
                   : 'لا توجد مواعيد متابعة متأخرة اليوم'}
               </p>
-              <button
-                onClick={() => {
-                  setMobileSidebarOpen(false);
-                  setIsAddCustomerOpen(true);
-                }}
+              <Link
+                href="/customers/new"
+                onClick={() => setMobileSidebarOpen(false)}
                 className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all flex items-center justify-center gap-space-xs font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
-                type="button"
               >
                 <span className="material-symbols-outlined text-[18px]">person_add</span>
                 + إضافة عميل جديد
-              </button>
+              </Link>
             </div>
           )}
 
@@ -501,26 +490,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex items-center gap-space-sm lg:gap-space-md">
           {/* Action button in header for Company Admin */}
           {isCompanyAdmin && (
-            <button
-              onClick={() => setIsAddUnitOpen(true)}
+            <Link
+              href="/units/new"
               className="hidden sm:flex items-center gap-space-xs px-space-md py-space-sm rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
-              type="button"
             >
               <span className="material-symbols-outlined text-[18px]">add</span>
               + إضافة وحدة للشركة
-            </button>
+            </Link>
           )}
 
           {/* Action button in header for Broker */}
           {isBroker && (
-            <button
-              onClick={() => setIsAddCustomerOpen(true)}
+            <Link
+              href="/customers/new"
               className="hidden sm:flex items-center gap-space-xs px-space-md py-space-sm rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
-              type="button"
             >
               <span className="material-symbols-outlined text-[18px]">person_add</span>
               + عميل جديد
-            </button>
+            </Link>
           )}
 
           {/* Notifications button (ONLY for Brokers follow-ups) */}
@@ -685,22 +672,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 w-full p-3 sm:p-5 lg:p-space-lg max-w-full overflow-x-hidden">{children}</main>
       </div>
 
-      {/* Global Quick Action Modals */}
-      <UnitFormModal
-        isOpen={isAddUnitOpen}
-        zones={zones}
-        buildings={buildings}
-        onAddBuilding={addBuilding}
-        onClose={() => setIsAddUnitOpen(false)}
-        onSubmit={(unitData) => addUnit(unitData)}
-      />
 
-      <CustomerModal
-        isOpen={isAddCustomerOpen}
-        units={myUnits}
-        onClose={() => setIsAddCustomerOpen(false)}
-        onSubmit={(customerData) => addCustomer(customerData)}
-      />
 
       <ProfileModal
         isOpen={isProfileModalOpen}

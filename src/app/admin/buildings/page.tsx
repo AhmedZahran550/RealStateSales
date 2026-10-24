@@ -44,15 +44,6 @@ export default function AdminBuildingsPage() {
   const [addingBuilding, setAddingBuilding] = useState(false);
   const [pageMessage, setPageMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // تعديل مبنى
-  const [editingBuilding, setEditingBuilding] = useState<Building | null>(null);
-  const [editPlotNo, setEditPlotNo] = useState('');
-  const [editZoneId, setEditZoneId] = useState<number | ''>('');
-  const [editLandArea, setEditLandArea] = useState('');
-  const [editFeatures, setEditFeatures] = useState('');
-  const [editNotes, setEditNotes] = useState('');
-  const [savingEdit, setSavingEdit] = useState(false);
-
   // حذف مبنى
   const [deletingBuildingId, setDeletingBuildingId] = useState<number | null>(null);
 
@@ -136,43 +127,7 @@ export default function AdminBuildingsPage() {
     }
   };
 
-  const openEdit = (b: Building) => {
-    setEditingBuilding(b);
-    setEditPlotNo(String(b.plotNo));
-    setEditZoneId(b.zoneId);
-    setEditLandArea(b.landArea ? String(b.landArea) : '');
-    setEditFeatures((b.features || []).join('، '));
-    setEditNotes(b.notes || '');
-  };
 
-  const handleSaveEdit = async () => {
-    if (!editingBuilding) return;
-    const plotNo = Number(editPlotNo);
-    if (!Number.isFinite(plotNo) || plotNo <= 0) {
-      setPageMessage({ type: 'error', text: 'أدخل رقم قطعة صحيح' });
-      return;
-    }
-    if (!editZoneId) {
-      setPageMessage({ type: 'error', text: 'اختر منطقة المبنى' });
-      return;
-    }
-    setSavingEdit(true);
-    const res = await buildingService.updateBuilding(editingBuilding.id, {
-      zoneId: Number(editZoneId),
-      plotNo,
-      landArea: editLandArea ? Number(editLandArea) : undefined,
-      features: parseFeatures(editFeatures),
-      notes: editNotes.trim(),
-    });
-    setSavingEdit(false);
-    if (res.success) {
-      setEditingBuilding(null);
-      setPageMessage({ type: 'success', text: 'تم تحديث المبنى بنجاح' });
-      await refreshFromDatabase(undefined, true);
-    } else {
-      setPageMessage({ type: 'error', text: res.error || 'فشل تحديث المبنى' });
-    }
-  };
 
   const handleDeleteBuilding = async (b: Building) => {
     const linkedUnits = unitsOfBuilding(b.id);
@@ -249,6 +204,14 @@ export default function AdminBuildingsPage() {
 
         <div className="flex items-center gap-1.5 shrink-0">
           <Link
+            href={`/admin/buildings/${b.id}`}
+            className="p-2 rounded-xl text-primary hover:bg-surface-container-high transition"
+            aria-label="عرض التفاصيل والوحدات"
+            title="عرض تفاصيل المبنى ووحداته"
+          >
+            <Building2 className="w-4 h-4" />
+          </Link>
+          <Link
             href={`/map?zoneId=${b.zoneId}`}
             className="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition"
             aria-label="معاينة على الخريطة"
@@ -256,14 +219,14 @@ export default function AdminBuildingsPage() {
           >
             <MapIcon className="w-4 h-4" />
           </Link>
-          <button
-            onClick={() => openEdit(b)}
-            className="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition cursor-pointer"
+          <Link
+            href={`/admin/buildings/${b.id}/edit`}
+            className="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition"
             aria-label="تعديل"
             title="تعديل المبنى"
           >
             <Pencil className="w-4 h-4" />
-          </button>
+          </Link>
           <button
             onClick={() => handleDeleteBuilding(b)}
             disabled={deletingBuildingId === b.id || bUnits.length > 0}
@@ -303,6 +266,13 @@ export default function AdminBuildingsPage() {
             </p>
           </div>
         </div>
+        <Link
+          href="/admin/buildings/new"
+          className="btn-primary flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold shadow-md shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          <span>+ إضافة عمارة وقطع جديدة</span>
+        </Link>
       </div>
 
       {/* Company picker for super admin */}
@@ -528,114 +498,6 @@ export default function AdminBuildingsPage() {
           </div>
         )}
       </div>
-
-      {/* Edit modal */}
-      {editingBuilding && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-surface rounded-3xl border border-outline-variant shadow-xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-black text-sm text-on-surface">
-                تعديل المبنى رقم {editingBuilding.plotNo}
-              </h3>
-              <button
-                onClick={() => setEditingBuilding(null)}
-                className="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition cursor-pointer"
-                aria-label="إغلاق"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-1">
-                  رقم القطعة *
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={editPlotNo}
-                  onChange={(e) => setEditPlotNo(e.target.value)}
-                  className="input-base text-xs"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-1">
-                  مساحة الأرض (م²)
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  value={editLandArea}
-                  onChange={(e) => setEditLandArea(e.target.value)}
-                  className="input-base text-xs"
-                />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-xs font-bold text-on-surface-variant mb-1">
-                  المنطقة (يمكن نقل المبنى بين المناطق)
-                </label>
-                <select
-                  value={editZoneId}
-                  onChange={(e) => setEditZoneId(e.target.value ? Number(e.target.value) : '')}
-                  className="input-base text-xs cursor-pointer"
-                >
-                  <option value="">اختر المنطقة</option>
-                  {mainZones.map((mz) => (
-                    <React.Fragment key={mz.id}>
-                      <option value={mz.id}>{mz.name}</option>
-                      {subZonesOf(mz.id).map((sz) => (
-                        <option key={sz.id} value={sz.id}>
-                          — {sz.name}
-                        </option>
-                      ))}
-                    </React.Fragment>
-                  ))}
-                </select>
-              </div>
-              <div className="col-span-2">
-                <label className="block text-xs font-bold text-on-surface-variant mb-1">
-                  المميزات (مفصولة بفاصلة)
-                </label>
-                <input
-                  type="text"
-                  value={editFeatures}
-                  onChange={(e) => setEditFeatures(e.target.value)}
-                  className="input-base text-xs"
-                />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-xs font-bold text-on-surface-variant mb-1">
-                  ملاحظات
-                </label>
-                <input
-                  type="text"
-                  value={editNotes}
-                  onChange={(e) => setEditNotes(e.target.value)}
-                  className="input-base text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 pt-1">
-              <button
-                onClick={handleSaveEdit}
-                disabled={savingEdit}
-                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold text-xs shadow-md transition disabled:opacity-50 cursor-pointer"
-              >
-                {savingEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                <span>حفظ التعديلات</span>
-              </button>
-              <button
-                onClick={() => setEditingBuilding(null)}
-                className="px-5 py-2.5 rounded-xl bg-surface-container text-on-surface-variant font-bold text-xs hover:bg-surface-container-high transition cursor-pointer"
-              >
-                إلغاء
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

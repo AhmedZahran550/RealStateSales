@@ -14,6 +14,17 @@ export const customerService = {
   },
 
   /**
+   * جلب تفاصيل عميل واحد بالمعرف
+   */
+  async getCustomerById(id: string): Promise<Customer | null> {
+    const res = await apiClient.get<Customer>(`/customers/${id}`);
+    if (res.success && res.data) {
+      return res.data;
+    }
+    return null;
+  },
+
+  /**
    * إضافة عميل جديد
    */
   async createCustomer(

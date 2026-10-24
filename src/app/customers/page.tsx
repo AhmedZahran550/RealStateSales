@@ -2,15 +2,14 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { Customer, CustomerStage, STAGE_CONFIG } from '@/lib/types';
 import CrmKanban from '@/components/CrmKanban';
-import CustomerModal from '@/components/CustomerModal';
-import CustomerDetailModal from '@/components/CustomerDetailModal';
 import { formatArabicFollowupDate } from '@/lib/date-utils';
 
 function CustomersContent() {
+  const router = useRouter();
   const {
     currentUser,
     myCustomers,
@@ -31,9 +30,6 @@ function CustomersContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [budgetFilter, setBudgetFilter] = useState<string>('all');
 
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -226,17 +222,13 @@ function CustomersContent() {
             </button>
           </div>
 
-          <button
-            onClick={() => {
-              setEditingCustomer(null);
-              setIsCustomerModalOpen(true);
-            }}
+          <Link
+            href="/customers/new"
             className="flex items-center justify-center gap-space-xs w-full sm:w-auto px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-md text-sm cursor-pointer min-h-[42px]"
-            type="button"
           >
             <span className="material-symbols-outlined text-[20px]">person_add</span>
             <span>+ إضافة عميل جديد</span>
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -323,7 +315,7 @@ function CustomersContent() {
       {viewMode === 'kanban' ? (
         <CrmKanban
           customers={myCustomers}
-          onSelectCustomer={(c) => setSelectedCustomer(c)}
+          onSelectCustomer={(c) => router.push(`/customers/${c.id}`)}
           onMoveStage={(id, stage) => updateCustomerStage(id, stage)}
         />
       ) : (
@@ -601,15 +593,14 @@ function CustomersContent() {
                     {/* 2. شريط أزرار الإجراءات المنظم: عرض التفاصيل والمطابقة وتعديل وحذف */}
                     <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pt-2.5 md:pt-0 border-t md:border-t-0 border-surface-container-high/30 w-full md:w-auto justify-end">
                       {/* زر عرض التفاصيل */}
-                      <button
-                        type="button"
-                        onClick={() => setSelectedCustomer(lead)}
+                      <Link
+                        href={`/customers/${lead.id}`}
                         className="flex-1 md:flex-none px-3.5 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container text-on-surface font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer min-h-[38px]"
                         title="عرض كافة التفاصيل والملاحظات وسجل العميل"
                       >
                         <span className="material-symbols-outlined text-[17px] text-primary">visibility</span>
                         <span>عرض التفاصيل</span>
-                      </button>
+                      </Link>
 
                       {/* زر المطابقة */}
                       <Link
@@ -622,18 +613,14 @@ function CustomersContent() {
                       </Link>
 
                       {/* زر التعديل */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingCustomer(lead);
-                          setIsCustomerModalOpen(true);
-                        }}
+                      <Link
+                        href={`/customers/${lead.id}/edit`}
                         className="px-3 py-2 rounded-xl bg-warning-container text-warning border border-warning hover:bg-warning hover:text-white transition-all flex items-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[38px]"
                         title="تعديل بيانات ومتابعة العميل"
                       >
                         <span className="material-symbols-outlined text-[17px]">edit_note</span>
                         <span>تعديل</span>
-                      </button>
+                      </Link>
 
                       {/* زر الحذف */}
                       <button
@@ -668,70 +655,6 @@ function CustomersContent() {
           </div>
         </div>
       )}
-
-      {/* Global Customer Modals */}
-      <CustomerDetailModal
-        customer={selectedCustomer}
-        units={myUnits}
-        onClose={() => setSelectedCustomer(null)}
-        onUpdateStage={(id, stage, note) => {
-          updateCustomerStage(id, stage, note);
-          showToast('تم تحديث مرحلة العميل');
-        }}
-        onAddActivity={(id, type, note) => {
-          addCustomerActivity(id, type, note);
-          showToast('تم حفظ النشاط');
-        }}
-        onUpdateCustomer={(id, data) => {
-          updateCustomer(id, data);
-          showToast('تم تحديث بيانات العميل');
-        }}
-        onDeleteCustomer={async (id) => {
-          const res = await deleteCustomer(id);
-          if (res.success) {
-            setSelectedCustomer(null);
-            showToast('تم حذف العميل بنجاح');
-          } else {
-            showToast(res.message || 'فشل حذف العميل');
-          }
-        }}
-        onEdit={(cust) => {
-          setSelectedCustomer(null);
-          setEditingCustomer(cust);
-          setIsCustomerModalOpen(true);
-        }}
-      />
-
-      <CustomerModal
-        isOpen={isCustomerModalOpen}
-        initialCustomer={editingCustomer || undefined}
-        units={myUnits}
-        onClose={() => {
-          setIsCustomerModalOpen(false);
-          setEditingCustomer(null);
-        }}
-        onDelete={async (customerId) => {
-          const res = await deleteCustomer(customerId);
-          if (res.success) {
-            setIsCustomerModalOpen(false);
-            setEditingCustomer(null);
-            showToast('تم حذف العميل بنجاح');
-          } else {
-            showToast(res.message || 'فشل حذف العميل');
-          }
-        }}
-        onSubmit={async (customerData) => {
-          const res = editingCustomer
-            ? await updateCustomer(editingCustomer.id, customerData)
-            : await addCustomer(customerData);
-          if (res.success) {
-            showToast(editingCustomer ? 'تم حفظ تعديلات العميل بنجاح' : 'تمت إضافة العميل الجديد بنجاح');
-            setIsCustomerModalOpen(false);
-            setEditingCustomer(null);
-          }
-          return res;
-        }}
-      />
 
       {/* Floating Toast Notification */}
       {toastMessage && (

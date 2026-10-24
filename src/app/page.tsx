@@ -4,10 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { Unit, Customer, CustomerStage, ActivityType } from '@/lib/types';
-import UnitDetailModal from '@/components/UnitDetailModal';
-import UnitFormModal from '@/components/UnitFormModal';
-import CustomerModal from '@/components/CustomerModal';
-import CustomerDetailModal from '@/components/CustomerDetailModal';
+import { useRouter } from 'next/navigation';
 import { formatArabicFollowupDate } from '@/lib/date-utils';
 import { createUnitWhatsAppUrl } from '@/lib/shareUtils';
 import { zoneDisplayName } from '@/lib/zone-utils';
@@ -38,16 +35,12 @@ export default function DashboardPage() {
     deleteCustomer,
   } = useApp();
 
-  const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [isUnitFormOpen, setIsUnitFormOpen] = useState(false);
-  const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
+  const router = useRouter();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const showToast = (text: string) => {
     setToastMessage(text);
     window.setTimeout(() => setToastMessage(null), 3500);
   };
-  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [completedFollowups, setCompletedFollowups] = useState<Record<string, boolean>>({});
   const [brokerTab, setBrokerTab] = useState<'agenda' | 'pipeline' | 'share'>('agenda');
 
@@ -430,61 +423,18 @@ export default function DashboardPage() {
                       <span>المساحة: <strong>{unit.area} م²</strong></span>
                       <span>الاستلام: <strong>{unit.deliveryNote || 'استلام فوري'}</strong></span>
                     </div>
-                    <button
-                      onClick={() => setSelectedUnit(unit)}
-                      className="w-full mt-1 py-1.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold text-xs transition cursor-pointer"
+                    <Link
+                      href={`/units/${unit.id}`}
+                      className="w-full mt-1 py-1.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold text-xs transition flex items-center justify-center"
                     >
                       عرض التفاصيل الكاملة
-                    </button>
+                    </Link>
                   </div>
                 </div>
               );
             })}
           </div>
         </div>
-
-        {/* Modal for unit details */}
-        <UnitDetailModal
-          unit={selectedUnit}
-          onClose={() => setSelectedUnit(null)}
-          onEdit={(unit) => {
-            setSelectedUnit(null);
-            setEditingUnit(unit);
-            setIsUnitFormOpen(true);
-          }}
-          onDelete={async (id) => {
-            const res = await deleteUnit(id);
-            if (res.success) {
-              setSelectedUnit(null);
-              showToast('تم حذف الوحدة بنجاح');
-            } else {
-              showToast(res.message || 'فشل حذف الوحدة');
-            }
-          }}
-        />
-
-        {/* نموذج تعديل الوحدة (يعمل الآن في لوحة المدير أيضًا) */}
-        <UnitFormModal
-          isOpen={isUnitFormOpen}
-          initialUnit={editingUnit || undefined}
-          zones={zones}
-          buildings={buildings}
-          onAddBuilding={addBuilding}
-          onClose={() => {
-            setIsUnitFormOpen(false);
-            setEditingUnit(null);
-          }}
-          onSubmit={async (unitData) => {
-            const res = editingUnit
-              ? await updateUnit(editingUnit.id, unitData)
-              : await addUnit(unitData);
-            if (res.success) {
-              showToast(editingUnit ? 'تم تحديث الوحدة بنجاح' : 'تمت إضافة الوحدة بنجاح');
-              setEditingUnit(null);
-            }
-            return res;
-          }}
-        />
       </div>
     );
   }
@@ -566,14 +516,13 @@ export default function DashboardPage() {
 
           {/* Quick Action Commands */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <button
-              onClick={() => setIsCustomerModalOpen(true)}
+            <Link
+              href="/customers/new"
               className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[40px] inline-flex items-center gap-1.5"
-              type="button"
             >
               <span className="material-symbols-outlined text-[20px]">person_add</span>
               <span>+ تسجيل عميل جديد</span>
-            </button>
+            </Link>
 
             <Link
               href="/matching"
@@ -691,8 +640,8 @@ export default function DashboardPage() {
             customers={myCustomers}
             completedFollowups={completedFollowups}
             onMarkDone={markFollowupDone}
-            onSelectCustomer={setSelectedCustomer}
-            onNewCustomer={() => setIsCustomerModalOpen(true)}
+            onSelectCustomer={(c) => router.push(`/customers/${c.id}`)}
+            onNewCustomer={() => router.push('/customers/new')}
           />
         )}
 
@@ -703,77 +652,10 @@ export default function DashboardPage() {
             units={myUnits}
             zones={zones}
             currentUser={currentUser}
-            onSelectUnit={setSelectedUnit}
+            onSelectUnit={(u) => router.push(`/units/${u.id}`)}
           />
         )}
       </div>
-
-      {/* Global Modals */}
-      <UnitDetailModal
-        unit={selectedUnit}
-        onClose={() => setSelectedUnit(null)}
-        onEdit={(unit) => {
-          setSelectedUnit(null);
-          setEditingUnit(unit);
-          setIsUnitFormOpen(true);
-        }}
-        onDelete={async (id) => {
-          const res = await deleteUnit(id);
-          if (res.success) {
-            setSelectedUnit(null);
-            showToast('تم حذف الوحدة بنجاح');
-          } else {
-            showToast(res.message || 'فشل حذف الوحدة');
-          }
-        }}
-      />
-
-      <CustomerDetailModal
-        customer={selectedCustomer}
-        units={myUnits}
-        onClose={() => setSelectedCustomer(null)}
-        onUpdateStage={(id, stage, note) => updateCustomerStage(id, stage, note)}
-        onAddActivity={(id, type, note) => addCustomerActivity(id, type, note)}
-        onUpdateCustomer={(id, data) => updateCustomer(id, data)}
-        onDeleteCustomer={async (id) => {
-          const res = await deleteCustomer(id);
-          if (res.success) {
-            setSelectedCustomer(null);
-            showToast('تم حذف العميل بنجاح');
-          } else {
-            showToast(res.message || 'فشل حذف العميل');
-          }
-        }}
-      />
-
-      <UnitFormModal
-        isOpen={isUnitFormOpen}
-        initialUnit={editingUnit || undefined}
-        zones={zones}
-        buildings={buildings}
-        onAddBuilding={addBuilding}
-        onClose={() => {
-          setIsUnitFormOpen(false);
-          setEditingUnit(null);
-        }}
-        onSubmit={async (unitData) => {
-          const res = editingUnit
-            ? await updateUnit(editingUnit.id, unitData)
-            : await addUnit(unitData);
-          if (res.success) {
-            showToast(editingUnit ? 'تم تحديث الوحدة بنجاح' : 'تمت إضافة الوحدة بنجاح');
-            setEditingUnit(null);
-          }
-          return res;
-        }}
-      />
-
-      <CustomerModal
-        isOpen={isCustomerModalOpen}
-        units={myUnits}
-        onClose={() => setIsCustomerModalOpen(false)}
-        onSubmit={(customerData) => addCustomer(customerData)}
-      />
     </div>
   );
 }

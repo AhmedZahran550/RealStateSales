@@ -35,18 +35,23 @@ export default function BrokerQuickShareTab({
 
   const availableUnits = units.filter((u) => u.status === 'available');
 
-  const filtered = availableUnits.filter((u) => {
-    if (selectedZone !== 'all' && String(u.zoneId) !== selectedZone) {
-      return false;
-    }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      const matchPlot = String(u.plotNo).includes(q);
-      const matchDesc = u.description?.toLowerCase().includes(q);
-      return matchPlot || matchDesc;
-    }
-    return true;
-  });
+  const filtered = availableUnits
+    .filter((u) => {
+      if (selectedZone !== 'all' && String(u.zoneId) !== selectedZone) {
+        return false;
+      }
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        const matchPlot = String(u.plotNo).includes(q);
+        const matchDesc = u.description?.toLowerCase().includes(q);
+        return matchPlot || matchDesc;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (a.zoneId !== b.zoneId) return a.zoneId - b.zoneId;
+      return a.plotNo - b.plotNo;
+    });
 
   return (
     <div className="space-y-4">
