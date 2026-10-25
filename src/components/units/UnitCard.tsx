@@ -60,7 +60,7 @@ export default function UnitCard({
         {/* Small Thumbnail Image (User Request: small image, see details more) */}
         <Link
           href={`/units/${unit.id}`}
-          className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden shrink-0 border border-outline-variant group bg-surface-container"
+          className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-xl overflow-hidden shrink-0 border border-outline-variant group bg-surface-container"
         >
           <img
             src={primaryImage}
@@ -179,7 +179,7 @@ export default function UnitCard({
         <button
           type="button"
           onClick={handleCopy}
-          className="btn-tonal flex-1 py-1.5 text-xs flex items-center justify-center gap-1 font-bold"
+          className="btn-tonal flex-1 py-2 text-xs flex items-center justify-center gap-1 font-bold min-h-[42px]"
           title="نسخ تفاصيل الوحدة"
         >
           {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
@@ -190,7 +190,7 @@ export default function UnitCard({
           href={createUnitWhatsAppUrl(unit, currentUser, undefined, zones)}
           target="_blank"
           rel="noreferrer"
-          className="btn-primary flex-1 py-1.5 text-xs flex items-center justify-center gap-1 font-bold"
+          className="btn-primary flex-1 py-2 text-xs flex items-center justify-center gap-1 font-bold min-h-[42px]"
         >
           <MessageCircle className="w-3.5 h-3.5" />
           <span>واتساب</span>
@@ -198,7 +198,7 @@ export default function UnitCard({
 
         <Link
           href={`/units/${unit.id}`}
-          className="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition border border-outline-variant"
+          className="p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition border border-outline-variant min-h-[42px] min-w-[42px] flex items-center justify-center"
           title="عرض صفحة التفاصيل الكاملة"
         >
           <ArrowLeft className="w-4 h-4" />

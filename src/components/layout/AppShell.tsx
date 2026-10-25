@@ -231,6 +231,100 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     ];
   }
 
+  // Mobile Bottom Navigation Bar Links (thumb-friendly for phones)
+  let mobileBottomNavLinks: NavItem[] = [];
+  if (isSuperAdmin) {
+    mobileBottomNavLinks = [
+      {
+        href: '/super-admin?tab=companies',
+        label: 'الشركات',
+        icon: 'store',
+        active: pathname.startsWith('/super-admin') && currentSuperAdminTab === 'companies',
+      },
+      {
+        href: '/super-admin?tab=users',
+        label: 'المستخدمين',
+        icon: 'manage_accounts',
+        active: pathname.startsWith('/super-admin') && currentSuperAdminTab === 'users',
+      },
+      {
+        href: '/super-admin?tab=reports',
+        label: 'التقارير',
+        icon: 'analytics',
+        active: pathname.startsWith('/super-admin') && currentSuperAdminTab === 'reports',
+      },
+    ];
+  } else if (isCompanyAdmin) {
+    mobileBottomNavLinks = [
+      {
+        href: '/',
+        label: 'اللوحة',
+        icon: 'speed',
+        active: pathname === '/',
+      },
+      {
+        href: '/units',
+        label: 'الوحدات',
+        icon: 'apartment',
+        active: pathname.startsWith('/units'),
+        badge: myUnits.length > 0 ? `${myUnits.length}` : undefined,
+      },
+      {
+        href: '/admin/zones',
+        label: 'المناطق',
+        icon: 'explore',
+        active: pathname.startsWith('/admin/zones'),
+      },
+      {
+        href: '/admin/buildings',
+        label: 'المباني',
+        icon: 'domain',
+        active: pathname.startsWith('/admin/buildings'),
+      },
+      {
+        href: '/admin/users',
+        label: 'الوسطاء',
+        icon: 'group',
+        active: pathname.startsWith('/admin/users'),
+      },
+    ];
+  } else {
+    mobileBottomNavLinks = [
+      {
+        href: '/',
+        label: 'الرئيسية',
+        icon: 'speed',
+        active: pathname === '/',
+      },
+      {
+        href: '/units',
+        label: 'الوحدات',
+        icon: 'apartment',
+        active: pathname.startsWith('/units'),
+        badge: myUnits.length > 0 ? `${myUnits.length}` : undefined,
+      },
+      {
+        href: '/customers',
+        label: 'العملاء',
+        icon: 'group',
+        active: pathname.startsWith('/customers'),
+        badge: myCustomers.length > 0 ? `${myCustomers.length}` : undefined,
+      },
+      {
+        href: '/map',
+        label: 'الخريطة',
+        icon: 'map',
+        active: pathname === '/map',
+      },
+      {
+        href: '/matching',
+        label: 'المطابقة',
+        icon: 'travel_explore',
+        active: pathname === '/matching',
+      },
+    ];
+  }
+
   return (
     <div className="min-h-screen bg-surface text-on-surface flex flex-col antialiased">
       {/* Mobile Sidebar Overlay */}
@@ -669,10 +763,63 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* MAIN CONTENT AREA */}
       <div className="pr-0 lg:pr-72 pt-16 lg:pt-20 flex-1 flex flex-col">
-        <main className="flex-1 w-full p-3 sm:p-5 lg:p-space-lg max-w-full overflow-x-hidden">{children}</main>
+        <main className="flex-1 w-full p-3 sm:p-5 lg:p-space-lg pb-24 lg:pb-space-lg max-w-full overflow-x-hidden">{children}</main>
       </div>
 
-
+      {/* MOBILE BOTTOM NAVIGATION BAR */}
+      <nav
+        aria-label="التنقل السريع للهاتف"
+        className="lg:hidden fixed bottom-0 right-0 left-0 z-40 bg-surface/95 backdrop-blur-md border-t border-outline-variant shadow-[0_-2px_12px_rgba(0,0,0,0.06)] px-1 py-1 flex items-center justify-around"
+      >
+        {mobileBottomNavLinks.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={() => {
+              if (item.tab) {
+                setCurrentSuperAdminTab(item.tab);
+                if (typeof window !== 'undefined') {
+                  const url = new URL(window.location.href);
+                  url.pathname = '/super-admin';
+                  url.searchParams.set('tab', item.tab);
+                  window.history.pushState({}, '', url.toString());
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }
+              }
+            }}
+            className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-all select-none min-h-[48px] relative ${
+              item.active
+                ? 'text-primary font-bold'
+                : 'text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            <div className="relative flex items-center justify-center">
+              <span
+                className={`material-symbols-outlined text-[22px] transition-transform ${
+                  item.active ? 'scale-110 text-primary' : 'text-on-surface-variant'
+                }`}
+              >
+                {item.icon}
+              </span>
+              {item.badge && (
+                <span className="absolute -top-1 -right-2 px-1.5 py-0.2 rounded-full bg-primary text-on-primary text-[9px] font-bold leading-tight shadow-xs">
+                  {item.badge}
+                </span>
+              )}
+            </div>
+            <span
+              className={`text-[10px] tracking-tight mt-0.5 truncate max-w-[64px] ${
+                item.active ? 'font-bold text-primary' : 'font-medium'
+              }`}
+            >
+              {item.label}
+            </span>
+            {item.active && (
+              <span className="w-1.5 h-1.5 rounded-full bg-primary mt-0.5" />
+            )}
+          </Link>
+        ))}
+      </nav>
 
       <ProfileModal
         isOpen={isProfileModalOpen}

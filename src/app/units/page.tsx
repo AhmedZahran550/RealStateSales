@@ -58,6 +58,8 @@ export default function UnitsPage() {
       const savedViewMode = localStorage.getItem('brokers_units_view_mode');
       if (savedViewMode === 'grid' || savedViewMode === 'table') {
         setViewMode(savedViewMode);
+      } else if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        setViewMode('grid');
       }
     } catch {}
   }, []);
@@ -627,8 +629,19 @@ export default function UnitsPage() {
               <p className="text-xs text-on-surface-variant">جرّب تغيير فلاتر البحث أو اختيار منطقة أخرى.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-right text-xs">
+            <>
+              <div className="md:hidden px-3.5 py-2 bg-surface-container text-on-surface-variant text-[11px] flex items-center justify-between border-b border-surface-container-high">
+                <span>💡 اسحب الجدول أفقياً للاطلاع على كافة الأعمدة</span>
+                <button
+                  type="button"
+                  onClick={() => handleToggleViewMode('grid')}
+                  className="text-primary font-bold hover:underline cursor-pointer"
+                >
+                  عرض شبكة بطاقات
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[760px] text-right text-xs">
                 <thead className="bg-surface-container-low text-on-surface-variant font-bold border-b border-surface-container-high">
                   <tr>
                     <th className="p-3.5">الوحدة</th>
@@ -817,6 +830,7 @@ export default function UnitsPage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </div>
       )}

@@ -591,21 +591,21 @@ function CustomersContent() {
                     </div>
 
                     {/* 2. شريط أزرار الإجراءات المنظم: عرض التفاصيل والمطابقة وتعديل وحذف */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pt-2.5 md:pt-0 border-t md:border-t-0 border-surface-container-high/30 w-full md:w-auto justify-end">
+                    <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-2 shrink-0 pt-2.5 md:pt-0 border-t md:border-t-0 border-surface-container-high/30 w-full md:w-auto">
                       {/* زر عرض التفاصيل */}
                       <Link
                         href={`/customers/${lead.id}`}
-                        className="flex-1 md:flex-none px-3.5 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container text-on-surface font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer min-h-[38px]"
+                        className="px-3 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container text-on-surface font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer min-h-[42px]"
                         title="عرض كافة التفاصيل والملاحظات وسجل العميل"
                       >
                         <span className="material-symbols-outlined text-[17px] text-primary">visibility</span>
-                        <span>عرض التفاصيل</span>
+                        <span>التفاصيل</span>
                       </Link>
 
                       {/* زر المطابقة */}
                       <Link
                         href={`/matching?customerId=${lead.id}`}
-                        className="flex-1 md:flex-none px-3.5 py-2 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition flex items-center justify-center gap-1.5 shadow-sm text-xs min-h-[38px]"
+                        className="px-3 py-2 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition flex items-center justify-center gap-1.5 shadow-sm text-xs min-h-[42px]"
                         title="مطابقة الوحدات المعروضة لطلب العميل"
                       >
                         <span className="material-symbols-outlined text-[17px]">travel_explore</span>
@@ -615,7 +615,7 @@ function CustomersContent() {
                       {/* زر التعديل */}
                       <Link
                         href={`/customers/${lead.id}/edit`}
-                        className="px-3 py-2 rounded-xl bg-warning-container text-warning border border-warning hover:bg-warning hover:text-white transition-all flex items-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[38px]"
+                        className="px-3 py-2 rounded-xl bg-warning-container text-warning border border-warning hover:bg-warning hover:text-white transition-all flex items-center justify-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[42px]"
                         title="تعديل بيانات ومتابعة العميل"
                       >
                         <span className="material-symbols-outlined text-[17px]">edit_note</span>
@@ -635,7 +635,7 @@ function CustomersContent() {
                             }
                           }
                         }}
-                        className="px-3 py-2 rounded-xl bg-error-container text-error border border-error hover:bg-error hover:text-white transition-all flex items-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[38px]"
+                        className="px-3 py-2 rounded-xl bg-error-container text-error border border-error hover:bg-error hover:text-white transition-all flex items-center justify-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[42px]"
                         title="حذف العميل"
                       >
                         <span className="material-symbols-outlined text-[17px]">delete_forever</span>

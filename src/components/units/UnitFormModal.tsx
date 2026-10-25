@@ -230,12 +230,12 @@ export default function UnitFormModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-outline-variant overflow-hidden my-auto sm:my-8 max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-outline-variant overflow-hidden my-auto sm:my-8 max-h-[92dvh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-outline-variant bg-surface shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-warning text-white flex items-center justify-center shadow-md shadow-warning/30 font-black">
+            <div className="w-10 h-10 rounded-2xl bg-primary text-on-primary flex items-center justify-center shadow-sm font-black">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
@@ -680,14 +680,14 @@ export default function UnitFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container font-bold cursor-pointer transition"
+              className="px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container font-bold cursor-pointer transition text-xs min-h-[44px]"
             >
               إلغاء
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-6 py-2.5 rounded-xl bg-warning hover:bg-warning text-white font-bold cursor-pointer shadow-md shadow-warning/30 transition disabled:opacity-60 disabled:cursor-wait flex items-center gap-2"
+              className="btn-primary px-6 py-2.5 rounded-xl text-xs font-bold min-h-[44px] flex items-center gap-2"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {submitting

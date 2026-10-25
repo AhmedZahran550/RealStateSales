@@ -57,12 +57,12 @@ export default function ZoneDrawer({
         <div className="p-3.5 sm:p-5 border-b border-warning/25 bg-gradient-to-l from-warning-container/60 to-transparent ">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary-strong via-primary to-primary text-white flex items-center justify-center font-black text-xl shadow-md shadow-warning/30">
+            <div className="w-12 h-12 rounded-2xl bg-primary text-on-primary flex items-center justify-center font-black text-xl shadow-sm">
               {zone.id}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-bold text-[#1c1917] ">
+                <h3 className="text-xl font-bold text-on-surface">
                   {zone.name}
                 </h3>
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-warning-container text-warning font-semibold border border-warning ">

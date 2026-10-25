@@ -157,6 +157,12 @@ body {
   background: var(--color-primary);
 }
 
+/* Mobile-first overflow guard (prevents horizontal scroll without breaking sticky elements) */
+html,
+body {
+  overflow-x: clip;
+}
+
 /* Universal input visibility & autofill handling */
 input, select, textarea {
   color-scheme: light; /* light-only system: keep browser-drawn controls (date pickers) light */

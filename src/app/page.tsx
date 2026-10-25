@@ -125,6 +125,13 @@ export default function DashboardPage() {
                 <span>إدارة وسطاء الشركة</span>
               </Link>
               <Link
+                href="/admin/zones"
+                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px] border border-surface-container-high"
+              >
+                <span className="material-symbols-outlined text-[20px]">explore</span>
+                <span>المناطق والمجاورات</span>
+              </Link>
+              <Link
                 href="/units"
                 className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px] border border-surface-container-high"
               >
@@ -188,8 +195,11 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2 text-xs">
-              <span>تغطي مناطق الحي المتميز</span>
-              <span className="material-symbols-outlined text-primary text-[18px]">domain</span>
+              <Link href="/admin/zones" className="text-primary font-bold hover:underline flex items-center gap-1">
+                <span>{zones.length} منطقة ومجاورة مسجلة</span>
+                <span className="material-symbols-outlined text-sm">arrow_back</span>
+              </Link>
+              <span className="material-symbols-outlined text-primary text-[18px]">explore</span>
             </div>
           </div>
 

@@ -407,20 +407,21 @@ function MatchingContent() {
                           </span>
                         </div>
                       </div>
-                      {/* Mobile Jump Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedUnitId(unit.id);
-                          setMobileTab('proposal');
-                        }}
-                        className="xl:hidden w-full mt-3 py-2 px-3 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer min-h-[38px] shadow-sm"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">chat</span>
-                        <span>تجهيز ومشاركة العرض لهذه الوحدة ←</span>
-                      </button>
                     </div>
+
+                    {/* Mobile Jump Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedUnitId(unit.id);
+                        setMobileTab('proposal');
+                      }}
+                      className="xl:hidden w-full mt-3 py-2.5 px-3 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer min-h-[42px] shadow-sm"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">chat</span>
+                      <span>تجهيز ومشاركة العرض لهذه الوحدة ←</span>
+                    </button>
                   </div>
                 </div>
               </div>

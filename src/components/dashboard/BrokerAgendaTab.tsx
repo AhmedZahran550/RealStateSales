@@ -203,11 +203,11 @@ export default function BrokerAgendaTab({
                 </div>
 
                 {/* Direct Action Buttons */}
-                <div className="flex flex-wrap items-center justify-between gap-2 mt-4 pt-3 border-t border-surface-container-high/40">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mt-4 pt-3 border-t border-surface-container-high/40">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <a
                       href={`tel:${lead.phone}`}
-                      className="px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold inline-flex items-center gap-1.5 transition"
+                      className="flex-1 sm:flex-initial px-3 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold inline-flex items-center justify-center gap-1.5 transition min-h-[40px]"
                     >
                       <Phone className="w-3.5 h-3.5 text-primary" />
                       <span dir="ltr">{lead.phone}</span>
@@ -217,7 +217,7 @@ export default function BrokerAgendaTab({
                       href={waUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-3 py-1.5 rounded-xl bg-success-container hover:bg-success-container/70 text-success text-xs font-bold inline-flex items-center gap-1.5 transition"
+                      className="flex-1 sm:flex-initial px-3 py-2 rounded-xl bg-success-container hover:bg-success-container/70 text-success text-xs font-bold inline-flex items-center justify-center gap-1.5 transition min-h-[40px]"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
                       <span>واتساب مباشر</span>
@@ -229,7 +229,7 @@ export default function BrokerAgendaTab({
                       type="button"
                       disabled={isDone}
                       onClick={() => onMarkDone(lead.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer ${
+                      className={`flex-1 sm:flex-initial px-3 py-2 rounded-xl text-xs font-bold transition inline-flex items-center justify-center gap-1.5 cursor-pointer min-h-[40px] ${
                         isDone
                           ? 'bg-success-container text-success cursor-default'
                           : 'bg-primary text-on-primary hover:bg-primary-strong shadow-xs'

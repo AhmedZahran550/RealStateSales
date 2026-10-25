@@ -151,11 +151,11 @@ export default function CustomerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-surface rounded-3xl shadow-2xl border border-warning/70 overflow-hidden my-auto sm:my-8 max-h-[94vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-2xl bg-surface rounded-3xl shadow-2xl border border-outline-variant overflow-hidden my-auto sm:my-8 max-h-[92dvh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-warning/25 bg-gradient-to-r from-warning/10 via-primary/5 to-transparent shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-outline-variant bg-surface-container-low shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-warning text-white flex items-center justify-center shadow-md shadow-warning/30 shrink-0">
+            <div className="w-11 h-11 rounded-2xl bg-primary text-on-primary flex items-center justify-center shadow-sm shrink-0">
               {initialCustomer ? <Edit3 className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
             </div>
             <div>
@@ -426,14 +426,14 @@ export default function CustomerModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high/70 font-bold transition text-xs cursor-pointer"
+                className="px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high/70 font-bold transition text-xs cursor-pointer min-h-[44px]"
               >
                 إلغاء
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-5 py-2.5 rounded-xl bg-warning hover:bg-warning active:bg-warning text-white font-extrabold text-xs shadow-md shadow-warning/30 hover:shadow-lg hover:shadow-warning/40 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-wait"
+                className="btn-primary px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-wait min-h-[44px]"
               >
                 {submitting ? (
                   <>

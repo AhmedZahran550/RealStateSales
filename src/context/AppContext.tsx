@@ -78,6 +78,21 @@ interface AppContextType {
   ) => Promise<{ success: boolean; message?: string; data?: Building }>;
   updateBuildingCoords: (id: number, mapX: number, mapY: number) => void;
   addService: (service: Omit<Service, 'id'>) => void;
+  addZone: (payload: {
+    name: string;
+    direction?: string;
+    mapX?: number;
+    mapY?: number;
+    notes?: string;
+    parentId?: number | null;
+    companyId?: string;
+  }) => Promise<{ success: boolean; message?: string; zone?: Zone }>;
+  updateZone: (
+    id: number,
+    payload: { name?: string; direction?: string; notes?: string }
+  ) => Promise<{ success: boolean; message?: string }>;
+  deleteZone: (id: number) => Promise<{ success: boolean; message?: string }>;
+  refreshZones: () => Promise<void>;
   addUser: (user: Omit<UserProfile, 'id' | 'createdAt'>) => Promise<{ success: boolean; message?: string }>;
   deleteUser: (id: string) => Promise<{ success: boolean; message?: string }>;
   updateUserPassword: (id: string, newPass: string) => Promise<{ success: boolean; message?: string }>;
@@ -532,6 +547,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setServices((prev) => [...prev, { ...sData, id: Date.now() }]);
   };
 
+  const addZone = async (payload: {
+    name: string;
+    direction?: string;
+    mapX?: number;
+    mapY?: number;
+    notes?: string;
+    parentId?: number | null;
+    companyId?: string;
+  }): Promise<{ success: boolean; message?: string; zone?: Zone }> => {
+    const res = await zoneService.createZone(payload);
+    if (res.success && res.data) {
+      setZones((prev) => [...prev, res.data!]);
+      return { success: true, message: res.message || 'تم إضافة المنطقة بنجاح', zone: res.data };
+    }
+    return { success: false, message: res.error || res.message || 'فشل إضافة المنطقة' };
+  };
+
+  const updateZone = async (
+    id: number,
+    payload: { name?: string; direction?: string; notes?: string }
+  ): Promise<{ success: boolean; message?: string }> => {
+    const res = await zoneService.updateZone(id, payload);
+    if (res.success) {
+      setZones((prev) =>
+        prev.map((z) => (z.id === id ? { ...z, ...payload } : z))
+      );
+      return { success: true, message: res.message || 'تم تحديث المنطقة بنجاح' };
+    }
+    return { success: false, message: res.error || res.message || 'فشل تحديث المنطقة' };
+  };
+
+  const deleteZone = async (id: number): Promise<{ success: boolean; message?: string }> => {
+    const res = await zoneService.deleteZone(id);
+    if (res.success) {
+      setZones((prev) => prev.filter((z) => z.id !== id));
+      return { success: true, message: res.message || 'تم حذف المنطقة بنجاح' };
+    }
+    return { success: false, message: res.error || res.message || 'فشل حذف المنطقة' };
+  };
+
+  const refreshZones = async () => {
+    const fetched = await zoneService.fetchZones();
+    setZones(fetched);
+  };
+
   const addUser = async (
     userData: Omit<UserProfile, 'id' | 'createdAt'>
   ): Promise<{ success: boolean; message?: string }> => {
@@ -652,6 +712,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateBuilding,
         updateBuildingCoords,
         addService,
+        addZone,
+        updateZone,
+        deleteZone,
+        refreshZones,
         addUser,
         deleteUser,
         updateUserPassword,
