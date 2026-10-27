@@ -92,14 +92,23 @@ export default function UnitsPage() {
     .filter((u) => u.status === 'available')
     .reduce((acc, u) => acc + (u.price || 0), 0);
 
+  const mainZones = useMemo(() => zones.filter((z) => z.parentId == null), [zones]);
+  const subZonesOf = (parentId: number) => zones.filter((z) => z.parentId === parentId);
+
   // Filtered & sorted units (default order: per areas numbers, then plotNo, then floor)
   const filteredUnits = useMemo(() => {
     const list = myUnits.filter((unit) => {
       // Status
       if (statusFilter !== 'all' && unit.status !== statusFilter) return false;
 
-      // Zone
-      if (zoneFilter !== 'all' && unit.zoneId.toString() !== zoneFilter) return false;
+      // Zone (matches specific sub-zone or all sub-zones of a selected main district)
+      if (zoneFilter !== 'all') {
+        const filterId = Number(zoneFilter);
+        const isMatching =
+          unit.zoneId === filterId ||
+          zones.some((z) => z.id === unit.zoneId && z.parentId === filterId);
+        if (!isMatching) return false;
+      }
 
       // Type
       if (typeFilter !== 'all' && unit.unitKind !== typeFilter) return false;
@@ -173,7 +182,13 @@ export default function UnitsPage() {
   // تصفية المباني بناءً على معايير البحث والمنطقة والحالة مع ترتيب افتراضي حسب أرقام المناطق
   const filteredBuildings = useMemo(() => {
     const list = buildingsWithStats.filter((b) => {
-      if (zoneFilter !== 'all' && b.zoneId.toString() !== zoneFilter) return false;
+      if (zoneFilter !== 'all') {
+        const filterId = Number(zoneFilter);
+        const isMatching =
+          b.zoneId === filterId ||
+          zones.some((z) => z.id === b.zoneId && z.parentId === filterId);
+        if (!isMatching) return false;
+      }
       if (statusFilter === 'available' && b.availableCount === 0) return false;
       if (statusFilter === 'reserved' && b.reservedCount === 0) return false;
       if (statusFilter === 'sold' && b.soldCount === 0) return false;
@@ -468,11 +483,28 @@ export default function UnitsPage() {
               className="w-full border border-outline-variant bg-white rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
             >
               <option value="all" className="bg-white text-on-surface">كافة المناطق</option>
-              {zones.map((z) => (
-                <option key={z.id} value={z.id.toString()} className="bg-white text-on-surface">
-                  منطقة {z.name}
-                </option>
-              ))}
+              {mainZones.map((mz) => {
+                const subs = subZonesOf(mz.id);
+                if (subs.length === 0) {
+                  return (
+                    <option key={mz.id} value={mz.id.toString()} className="bg-white text-on-surface">
+                      {mz.name}
+                    </option>
+                  );
+                }
+                return (
+                  <optgroup key={mz.id} label={mz.name} className="bg-white text-on-surface font-bold">
+                    <option value={mz.id.toString()} className="bg-white text-on-surface font-semibold">
+                      كل {mz.name}
+                    </option>
+                    {subs.map((sz) => (
+                      <option key={sz.id} value={sz.id.toString()} className="bg-white text-on-surface font-normal">
+                        {sz.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                );
+              })}
             </select>
             <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">
               expand_more

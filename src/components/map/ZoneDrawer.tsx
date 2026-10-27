@@ -20,6 +20,7 @@ export interface ZoneDrawerProps {
   units: Unit[];
   buildings: Building[];
   services: Service[];
+  zones?: Zone[];
   onSelectUnit: (unit: Unit) => void;
   onAddUnitInZone: (zoneId: number) => void;
 }
@@ -30,6 +31,7 @@ export default function ZoneDrawer({
   units,
   buildings,
   services,
+  zones = [],
   onSelectUnit,
   onAddUnitInZone,
 }: ZoneDrawerProps) {
@@ -44,6 +46,9 @@ export default function ZoneDrawer({
   const filteredBuildings = zoneBuildings.filter((b) =>
     plotSearch ? b.plotNo.toString().includes(plotSearch) : true
   );
+
+  const parentZone = zone.parentId ? zones.find((z) => z.id === zone.parentId) : null;
+  const parentDisplayName = parentZone ? parentZone.name : 'الحي المتميز (مدينة بدر)';
 
   return (
     <>
@@ -70,7 +75,7 @@ export default function ZoneDrawer({
                 </span>
               </div>
               <p className="text-xs text-on-surface-variant mt-0.5">
-                الحي المتميز – إجمالي عروضك: {zoneUnits.length} وحدة
+                {parentDisplayName} – إجمالي عروضك: {zoneUnits.length} وحدة
               </p>
             </div>
           </div>

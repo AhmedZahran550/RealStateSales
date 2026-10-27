@@ -71,6 +71,11 @@ export default function MapViewer({
     { id: 13, name: 'طريق السويس الصحراوي', x: 48.5, y: 97.0, icon: '🛣️', color: 'bg-warning' },
   ];
 
+  // Filter only leaf/sub-zones that have map coordinates to plot on the masterplan
+  const interactiveZones = zones.filter(
+    (z) => z.mapX != null && z.mapY != null && (z.parentId != null || !zones.some((other) => other.parentId === z.id))
+  );
+
   const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isAdmin) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -105,7 +110,7 @@ export default function MapViewer({
                   : 'text-white/70 hover:text-white hover:bg-white/10'
               }`}
             >
-              الكل (16)
+              الكل ({interactiveZones.length})
             </button>
             <button
               onClick={() => setFilterMode('my-units')}
@@ -271,8 +276,8 @@ export default function MapViewer({
                 {/* Subtle Amber Glow Border */}
                 <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-warning/20 pointer-events-none" />
 
-                {/* 16 Zones Interactive Nodes */}
-                {zones.map((zone) => {
+                {/* Interactive Sub-Zone Nodes */}
+                {interactiveZones.map((zone) => {
                   const unitCount = unitsCountByZone[zone.id] || 0;
                   const isSelected = selectedZone?.id === zone.id;
 

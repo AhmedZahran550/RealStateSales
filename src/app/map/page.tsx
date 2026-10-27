@@ -118,7 +118,7 @@ export default function MapPage() {
           الانتقال السريع لمناطق الحي الـ 16
         </h3>
         <div className="flex gap-2 overflow-x-auto pb-2">
-          {zones.map((z) => {
+          {zones.filter((z) => z.parentId != null || !zones.some((other) => other.parentId === z.id)).map((z) => {
             const count = myUnits.filter((u) => u.zoneId === z.id).length;
             const isSelected = selectedZone?.id === z.id;
             return (
@@ -158,6 +158,7 @@ export default function MapPage() {
         units={myUnits.filter((u) => selectedZone && u.zoneId === selectedZone.id)}
         buildings={buildings}
         services={services}
+        zones={zones}
         onClose={() => setSelectedZone(null)}
         onSelectUnit={(u) => router.push(`/units/${u.id}`)}
         onAddUnitInZone={handleAddUnitInZone}

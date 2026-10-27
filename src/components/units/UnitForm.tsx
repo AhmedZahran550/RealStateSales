@@ -289,11 +289,25 @@ export default function UnitForm({
                 className="input-base w-full text-xs"
                 required
               >
-                {zones.map((z) => (
-                  <option key={z.id} value={z.id}>
-                    {zoneDisplayName(z.id, zones)}
-                  </option>
-                ))}
+                {zones.filter((z) => z.parentId == null).map((mz) => {
+                  const subs = zones.filter((z) => z.parentId === mz.id);
+                  if (subs.length === 0) {
+                    return (
+                      <option key={mz.id} value={mz.id}>
+                        {mz.name}
+                      </option>
+                    );
+                  }
+                  return (
+                    <optgroup key={mz.id} label={mz.name}>
+                      {subs.map((sz) => (
+                        <option key={sz.id} value={sz.id}>
+                          {sz.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  );
+                })}
               </select>
             </div>
 
