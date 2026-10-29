@@ -15,7 +15,6 @@ import {
   MapPin,
   KeyRound,
   Search,
-  SlidersHorizontal,
   X,
   MessageCircle,
   Share2,
@@ -142,62 +141,62 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
 
   return (
     <div className="min-h-screen bg-surface flex flex-col selection:bg-primary-container selection:text-on-primary-container">
-      {/* الترويسة الرئيسية الفاخرة */}
-      <header className="hero-gradient text-white relative overflow-hidden shadow-lg">
+      {/* الترويسة الرئيسية الفاخرة المتجاوبة */}
+      <header className="hero-gradient text-white relative overflow-hidden shadow-md">
         {/* خلفية جمالية هندسية ناعمة */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-8 sm:pt-14 sm:pb-12 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center lg:items-end justify-between gap-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-7 pb-6 sm:pt-12 sm:pb-10 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center lg:items-end justify-between gap-5 sm:gap-6">
             {/* بطاقة هوية الشركة ومعلومات التواصل */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-right">
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3.5 sm:gap-5 text-center sm:text-right w-full sm:w-auto">
               {company.logoUrl ? (
                 <div className="relative shrink-0">
                   <img
                     src={company.logoUrl}
                     alt={company.name}
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl object-cover shadow-xl ring-4 ring-white/20 bg-white"
+                    className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl object-cover shadow-xl ring-2 sm:ring-4 ring-white/20 bg-white"
                   />
-                  <span className="absolute -bottom-1 -right-1 p-1 bg-primary text-white rounded-full ring-2 ring-white shadow-xs" title="شركة موثقة">
-                    <ShieldCheck className="w-4 h-4" />
+                  <span className="absolute -bottom-1 -right-1 p-0.5 sm:p-1 bg-primary text-white rounded-full ring-2 ring-white shadow-xs" title="شركة موثقة">
+                    <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </span>
                 </div>
               ) : (
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-white/15 backdrop-blur-md flex items-center justify-center shadow-xl ring-4 ring-white/20 shrink-0">
-                  <Building2 className="w-10 h-10 sm:w-12 sm:h-12 text-white/95" />
+                <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-white/15 backdrop-blur-md flex items-center justify-center shadow-xl ring-2 sm:ring-4 ring-white/20 shrink-0">
+                  <Building2 className="w-8 h-8 sm:w-12 sm:h-12 text-white/95" />
                 </div>
               )}
 
-              <div className="min-w-0">
-                <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-bold text-white shadow-xs">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-center sm:justify-start gap-1.5 flex-wrap">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] sm:text-[11px] font-bold text-white shadow-xs">
                     <Sparkles className="w-3 h-3 text-primary-fixed" />
                     <span>شركة عقارية معتمدة</span>
                   </span>
                 </div>
 
-                <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white mt-1.5 drop-shadow-xs">
+                <h1 className="text-xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white mt-1 drop-shadow-xs break-words">
                   {company.name}
                 </h1>
 
                 {company.commercialName && (
-                  <p className="text-xs sm:text-sm text-white/80 font-bold mt-1">
+                  <p className="text-[11px] sm:text-sm text-white/80 font-bold mt-0.5">
                     {company.commercialName}
                   </p>
                 )}
 
                 {/* روابط وسجلات الاتصال */}
-                <div className="flex flex-wrap justify-center sm:justify-start items-center gap-x-4 gap-y-2 mt-3 text-xs font-semibold text-white/85">
+                <div className="flex flex-wrap justify-center sm:justify-start items-center gap-x-3 sm:gap-x-4 gap-y-1 mt-2 text-[11px] sm:text-xs font-semibold text-white/85">
                   {company.address && (
-                    <span className="flex items-center gap-1.5">
+                    <span className="flex items-center gap-1 max-w-full truncate">
                       <MapPin className="w-3.5 h-3.5 text-primary-fixed shrink-0" />
-                      <span>{company.address}</span>
+                      <span className="truncate">{company.address}</span>
                     </span>
                   )}
                   {company.phone && (
                     <a
                       href={`tel:${company.phone}`}
-                      className="flex items-center gap-1.5 hover:text-white transition-colors"
+                      className="flex items-center gap-1 hover:text-white transition-colors shrink-0"
                       dir="ltr"
                     >
                       <Phone className="w-3.5 h-3.5 text-primary-fixed shrink-0" />
@@ -207,11 +206,11 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                   {company.email && (
                     <a
                       href={`mailto:${company.email}`}
-                      className="flex items-center gap-1.5 hover:text-white transition-colors"
+                      className="flex items-center gap-1 hover:text-white transition-colors shrink-0"
                       dir="ltr"
                     >
                       <Mail className="w-3.5 h-3.5 text-primary-fixed shrink-0" />
-                      <span>{company.email}</span>
+                      <span className="truncate max-w-[180px]">{company.email}</span>
                     </a>
                   )}
                 </div>
@@ -219,21 +218,21 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
             </div>
 
             {/* أزرار الإجراءات السريعة والإحصائيات */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3 w-full lg:w-auto">
               {/* إحصائيات سريعة */}
-              <div className="flex gap-2.5 w-full sm:w-auto justify-center">
-                <div className="rounded-2xl bg-white/10 backdrop-blur-md px-4 py-3 text-center ring-1 ring-white/15 min-w-[90px]">
-                  <div className="flex items-center justify-center gap-1.5">
-                    <KeyRound className="w-4 h-4 text-primary-fixed" />
-                    <span className="text-xl font-black text-white">{units.length}</span>
+              <div className="flex gap-2 w-full sm:w-auto justify-center">
+                <div className="rounded-2xl bg-white/10 backdrop-blur-md px-3.5 py-2.5 sm:px-4 sm:py-3 text-center ring-1 ring-white/15 flex-1 sm:flex-none min-w-[80px]">
+                  <div className="flex items-center justify-center gap-1">
+                    <KeyRound className="w-3.5 h-3.5 text-primary-fixed" />
+                    <span className="text-lg sm:text-xl font-black text-white">{units.length}</span>
                   </div>
                   <p className="text-[10px] font-bold text-white/80 mt-0.5">وحدة متاحة</p>
                 </div>
 
-                <div className="rounded-2xl bg-white/10 backdrop-blur-md px-4 py-3 text-center ring-1 ring-white/15 min-w-[90px]">
-                  <div className="flex items-center justify-center gap-1.5">
-                    <History className="w-4 h-4 text-primary-fixed" />
-                    <span className="text-xl font-black text-white">{gallery.length}</span>
+                <div className="rounded-2xl bg-white/10 backdrop-blur-md px-3.5 py-2.5 sm:px-4 sm:py-3 text-center ring-1 ring-white/15 flex-1 sm:flex-none min-w-[80px]">
+                  <div className="flex items-center justify-center gap-1">
+                    <History className="w-3.5 h-3.5 text-primary-fixed" />
+                    <span className="text-lg sm:text-xl font-black text-white">{gallery.length}</span>
                   </div>
                   <p className="text-[10px] font-bold text-white/80 mt-0.5">مشروع منجز</p>
                 </div>
@@ -246,7 +245,7 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                     href={companyWaUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-2xl bg-white text-primary font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:bg-surface-container-low transition-all cursor-pointer"
+                    className="flex-1 sm:flex-none min-h-[44px] px-4 py-2.5 rounded-2xl bg-white text-primary font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:bg-surface-container-low transition-all cursor-pointer"
                   >
                     <MessageCircle className="w-4 h-4" />
                     <span>تواصل واتساب</span>
@@ -256,7 +255,7 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="p-2.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white ring-1 ring-white/20 transition-all cursor-pointer"
+                  className="min-h-[44px] min-w-[44px] p-2.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white ring-1 ring-white/20 transition-all cursor-pointer flex items-center justify-center shrink-0"
                   title="مشاركة رابط الصفحة"
                   aria-label="مشاركة رابط الصفحة"
                 >
@@ -267,21 +266,21 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
           </div>
         </div>
 
-        {/* أشرطة التبويب الرئيسية بتصميم متناسق */}
-        <div className="border-t border-white/15 bg-black/10 backdrop-blur-xs">
-          <nav className="max-w-6xl mx-auto px-4 sm:px-6 flex gap-2 pt-2">
+        {/* أشرطة التبويب الرئيسية بنمط Segmented Control ملائم للموبايل */}
+        <div className="border-t border-white/15 bg-black/15 backdrop-blur-xs px-3 sm:px-6 py-2">
+          <nav className="max-w-6xl mx-auto flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={() => setActiveTab('units')}
-              className={`px-6 sm:px-8 py-3 rounded-t-2xl text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center gap-2 ${
+              className={`flex-1 sm:flex-none px-4 sm:px-7 py-2.5 rounded-xl sm:rounded-t-2xl text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 min-h-[40px] ${
                 activeTab === 'units'
                   ? 'bg-surface text-primary shadow-xs'
-                  : 'text-white/75 hover:bg-white/10 hover:text-white'
+                  : 'text-white/80 hover:bg-white/10 hover:text-white'
               }`}
             >
-              <Building2 className="w-4 h-4" />
+              <Building2 className="w-4 h-4 shrink-0" />
               <span>الوحدات المعروضة</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
                 activeTab === 'units' ? 'bg-primary-container text-on-primary-container' : 'bg-white/20 text-white'
               }`}>
                 {units.length}
@@ -291,15 +290,15 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
             <button
               type="button"
               onClick={() => setActiveTab('gallery')}
-              className={`px-6 sm:px-8 py-3 rounded-t-2xl text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center gap-2 ${
+              className={`flex-1 sm:flex-none px-4 sm:px-7 py-2.5 rounded-xl sm:rounded-t-2xl text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 min-h-[40px] ${
                 activeTab === 'gallery'
                   ? 'bg-surface text-primary shadow-xs'
-                  : 'text-white/75 hover:bg-white/10 hover:text-white'
+                  : 'text-white/80 hover:bg-white/10 hover:text-white'
               }`}
             >
-              <History className="w-4 h-4" />
+              <History className="w-4 h-4 shrink-0" />
               <span>أعمال ومشاريع سابقة</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
                 activeTab === 'gallery' ? 'bg-primary-container text-on-primary-container' : 'bg-white/20 text-white'
               }`}>
                 {gallery.length}
@@ -309,15 +308,15 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
         </div>
       </header>
 
-      {/* المحتوى الرئيسي للوحدات أو المعرض */}
-      <main className="flex-1 bg-surface py-6 sm:py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
+      {/* المحتوى الرئيسي للوحدات أو المعرض مع مسافة سفلية للشريط العائم */}
+      <main className="flex-1 bg-surface py-5 sm:py-8 pb-28 sm:pb-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-5 sm:space-y-6">
           {activeTab === 'units' ? (
             <>
-              {/* شريط البحث وتصفية الوحدات المتطور */}
+              {/* شريط البحث وتصفية الوحدات المتطور والمحكم للهواتف */}
               {units.length > 0 && (
-                <div className="card card-bordered p-4 sm:p-5 shadow-xs bg-surface-container-lowest space-y-4">
-                  <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                <div className="card card-bordered p-3.5 sm:p-5 shadow-xs bg-surface-container-lowest space-y-3 sm:space-y-4">
+                  <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 sm:gap-3">
                     {/* حقل البحث بالكلمات المفتاحية */}
                     <div className="relative flex-1">
                       <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-outline pointer-events-none" />
@@ -326,13 +325,13 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="ابحث بالمنطقة، رقم القطعة، أو نوع الوحدة..."
-                        className="input-base w-full py-2.5 pr-10 pl-9 text-xs sm:text-sm"
+                        className="input-base w-full min-h-[44px] py-2.5 pr-10 pl-9 text-xs sm:text-sm"
                       />
                       {searchQuery && (
                         <button
                           type="button"
                           onClick={() => setSearchQuery('')}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface p-1 cursor-pointer"
+                          className="absolute left-2.5 top-1/2 -translate-y-1/2 min-h-[36px] min-w-[36px] text-outline hover:text-on-surface p-1 cursor-pointer flex items-center justify-center"
                           aria-label="مسح البحث"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -340,15 +339,15 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                       )}
                     </div>
 
-                    {/* خيارات التصفية والترتيب */}
-                    <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+                    {/* خيارات التصفية والترتيب: شبكة 2 عمود على الموبايل */}
+                    <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
                       {/* اختيار المنطقة إن توفرت مناطق متعددة */}
                       {availableZones.length > 0 && (
-                        <div className="flex-1 sm:flex-none">
+                        <div className="w-full sm:w-auto">
                           <select
                             value={selectedZone}
                             onChange={(e) => setSelectedZone(e.target.value)}
-                            className="input-base py-2.5 px-3 text-xs font-bold text-on-surface w-full cursor-pointer"
+                            className="input-base min-h-[42px] py-2 px-2.5 text-xs font-bold text-on-surface w-full cursor-pointer"
                           >
                             <option value="all">جميع المناطق</option>
                             {availableZones.map((z) => (
@@ -361,16 +360,16 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                       )}
 
                       {/* قائمة الترتيب */}
-                      <div className="flex-1 sm:flex-none">
+                      <div className="w-full sm:w-auto">
                         <select
                           value={sortBy}
                           onChange={(e) => setSortBy(e.target.value as SortOption)}
-                          className="input-base py-2.5 px-3 text-xs font-bold text-on-surface w-full cursor-pointer"
+                          className="input-base min-h-[42px] py-2 px-2.5 text-xs font-bold text-on-surface w-full cursor-pointer"
                         >
                           <option value="newest">الترتيب: الأحدث</option>
-                          <option value="price-asc">السعر: من الأقل للأعلى</option>
-                          <option value="price-desc">السعر: من الأعلى للأقل</option>
-                          <option value="area-desc">المساحة: الأكبر أولاً</option>
+                          <option value="price-asc">السعر: من الأقل</option>
+                          <option value="price-desc">السعر: من الأعلى</option>
+                          <option value="area-desc">المساحة: الأكبر</option>
                         </select>
                       </div>
 
@@ -379,24 +378,24 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                         <button
                           type="button"
                           onClick={resetFilters}
-                          className="px-3 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold transition flex items-center gap-1 cursor-pointer shrink-0"
+                          className="col-span-2 sm:col-span-1 min-h-[42px] px-3 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer"
                           title="إلغاء التصفية"
                         >
                           <X className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">إعادة ضبط</span>
+                          <span>إعادة ضبط التصفية</span>
                         </button>
                       )}
                     </div>
                   </div>
 
-                  {/* أشرطة تصنيف أنواع الوحدات السريعة */}
-                  <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar">
+                  {/* أشرطة تصنيف أنواع الوحدات السريعة بتمرير لمسي خفيف */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 no-scrollbar -mx-1 px-1 touch-pan-x">
                     {CATEGORY_TABS.map((cat) => (
                       <button
                         key={cat.id}
                         type="button"
                         onClick={() => setSelectedCategory(cat.id)}
-                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer border ${
+                        className={`px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold whitespace-nowrap transition-all cursor-pointer border shrink-0 ${
                           selectedCategory === cat.id
                             ? 'bg-primary text-on-primary border-primary shadow-xs'
                             : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:border-primary'
@@ -408,13 +407,13 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                   </div>
 
                   {/* شريط الإحصائية للنتائج */}
-                  <div className="flex items-center justify-between text-xs text-on-surface-variant font-semibold pt-1 border-t border-outline-variant/50">
+                  <div className="flex items-center justify-between text-[11px] sm:text-xs text-on-surface-variant font-semibold pt-1 border-t border-outline-variant/50">
                     <span>
                       عرض <strong className="text-on-surface font-black">{filteredUnits.length}</strong> من أصل{' '}
                       <strong className="text-on-surface font-black">{units.length}</strong> وحدة معروضة
                     </span>
                     {hasActiveFilters && (
-                      <span className="text-primary text-[11px] font-bold">
+                      <span className="text-primary text-[10px] sm:text-[11px] font-bold">
                         تصفية نشطة
                       </span>
                     )}
@@ -424,11 +423,11 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
 
               {/* شبكة عرض الوحدات */}
               {filteredUnits.length === 0 ? (
-                <div className="empty-state card card-bordered bg-surface-container-lowest p-8 sm:p-12">
+                <div className="empty-state card card-bordered bg-surface-container-lowest p-6 sm:p-12">
                   <div className="empty-state-icon">
-                    <Building2 className="w-8 h-8 text-on-surface-variant" />
+                    <Building2 className="w-7 h-7 sm:w-8 sm:h-8 text-on-surface-variant" />
                   </div>
-                  <h3 className="empty-state-title text-base sm:text-lg">
+                  <h3 className="empty-state-title text-sm sm:text-base">
                     {units.length === 0
                       ? 'لا توجد وحدات معروضة حالياً'
                       : 'لا توجد وحدات تطابق خيارات البحث المحددة'}
@@ -442,14 +441,14 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                     <button
                       type="button"
                       onClick={resetFilters}
-                      className="btn-primary mt-4 px-5 py-2 text-xs"
+                      className="btn-primary mt-4 px-5 py-2.5 text-xs"
                     >
                       إلغاء التصفية وعرض كل الوحدات
                     </button>
                   )}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {filteredUnits.map((unit) => (
                     <PublicUnitCard
                       key={unit.id}
@@ -466,16 +465,16 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
           ) : (
             /* معرض الأعمال السابقة */
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <h3 className="text-base sm:text-lg font-black text-on-surface">
+                  <h3 className="text-sm sm:text-lg font-black text-on-surface">
                     أعمال ومشاريع الشركة المنجزة
                   </h3>
-                  <p className="text-xs text-on-surface-variant mt-0.5">
+                  <p className="text-[11px] sm:text-xs text-on-surface-variant mt-0.5">
                     نماذج من المشروعات والإنشاءات التي تم تسليمها بنجاح للعملاء
                   </p>
                 </div>
-                <span className="text-xs font-bold text-on-surface-variant bg-surface-container px-3 py-1 rounded-xl">
+                <span className="text-[11px] sm:text-xs font-bold text-on-surface-variant bg-surface-container px-2.5 py-1 rounded-xl">
                   {gallery.length} مشروع
                 </span>
               </div>
@@ -486,13 +485,13 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
       </main>
 
       {/* التذييل العصري المطور */}
-      <footer className="border-t border-outline-variant bg-surface-container-lowest py-8 mt-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-right">
+      <footer className="border-t border-outline-variant bg-surface-container-lowest py-6 sm:py-8 mt-auto">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-center sm:text-right">
           <div>
-            <p className="text-sm font-black text-on-surface">
+            <p className="text-xs sm:text-sm font-black text-on-surface">
               {company.name} {company.commercialName ? `(${company.commercialName})` : ''}
             </p>
-            <p className="text-xs text-on-surface-variant mt-0.5">
+            <p className="text-[11px] text-on-surface-variant mt-0.5">
               جميع الحقوق محفوظة © {new Date().getFullYear()} — منصة الواحة العقارية
             </p>
           </div>
@@ -511,7 +510,7 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
             <button
               type="button"
               onClick={scrollToTop}
-              className="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition cursor-pointer"
+              className="min-h-[38px] min-w-[38px] p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition cursor-pointer flex items-center justify-center"
               title="العودة لأعلى الصفحة"
               aria-label="العودة لأعلى الصفحة"
             >
@@ -521,15 +520,15 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
         </div>
       </footer>
 
-      {/* الشريط العائم للتواصل السريع على الموبايل */}
+      {/* الشريط العائم للتواصل السريع على شاشات الجوال مع دعم Safe Area */}
       {company.phone && (
-        <div className="sm:hidden fixed bottom-3 inset-x-3 z-40 bg-surface-container-lowest/95 backdrop-blur-md border border-outline-variant rounded-2xl p-2.5 shadow-2xl flex items-center gap-2">
+        <div className="sm:hidden fixed bottom-3 inset-x-3 z-40 bg-surface-container-lowest/95 backdrop-blur-md border border-outline-variant rounded-2xl p-2 shadow-2xl flex items-center gap-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           {companyWaUrl && (
             <a
               href={companyWaUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 py-2.5 px-3 rounded-xl bg-success text-on-success font-black text-xs flex items-center justify-center gap-1.5 shadow-xs"
+              className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-success text-on-success font-black text-xs flex items-center justify-center gap-1.5 shadow-xs"
             >
               <MessageCircle className="w-4 h-4" />
               <span>واتساب سريع</span>
@@ -537,7 +536,7 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
           )}
           <a
             href={`tel:${company.phone}`}
-            className="flex-1 py-2.5 px-3 rounded-xl btn-primary text-xs font-black flex items-center justify-center gap-1.5"
+            className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl btn-primary text-xs font-black flex items-center justify-center gap-1.5"
           >
             <Phone className="w-4 h-4" />
             <span>اتصال هاتفي</span>
