@@ -29,6 +29,7 @@ import {
   History,
   ShieldCheck,
   Info,
+  Star,
 } from 'lucide-react';
 import { downloadMediaFile } from '@/lib/cloudinary';
 import { formatUnitFullDetails, createUnitWhatsAppUrl } from '@/lib/shareUtils';
@@ -83,7 +84,7 @@ export default function UnitDetailModal({
 
   const canManage = isCompanyAdmin || isSuperAdmin;
   const statusInfo = UNIT_STATUS_CONFIG[unit.status];
-  const mediaList = unit.media || [];
+  const mediaList = [...(unit.media || [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   const currentMedia = mediaList[activeMediaIndex];
 
   // البحث عن المبنى المرتبط لحساب التوريث الذكي للمميزات
@@ -406,6 +407,14 @@ export default function UnitDetailModal({
                         idx === activeMediaIndex ? 'border-warning scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-90'
                       }`}
                     >
+                      {idx === 0 && m.kind === 'image' && (
+                        <div
+                          className="absolute top-1 right-1 p-0.5 rounded-full bg-primary text-on-primary shadow-xs z-10"
+                          title="صورة الغلاف الأساسية"
+                        >
+                          <Star className="w-2.5 h-2.5 fill-current" />
+                        </div>
+                      )}
                       {m.kind === 'video' ? (
                         <div className="w-full h-full flex flex-col items-center justify-center text-warning-container bg-inverse-surface">
                           <Film className="w-4 h-4" />

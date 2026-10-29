@@ -116,8 +116,10 @@ export async function getPublicPageData(
     paymentTerms: u.payment_terms || undefined,
     description: u.description || undefined,
     features: (u.features || []).length > 0 ? u.features : undefined,
-    media: (u.unit_media || []).map(
-      (m: any): UnitMedia => ({
+    media: (u.unit_media || [])
+      .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+      .map(
+        (m: any): UnitMedia => ({
         id: m.id,
         unitId: m.unit_id,
         kind: m.kind,

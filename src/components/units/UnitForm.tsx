@@ -85,7 +85,10 @@ export default function UnitForm({
   const [lng, setLng] = useState<number | undefined>(initialUnit?.lng || 31.7415);
   const [showLiveMap, setShowLiveMap] = useState<boolean>(true);
 
-  const [unitMedia, setUnitMedia] = useState<UnitMedia[]>(initialUnit?.media || []);
+  const sortMedia = (m?: UnitMedia[]) =>
+    m ? [...m].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)) : [];
+
+  const [unitMedia, setUnitMedia] = useState<UnitMedia[]>(sortMedia(initialUnit?.media));
   const [unitFeatures, setUnitFeatures] = useState<string[]>(initialUnit?.features || []);
   const [newFeatureText, setNewFeatureText] = useState('');
   const [selectedBuildingId, setSelectedBuildingId] = useState<number | ''>(
@@ -110,7 +113,7 @@ export default function UnitForm({
       setStatus(initialUnit.status);
       setLat(initialUnit.lat || 30.1382);
       setLng(initialUnit.lng || 31.7415);
-      setUnitMedia(initialUnit.media || []);
+      setUnitMedia(sortMedia(initialUnit.media));
       setUnitFeatures(initialUnit.features || []);
     }
   }, [initialUnit]);

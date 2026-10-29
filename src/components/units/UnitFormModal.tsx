@@ -79,7 +79,7 @@ export default function UnitFormModal({
   const [showLiveMap, setShowLiveMap] = useState<boolean>(true);
 
   const [unitMedia, setUnitMedia] = useState<UnitMedia[]>(
-    initialUnit?.media || []
+    (initialUnit?.media ? [...initialUnit.media].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)) : [])
   );
   const [unitFeatures, setUnitFeatures] = useState<string[]>(
     initialUnit?.features || []
@@ -110,7 +110,11 @@ export default function UnitFormModal({
       setStatus(initialUnit.status);
       setLat(initialUnit.lat || 30.1382);
       setLng(initialUnit.lng || 31.7415);
-      setUnitMedia(initialUnit.media || []);
+      setUnitMedia(
+        initialUnit.media
+          ? [...initialUnit.media].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+          : []
+      );
       setUnitFeatures(initialUnit.features || []);
     } else {
       const bId = defaultBuildingId || '';

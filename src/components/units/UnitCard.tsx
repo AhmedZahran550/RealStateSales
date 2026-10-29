@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Unit, UNIT_KIND_LABELS, UNIT_STATUS_CONFIG } from '@/lib/types';
 import { zoneDisplayName } from '@/lib/zone-utils';
 import { createUnitWhatsAppUrl } from '@/lib/shareUtils';
+import { firstImageUrl } from '@/lib/public-utils';
 import {
   MapPin,
   Building2,
@@ -37,8 +38,7 @@ export default function UnitCard({
   const statusConfig = UNIT_STATUS_CONFIG[unit.status];
 
   const primaryImage =
-    unit.media?.[0]?.externalUrl ||
-    unit.media?.[0]?.storagePath ||
+    firstImageUrl(unit.media) ||
     'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80';
 
   const handleCopy = (e: React.MouseEvent) => {

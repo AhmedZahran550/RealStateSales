@@ -50,7 +50,7 @@ export async function PATCH(
     try {
       const { data: unit } = await serverSupabase
         .from('units')
-        .select('id, company_id, building_id, unit_media(storage_path, external_url)')
+        .select('id, company_id, building_id, unit_media(storage_path, external_url, sort_order)')
         .eq('id', id)
         .single();
 
@@ -83,6 +83,7 @@ export async function PATCH(
             const embeddedZone = Array.isArray(building?.zones) ? building?.zones?.[0] : building?.zones;
           const zoneName = (embeddedZone as any)?.name || '';
             const images = (unit.unit_media || [])
+              .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
               .map((m: any) => m.storage_path || m.external_url)
               .filter(Boolean);
 

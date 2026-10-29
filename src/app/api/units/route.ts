@@ -45,15 +45,19 @@ export async function GET(request: NextRequest) {
       status: u.status || 'available',
       lat: u.lat ? Number(u.lat) : undefined,
       lng: u.lng ? Number(u.lng) : undefined,
-      media: (u.unit_media || []).map((m: any) => ({
-        id: m.id,
-        unitId: m.unit_id,
-        ownerId: m.owner_id,
-        kind: m.kind || 'image',
-        externalUrl: m.external_url,
-        caption: m.caption || '',
-        createdAt: m.created_at,
-      })),
+      media: (u.unit_media || [])
+        .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+        .map((m: any) => ({
+          id: m.id,
+          unitId: m.unit_id,
+          ownerId: m.owner_id,
+          kind: m.kind || 'image',
+          storagePath: m.storage_path || undefined,
+          externalUrl: m.external_url || undefined,
+          caption: m.caption || '',
+          sortOrder: m.sort_order ?? 0,
+          createdAt: m.created_at,
+        })),
       features: u.features || [],
       createdAt: u.created_at,
       updatedAt: u.updated_at,
@@ -113,12 +117,14 @@ export async function POST(request: NextRequest) {
 
     // إدراج وسائط الوحدة إن وجدت
     if (body.media && body.media.length > 0) {
-      const mediaRows = body.media.map((m: any) => ({
+      const mediaRows = body.media.map((m: any, index: number) => ({
         unit_id: newUnit.id,
         owner_id: authUser.sub,
         kind: m.kind || 'image',
-        external_url: m.externalUrl,
+        storage_path: m.storagePath || null,
+        external_url: m.externalUrl || null,
         caption: m.caption || '',
+        sort_order: typeof m.sortOrder === 'number' ? m.sortOrder : index,
       }));
       await serverSupabase.from('unit_media').insert(mediaRows);
     }

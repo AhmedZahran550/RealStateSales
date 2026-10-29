@@ -8,11 +8,14 @@ import {
   Image as ImageIcon,
   Video as VideoIcon,
   Trash2,
-  Plus,
   Loader2,
   AlertCircle,
   ExternalLink,
   Film,
+  Star,
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 
 export interface MediaUploaderProps {
@@ -31,6 +34,10 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
   const [manualUrl, setManualUrl] = useState('');
   const [manualCaption, setManualCaption] = useState('');
   const [manualKind, setManualKind] = useState<'image' | 'video'>('image');
+
+  // Drag and drop state for reordering items
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -64,7 +71,7 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
           file,
           `el-waha/units/${unitId || 'new'}`,
           (percent) => {
-            setUploadProgress(Math.round(baseProgress + (percent / totalFiles)));
+            setUploadProgress(Math.round(baseProgress + percent / totalFiles));
           }
         );
 
@@ -76,6 +83,7 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
           externalUrl: result.url,
           caption: isVideo ? 'فيديو معاينة الوحدة' : 'صورة الوحدة',
           sizeBytes: result.sizeBytes,
+          sortOrder: media.length + i,
           createdAt: new Date().toISOString(),
         });
       } catch (err: unknown) {
@@ -85,7 +93,11 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
     }
 
     if (newMediaItems.length > 0) {
-      onChange([...media, ...newMediaItems]);
+      const combined = [...media, ...newMediaItems].map((item, idx) => ({
+        ...item,
+        sortOrder: idx,
+      }));
+      onChange(combined);
     }
 
     if (failedCount > 0) {
@@ -105,8 +117,9 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
   };
 
   const handleRemoveMedia = (index: number) => {
-    const updated = [...media];
-    updated.splice(index, 1);
+    const updated = media
+      .filter((_, idx) => idx !== index)
+      .map((item, idx) => ({ ...item, sortOrder: idx }));
     onChange(updated);
   };
 
@@ -127,13 +140,91 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
       kind: manualKind,
       externalUrl: manualUrl.trim(),
       caption: manualCaption.trim() || (manualKind === 'video' ? 'فيديو الوحدة' : 'صورة الوحدة'),
+      sortOrder: media.length,
       createdAt: new Date().toISOString(),
     };
 
-    onChange([...media, newItem]);
+    const updated = [...media, newItem].map((item, idx) => ({
+      ...item,
+      sortOrder: idx,
+    }));
+    onChange(updated);
     setManualUrl('');
     setManualCaption('');
     setShowUrlInput(false);
+  };
+
+  // Reorder by moving up / down
+  const handleMove = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= media.length) return;
+
+    const updated = [...media];
+    const item = updated[index];
+    updated.splice(index, 1);
+    updated.splice(targetIndex, 0, item);
+
+    const withRecomputedSort = updated.map((m, idx) => ({
+      ...m,
+      sortOrder: idx,
+    }));
+    onChange(withRecomputedSort);
+  };
+
+  // Set selected item as cover (promote to index 0)
+  const handleSetAsCover = (index: number) => {
+    if (index === 0) return;
+
+    const updated = [...media];
+    const [coverItem] = updated.splice(index, 1);
+    updated.unshift(coverItem);
+
+    const withRecomputedSort = updated.map((m, idx) => ({
+      ...m,
+      sortOrder: idx,
+    }));
+    onChange(withRecomputedSort);
+  };
+
+  // HTML5 Drag and Drop handlers for reordering
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const updated = [...media];
+    const [item] = updated.splice(draggedIndex, 1);
+    updated.splice(targetIndex, 0, item);
+
+    const withRecomputedSort = updated.map((m, idx) => ({
+      ...m,
+      sortOrder: idx,
+    }));
+    onChange(withRecomputedSort);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   return (
@@ -144,7 +235,7 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
             معرض صور وفيديوهات الوحدة
           </label>
           <p className="text-xs text-on-surface-variant mt-0.5">
-            ارفع صور أو فيديوهات عالية الجودة لتظهر للعملاء ومشاركتها عبر واتساب
+            ارفع صور أو فيديوهات عالية الجودة. يمكنك إعادة الترتيب واختيار صورة الغلاف الرئيسية
           </p>
         </div>
         <button
@@ -281,76 +372,177 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
         </div>
       )}
 
-      {/* قائمة الوسائط المرفوعة مسبقاً */}
+      {/* قائمة الوسائط المرفوعة مسبقاً مع أدوات الترتيب وصورة الغلاف */}
       {media.length > 0 && (
-        <div className="space-y-2">
-          <span className="text-xs font-bold text-on-surface-variant ">
-            الملفات المرفقة ({media.length}):
-          </span>
+        <div className="space-y-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-on-surface">
+                الوسائط المرفقة ({media.length}):
+              </span>
+              <span className="text-[11px] text-on-surface-variant font-medium hidden sm:inline">
+                (يمكنك السحب لإعادة الترتيب، أو استخدام الأسهم، وتعيين صورة الغلاف)
+              </span>
+            </div>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
+          <div className="flex flex-col gap-2.5 max-h-[32rem] overflow-y-auto p-1">
             {media.map((item, idx) => {
               const url = item.externalUrl || item.storagePath || '';
               const isVideo = item.kind === 'video';
+              const isCover = idx === 0 && !isVideo;
+              const isItemDragged = draggedIndex === idx;
+              const isItemDragOver = dragOverIndex === idx && draggedIndex !== idx;
 
               return (
                 <div
                   key={item.id || idx}
-                  className="flex items-center gap-3 p-2.5 rounded-2xl bg-white border border-outline-variant shadow-xs group"
+                  draggable={!isUploading}
+                  onDragStart={(e) => handleDragStart(e, idx)}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDrop={(e) => handleDrop(e, idx)}
+                  onDragEnd={handleDragEnd}
+                  className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-2xl bg-surface border transition-all duration-150 ${
+                    isCover
+                      ? 'border-primary ring-2 ring-primary/25 shadow-xs'
+                      : 'border-outline-variant hover:border-outline shadow-xs'
+                  } ${isItemDragOver ? 'ring-2 ring-primary border-primary bg-primary-container/10' : ''} ${
+                    isItemDragged ? 'opacity-40 scale-[0.98]' : 'opacity-100'
+                  }`}
                 >
-                  {/* Thumbnail */}
-                  <div className="relative w-16 h-14 rounded-xl overflow-hidden bg-black shrink-0 border border-outline-variant ">
-                    {isVideo ? (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-surface-container-lowest text-warning">
-                        <Film className="w-6 h-6" />
-                        <span className="text-[9px] font-black mt-0.5">فيديو</span>
-                      </div>
-                    ) : (
-                      <img
-                        src={url}
-                        alt="media"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src =
-                            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=200';
-                        }}
-                      />
-                    )}
+                  {/* Handle, Index & Thumbnail */}
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    {/* Drag Handle */}
+                    <div
+                      className="cursor-grab active:cursor-grabbing p-1 text-on-surface-variant hover:text-on-surface rounded-lg hover:bg-surface-container transition"
+                      title="اسحب لإعادة الترتيب"
+                    >
+                      <GripVertical className="w-4 h-4" />
+                    </div>
+
+                    {/* Sequential Number Badge */}
+                    <span
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
+                        isCover
+                          ? 'bg-primary text-on-primary'
+                          : 'bg-surface-container-high text-on-surface-variant'
+                      }`}
+                    >
+                      {idx + 1}
+                    </span>
+
+                    {/* Thumbnail Preview */}
+                    <div className="relative w-20 h-16 rounded-xl overflow-hidden bg-black shrink-0 border border-outline-variant">
+                      {isVideo ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-surface-container-lowest text-on-surface">
+                          <Film className="w-6 h-6 text-primary" />
+                          <span className="text-[9px] font-black mt-0.5">فيديو</span>
+                        </div>
+                      ) : (
+                        <img
+                          src={url}
+                          alt={item.caption || 'صورة الوحدة'}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src =
+                              'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=200';
+                          }}
+                        />
+                      )}
+
+                      {/* Small badge over thumbnail */}
+                      {isCover && (
+                        <div className="absolute top-1 right-1 p-0.5 rounded-full bg-primary text-on-primary shadow-xs">
+                          <Star className="w-3 h-3 fill-current" />
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Caption & Controls */}
-                  <div className="flex-1 min-w-0">
-                    <input
-                      type="text"
-                      value={item.caption || ''}
-                      onChange={(e) => handleUpdateCaption(idx, e.target.value)}
-                      placeholder={isVideo ? 'وصف الفيديو' : 'وصف الصورة'}
-                      className="w-full p-1.5 text-xs rounded-lg border border-transparent hover:border-outline-variant focus:border-primary bg-transparent text-on-surface font-medium"
-                    />
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-bold">
-                        {isVideo ? '🎥 فيديو' : '📸 صورة'}
-                      </span>
+                  {/* Caption & Metadata */}
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Cover Badge */}
+                      {isCover ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-primary text-on-primary shadow-xs">
+                          <Star className="w-3 h-3 fill-current" />
+                          صورة الغلاف الأساسية
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant font-bold">
+                          {isVideo ? '🎥 فيديو' : '📸 صورة'}
+                        </span>
+                      )}
+
                       <a
                         href={url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[10px] text-warning hover:underline flex items-center gap-0.5"
+                        className="text-[11px] text-primary hover:underline inline-flex items-center gap-0.5 font-bold"
                       >
-                        معاينة <ExternalLink className="w-2.5 h-2.5" />
+                        معاينة الرابط <ExternalLink className="w-2.5 h-2.5" />
                       </a>
                     </div>
+
+                    <input
+                      type="text"
+                      value={item.caption || ''}
+                      onChange={(e) => handleUpdateCaption(idx, e.target.value)}
+                      placeholder={isVideo ? 'وصف الفيديو (مثلاً: جولة بالفيديو)' : 'وصف الصورة (مثلاً: الواجهة، الصالة، الغرفة)'}
+                      className="w-full p-2 text-xs rounded-xl border border-outline-variant bg-surface text-on-surface focus:outline-hidden focus:border-primary font-medium transition"
+                    />
                   </div>
 
-                  {/* Delete button */}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveMedia(idx)}
-                    className="p-1.5 rounded-lg text-error hover:bg-error-container transition shrink-0"
-                    title="حذف هذا الملف"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {/* Ordering Controls & Actions */}
+                  <div className="flex items-center justify-between sm:justify-end gap-1.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-surface-container-high/40 shrink-0">
+                    {/* Make Cover Button (available on non-cover images) */}
+                    {!isVideo && !isCover && (
+                      <button
+                        type="button"
+                        onClick={() => handleSetAsCover(idx)}
+                        className="btn-tonal text-xs py-1.5 px-3 flex items-center gap-1 font-bold cursor-pointer"
+                        title="تعيين هذه الصورة كغلاف رئيسي للوحدة"
+                      >
+                        <Star className="w-3.5 h-3.5 text-primary" />
+                        <span>تعيين كغلاف</span>
+                      </button>
+                    )}
+
+                    {/* Move Up Button */}
+                    <button
+                      type="button"
+                      disabled={idx === 0}
+                      onClick={() => handleMove(idx, 'up')}
+                      className="p-1.5 rounded-xl border border-outline-variant hover:border-outline hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface disabled:opacity-25 disabled:pointer-events-none transition cursor-pointer"
+                      title="تحريك للأعلى (تقديم الترتيب)"
+                      aria-label="تحريك للأعلى"
+                    >
+                      <ChevronUp className="w-4 h-4" />
+                    </button>
+
+                    {/* Move Down Button */}
+                    <button
+                      type="button"
+                      disabled={idx === media.length - 1}
+                      onClick={() => handleMove(idx, 'down')}
+                      className="p-1.5 rounded-xl border border-outline-variant hover:border-outline hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface disabled:opacity-25 disabled:pointer-events-none transition cursor-pointer"
+                      title="تحريك للأسفل (تأخير الترتيب)"
+                      aria-label="تحريك للأسفل"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+
+                    {/* Delete button */}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMedia(idx)}
+                      className="p-1.5 rounded-xl text-error hover:bg-error-container transition cursor-pointer"
+                      title="حذف هذا الملف"
+                      aria-label="حذف الملف"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               );
             })}

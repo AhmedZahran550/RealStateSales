@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { formatArabicFollowupDate } from '@/lib/date-utils';
 import { createUnitWhatsAppUrl } from '@/lib/shareUtils';
 import { zoneDisplayName } from '@/lib/zone-utils';
+import { firstImageUrl } from '@/lib/public-utils';
 import BrokerStatsBento from '@/components/dashboard/BrokerStatsBento';
 import BrokerAgendaTab from '@/components/dashboard/BrokerAgendaTab';
 import BrokerPipelineTab from '@/components/dashboard/BrokerPipelineTab';
@@ -393,8 +394,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
             {myUnits.slice(0, 6).map((unit) => {
               const img =
-                unit.media?.[0]?.externalUrl ||
-                unit.media?.[0]?.storagePath ||
+                firstImageUrl(unit.media) ||
                 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
 
               const statusBadge =

@@ -50,15 +50,19 @@ export async function GET(
       status: dbUnit.status || 'available',
       lat: dbUnit.lat ? Number(dbUnit.lat) : undefined,
       lng: dbUnit.lng ? Number(dbUnit.lng) : undefined,
-      media: (dbUnit.unit_media || []).map((m: any) => ({
-        id: m.id,
-        unitId: m.unit_id,
-        ownerId: m.owner_id,
-        kind: m.kind || 'image',
-        externalUrl: m.external_url,
-        caption: m.caption || '',
-        createdAt: m.created_at,
-      })),
+      media: (dbUnit.unit_media || [])
+        .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+        .map((m: any) => ({
+          id: m.id,
+          unitId: m.unit_id,
+          ownerId: m.owner_id,
+          kind: m.kind || 'image',
+          storagePath: m.storage_path || undefined,
+          externalUrl: m.external_url || undefined,
+          caption: m.caption || '',
+          sortOrder: m.sort_order ?? 0,
+          createdAt: m.created_at,
+        })),
       features: dbUnit.features || [],
       createdAt: dbUnit.created_at,
       updatedAt: dbUnit.updated_at,
@@ -128,12 +132,14 @@ export async function PUT(
     if (body.media !== undefined) {
       await serverSupabase.from('unit_media').delete().eq('unit_id', id);
       if (body.media.length > 0) {
-        const mediaRows = body.media.map((m: any) => ({
+        const mediaRows = body.media.map((m: any, index: number) => ({
           unit_id: id,
           owner_id: authUser.sub,
           kind: m.kind || 'image',
-          external_url: m.externalUrl,
+          storage_path: m.storagePath || null,
+          external_url: m.externalUrl || null,
           caption: m.caption || '',
+          sort_order: typeof m.sortOrder === 'number' ? m.sortOrder : index,
         }));
         await serverSupabase.from('unit_media').insert(mediaRows);
       }
