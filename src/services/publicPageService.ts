@@ -95,9 +95,16 @@ export const publicPageService = {
   },
 
   /**
-   * استلام متابعة حجز عام (إنشاء عميل CRM + قفل الحجز)
+   * استلام متابعة حجز عام أو إسناده لموظف (إنشاء عميل CRM + قفل الحجز)
    */
-  async claimReservation(id: string): Promise<ServiceResult> {
-    return apiClient.post(`/public-reservations/${id}/claim`);
+  async claimReservation(id: string, targetUserId?: string): Promise<ServiceResult> {
+    return apiClient.post(`/public-reservations/${id}/claim`, { targetUserId });
+  },
+
+  /**
+   * حذف حجز عام (مدير الشركة أو السوبر أدمن)
+   */
+  async deleteReservation(id: string): Promise<ServiceResult> {
+    return apiClient.delete(`/public-reservations/${id}`);
   },
 };

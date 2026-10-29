@@ -135,14 +135,14 @@ export default function BrokerQuickShareTab({
               </div>
 
               {/* Details */}
-              <div className="p-3.5 space-y-2.5 flex-1 flex flex-col justify-between">
+              <div className="p-3.5 space-y-2.5 flex-1 min-w-0 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between text-[11px] text-on-surface-variant mb-1">
                     <span className="font-bold text-primary">الحي المتميز</span>
                     <span>{zoneDisplayName(unit.zoneId, zones)}</span>
                   </div>
 
-                  <h3 className="text-xs font-black text-on-surface line-clamp-1">
+                  <h3 className="text-xs font-black text-on-surface line-clamp-1 break-words">
                     {unit.description || `وحدة فاخرة قطعة ${unit.plotNo}`}
                   </h3>
 

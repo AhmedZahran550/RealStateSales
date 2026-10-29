@@ -344,14 +344,14 @@ function MatchingContent() {
                   </div>
 
                   {/* Unit Info */}
-                  <div className="flex-1 flex flex-col justify-between">
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
                     <div>
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start justify-between gap-2 min-w-0">
                         <div>
                           <span className="text-secondary font-bold text-xs">
                             الحي المتميز • {zoneDisplayName(unit.zoneId, zones)}
                           </span>
-                          <h3 className="text-on-surface font-bold text-base">
+                          <h3 className="text-on-surface font-bold text-sm sm:text-base line-clamp-2 break-words">
                             {unit.description || `وحدة فاخرة قطعة ${unit.plotNo}`}
                           </h3>
                           <p className="text-on-surface-variant flex items-center gap-1 mt-0.5 text-xs">

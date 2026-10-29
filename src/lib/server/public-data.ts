@@ -164,6 +164,133 @@ export async function getPublicPageData(
   };
 }
 
+export type PublicUnitDetail = PublicUnit & {
+  price: number;
+  description?: string;
+  deliveryNote?: string;
+  paymentTerms?: string;
+  lat?: number;
+  lng?: number;
+  companyId: string;
+  companyName?: string;
+  features?: string[];
+};
+
+/**
+ * جلب بيانات وحدة منفردة لصفحة المعاينة العامة (/u/[id])
+ */
+export async function getPublicUnitData(unitId: string): Promise<{
+  unit?: PublicUnitDetail;
+  company?: {
+    id: string;
+    name: string;
+    commercialName?: string;
+    logoUrl?: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+  };
+  settings?: CompanyPublicSettings;
+  status: number;
+  error?: string;
+}> {
+  // 1. جلب بيانات الوحدة مع المبنى والشركة والوسائط
+  const { data: dbUnit, error: unitErr } = await serverSupabase
+    .from('units')
+    .select(`
+      *,
+      companies (*),
+      buildings (plot_no, zone_id, zones (name)),
+      unit_media (*)
+    `)
+    .eq('id', unitId)
+    .maybeSingle();
+
+  if (unitErr || !dbUnit) {
+    return { status: 404, error: 'الوحدة غير موجودة' };
+  }
+
+  const company = dbUnit.companies;
+  if (!company || !company.is_active) {
+    return { status: 404, error: 'الشركة المالكة غير متاحة حالياً' };
+  }
+
+  // 2. جلب إعدادات الصفحة العامة للشركة
+  const { data: dbSettings } = await serverSupabase
+    .from('company_public_settings')
+    .select('*')
+    .eq('company_id', company.id)
+    .maybeSingle();
+
+  const settings: CompanyPublicSettings = {
+    companyId: company.id,
+    isEnabled: dbSettings?.is_enabled ?? true,
+    showPrice: dbSettings?.show_price ?? true,
+    showArea: dbSettings?.show_area ?? true,
+    showFloor: dbSettings?.show_floor ?? true,
+    showGarden: dbSettings?.show_garden ?? true,
+    showFeatures: dbSettings?.show_features ?? true,
+    showDescription: dbSettings?.show_description ?? true,
+    showDelivery: dbSettings?.show_delivery ?? true,
+    showPayment: dbSettings?.show_payment ?? true,
+  };
+
+  const embeddedZone = Array.isArray(dbUnit.buildings?.zones)
+    ? dbUnit.buildings?.zones?.[0]
+    : dbUnit.buildings?.zones;
+  const zoneName = (embeddedZone as any)?.name || undefined;
+
+  const sortedMedia: UnitMedia[] = (dbUnit.unit_media || [])
+    .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+    .map((m: any) => ({
+      id: m.id,
+      unitId: m.unit_id,
+      kind: m.kind,
+      storagePath: m.storage_path || undefined,
+      externalUrl: m.external_url || undefined,
+      caption: m.caption || undefined,
+      sortOrder: m.sort_order ?? 0,
+      createdAt: m.created_at,
+    }));
+
+  const unit: PublicUnitDetail = {
+    id: dbUnit.id,
+    unitKind: dbUnit.unit_kind as UnitKind,
+    plotNo: Number(dbUnit.buildings?.plot_no ?? 1),
+    zoneName,
+    floor: dbUnit.floor ?? undefined,
+    side: dbUnit.side || undefined,
+    area: Number(dbUnit.area),
+    gardenArea: dbUnit.garden_area ? Number(dbUnit.garden_area) : undefined,
+    price: Number(dbUnit.price),
+    negotiable: Boolean(dbUnit.negotiable),
+    deliveryNote: dbUnit.delivery_note || undefined,
+    paymentTerms: dbUnit.payment_terms || undefined,
+    description: dbUnit.description || undefined,
+    features: dbUnit.features || [],
+    lat: dbUnit.lat ? Number(dbUnit.lat) : undefined,
+    lng: dbUnit.lng ? Number(dbUnit.lng) : undefined,
+    companyId: company.id,
+    companyName: company.name,
+    media: sortedMedia,
+  };
+
+  return {
+    status: 200,
+    unit,
+    company: {
+      id: company.id,
+      name: company.name,
+      commercialName: company.commercial_name || undefined,
+      logoUrl: company.logo_url || undefined,
+      phone: company.phone || undefined,
+      email: company.email || undefined,
+      address: company.address || undefined,
+    },
+    settings,
+  };
+}
+
 /**
  * استخراج رابط عرض أول وسائط الوحدة (صورة للكرت)
  */

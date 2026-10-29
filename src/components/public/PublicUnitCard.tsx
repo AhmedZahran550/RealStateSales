@@ -126,10 +126,10 @@ export default function PublicUnitCard({
       </div>
 
       {/* المحتوى والتفاصيل المعمارية */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
-        <div>
-          <div className="flex items-start justify-between gap-2">
-            <h4 className="font-black text-sm sm:text-base text-on-surface line-clamp-1 group-hover:text-primary transition-colors">
+      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4 min-w-0">
+        <div className="min-w-0">
+          <div className="flex items-start justify-between gap-2 min-w-0">
+            <h4 className="font-black text-sm sm:text-base text-on-surface line-clamp-1 group-hover:text-primary transition-colors min-w-0 flex-1 break-words">
               {UNIT_KIND_LABELS[unit.unitKind]}
             </h4>
             <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary-container text-on-primary-container">

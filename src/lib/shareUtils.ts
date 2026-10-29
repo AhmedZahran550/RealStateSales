@@ -10,37 +10,37 @@ export interface ConsultantInfo {
 export type ZoneList = Parameters<typeof zoneDisplayName>[1];
 
 /**
- * تنسيق قسم روابط الصور والفيديوهات للرسائل
+ * إنشاء الرابط العام المباشر لصفحة معاينة الوحدة الديناميكية
  */
-export function formatMediaLinksSection(unit: Unit): string {
-  const mediaList = unit.media || [];
-  if (mediaList.length === 0) return '';
+export function getUnitPublicUrl(unitId: string, origin?: string): string {
+  const base =
+    origin ||
+    (typeof window !== 'undefined' && window.location.origin ? window.location.origin : '') ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    '';
+  return `${base}/u/${unitId}`;
+}
 
-  const mediaLines: string[] = [];
-
-  mediaList.forEach((m, idx) => {
-    const url = m.externalUrl || m.storagePath;
-    if (!url) return;
-
-    const label =
-      m.caption ||
-      (m.kind === 'video'
-        ? `فيديو معاينة #${idx + 1}`
-        : `صورة الوحدة #${idx + 1}`);
-
-    const icon = m.kind === 'video' ? '🎥' : '📸';
-    mediaLines.push(`${icon} ${label}:\n${url}`);
-  });
-
-  if (mediaLines.length === 0) return '';
-
-  return `\n\n🖼 *صور وفيديوهات المعاينة:*\n${mediaLines.join('\n\n')}`;
+/**
+ * تنسيق قسم رابط معرض صور وفيديوهات ومواصفات الوحدة الديناميكي
+ * يستبدل الروابط السحابية الكثيرة برابط واحد أنيق ونظيف يفتح صفحة المعاينة الغنية
+ */
+export function formatMediaLinksSection(unit: Unit, origin?: string): string {
+  const mediaCount = (unit.media || []).length;
+  const countHint = mediaCount > 0 ? ` (${mediaCount} صور وفيديو)` : '';
+  const publicUrl = getUnitPublicUrl(unit.id, origin);
+  return `\n\n📸 *معاينة صور وفيديوهات ومواصفات الوحدة كاملة${countHint}:*\n${publicUrl}`;
 }
 
 /**
  * إنشاء النص التفصيلي الكامل للوحدة لنسخه للحافظة أو مشاركته
  */
-export function formatUnitFullDetails(unit: Unit, consultant?: ConsultantInfo | null, zones?: ZoneList): string {
+export function formatUnitFullDetails(
+  unit: Unit,
+  consultant?: ConsultantInfo | null,
+  zones?: ZoneList,
+  origin?: string
+): string {
   const consultantName = consultant?.fullName || 'المستشار العقاري';
   const consultantPhone = consultant?.phone
     ? `\n📞 للتواصل والاستفسار (هاتف / واتساب): ${consultant.phone}`
@@ -54,7 +54,7 @@ export function formatUnitFullDetails(unit: Unit, consultant?: ConsultantInfo | 
   const googleMapsUrl =
     unit.lat && unit.lng ? `\n📍 الموقع على الخريطة: https://www.google.com/maps?q=${unit.lat},${unit.lng}` : '';
 
-  const mediaSection = formatMediaLinksSection(unit);
+  const mediaSection = formatMediaLinksSection(unit, origin);
 
   const floorText = unit.floor === 0 ? 'الأرضي' : unit.floor ? `الدور ${unit.floor}` : 'متكرر';
   const sideText = unit.side ? ` (${unit.side})` : '';
@@ -79,9 +79,10 @@ export function createUnitWhatsAppUrl(
   unit: Unit,
   consultant?: ConsultantInfo | null,
   targetPhone?: string,
-  zones?: ZoneList
+  zones?: ZoneList,
+  origin?: string
 ): string {
-  const text = formatUnitFullDetails(unit, consultant, zones);
+  const text = formatUnitFullDetails(unit, consultant, zones, origin);
   const cleanPhone = targetPhone ? targetPhone.replace(/[^0-9]/g, '') : '';
   const baseUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : 'https://wa.me/';
   return `${baseUrl}?text=${encodeURIComponent(text)}`;
@@ -95,7 +96,8 @@ export function formatCustomerProposalMessage(
   unit: Unit,
   consultant?: ConsultantInfo | null,
   customerBudget?: number,
-  zones?: ZoneList
+  zones?: ZoneList,
+  origin?: string
 ): string {
   const consultantName = consultant?.fullName || 'المستشار العقاري';
   const consultantPhone = consultant?.phone || '';
@@ -113,7 +115,7 @@ export function formatCustomerProposalMessage(
   const googleMapsUrl =
     unit.lat && unit.lng ? `\n📍 الموقع على الخريطة: https://www.google.com/maps?q=${unit.lat},${unit.lng}` : '';
 
-  const mediaSection = formatMediaLinksSection(unit);
+  const mediaSection = formatMediaLinksSection(unit, origin);
 
   return `مساء الخير يا ${customerName}، أتمنى تكون بخير 🌿
 

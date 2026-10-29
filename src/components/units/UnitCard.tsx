@@ -54,9 +54,9 @@ export default function UnitCard({
   const pricePerMeter = unit.area > 0 ? Math.round(unit.price / unit.area) : null;
 
   return (
-    <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200 border border-outline-variant flex flex-col justify-between gap-3 bg-surface">
+    <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200 border border-outline-variant flex flex-col justify-between gap-3 bg-surface min-w-0 overflow-hidden">
       {/* Top Section: Small Thumbnail + High-Density Header Specs */}
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
         {/* Small Thumbnail Image (User Request: small image, see details more) */}
         <Link
           href={`/units/${unit.id}`}
@@ -77,23 +77,27 @@ export default function UnitCard({
 
         {/* Core Specs: Plot, Zone, Kind, Price */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-1">
-            <Link href={`/units/${unit.id}`} className="hover:underline">
-              <h3 className="text-sm sm:text-base font-black text-on-surface truncate">
+          <div className="flex items-start justify-between gap-1.5 min-w-0">
+            <Link
+              href={`/units/${unit.id}`}
+              className="hover:underline flex-1 min-w-0 block"
+              title={`${zoneDisplayName(unit.zoneId, zones)} • ق ${unit.plotNo}`}
+            >
+              <h3 className="text-xs sm:text-base font-black text-on-surface line-clamp-2 sm:line-clamp-1 break-words leading-snug sm:leading-normal">
                 {zoneDisplayName(unit.zoneId, zones)} • ق {unit.plotNo}
               </h3>
             </Link>
-            <span className="text-[11px] font-mono text-on-surface-variant font-bold shrink-0">
+            <span className="text-[10px] sm:text-[11px] font-mono text-on-surface-variant font-bold shrink-0 max-w-[85px] sm:max-w-none truncate px-1.5 py-0.5 rounded bg-surface-container-high/60 self-start mt-0.5">
               #BD-{unit.zoneId}-{unit.plotNo}
             </span>
           </div>
 
           {/* Unit Kind & Floor & Company */}
-          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-            <span className="px-1.5 py-0.5 rounded-md bg-surface-container text-on-surface-variant text-[11px] font-bold">
+          <div className="flex items-center gap-1.5 mt-1 flex-wrap min-w-0">
+            <span className="px-1.5 py-0.5 rounded-md bg-surface-container text-on-surface-variant text-[10px] sm:text-[11px] font-bold">
               {UNIT_KIND_LABELS[unit.unitKind] || 'شقة سكنية'}
             </span>
-            <span className="text-[11px] text-on-surface-variant font-medium">
+            <span className="text-[10px] sm:text-[11px] text-on-surface-variant font-medium">
               {unit.floor === 0 ? 'أرضي' : unit.floor ? `دور ${unit.floor}` : 'متكرر'}
               {unit.side ? ` (${unit.side})` : ''}
             </span>
@@ -105,12 +109,12 @@ export default function UnitCard({
           </div>
 
           {/* Primary Price & Price/m² Display */}
-          <div className="mt-2 flex items-baseline gap-2 flex-wrap">
-            <span className="text-base sm:text-lg font-black text-primary font-mono">
-              {unit.price.toLocaleString('ar-EG')} <span className="text-[11px] font-bold text-on-surface-variant">ج.م</span>
+          <div className="mt-1.5 sm:mt-2 flex items-baseline gap-1.5 sm:gap-2 flex-wrap min-w-0">
+            <span className="text-sm sm:text-lg font-black text-primary font-mono">
+              {unit.price.toLocaleString('ar-EG')} <span className="text-[10px] sm:text-[11px] font-bold text-on-surface-variant">ج.م</span>
             </span>
             {pricePerMeter && (
-              <span className="text-[11px] text-on-surface-variant font-medium">
+              <span className="text-[10px] sm:text-[11px] text-on-surface-variant font-medium">
                 ({pricePerMeter.toLocaleString('ar-EG')} ج/م²)
               </span>
             )}
@@ -119,19 +123,19 @@ export default function UnitCard({
       </div>
 
       {/* Specifications Row: Area, Down Payment, Delivery */}
-      <div className="grid grid-cols-3 gap-1.5 bg-surface-container rounded-xl p-2 text-center text-[11px]">
-        <div>
-          <span className="text-on-surface-variant block text-[10px]">المساحة</span>
-          <strong className="text-on-surface font-bold font-mono">{unit.area} م²</strong>
+      <div className="grid grid-cols-3 gap-1.5 bg-surface-container rounded-xl p-2 text-center text-[11px] min-w-0">
+        <div className="min-w-0">
+          <span className="text-on-surface-variant block text-[10px] truncate">المساحة</span>
+          <strong className="text-on-surface font-bold font-mono truncate block">{unit.area} م²</strong>
         </div>
-        <div>
-          <span className="text-on-surface-variant block text-[10px]">المقدم</span>
-          <strong className="text-on-surface font-bold font-mono">
+        <div className="min-w-0">
+          <span className="text-on-surface-variant block text-[10px] truncate">المقدم</span>
+          <strong className="text-on-surface font-bold font-mono truncate block">
             {(unit.price * 0.1).toLocaleString('ar-EG')}
           </strong>
         </div>
-        <div>
-          <span className="text-on-surface-variant block text-[10px]">الاستلام</span>
+        <div className="min-w-0">
+          <span className="text-on-surface-variant block text-[10px] truncate">الاستلام</span>
           <strong className="text-on-surface font-bold truncate block">{unit.deliveryNote || 'فوري'}</strong>
         </div>
       </div>
@@ -175,7 +179,7 @@ export default function UnitCard({
       )}
 
       {/* Action Links */}
-      <div className="flex items-center gap-1.5 pt-1 border-t border-outline-variant">
+      <div className="flex items-center gap-1.5 pt-1 border-t border-outline-variant min-w-0">
         <button
           type="button"
           onClick={handleCopy}

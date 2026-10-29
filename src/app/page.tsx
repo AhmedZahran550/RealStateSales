@@ -411,8 +411,8 @@ export default function DashboardPage() {
                 >
                   <div className="relative h-44 w-full">
                     <img src={img} alt={`قطعة ${unit.plotNo}`} className="w-full h-full object-cover" />
-                    <div className="absolute top-2 right-2 flex flex-col gap-1">
-                      <span className="px-2 py-0.5 rounded-lg bg-surface-container-lowest/90 font-bold text-[11px] text-primary shadow-xs">
+                    <div className="absolute top-2 right-2 flex flex-col gap-1 max-w-[60%]">
+                      <span className="px-2 py-0.5 rounded-lg bg-surface-container-lowest/90 font-bold text-[11px] text-primary shadow-xs truncate block">
                         {zoneDisplayName(unit.zoneId, zones)} • قطعة {unit.plotNo}
                       </span>
                     </div>
@@ -428,7 +428,7 @@ export default function DashboardPage() {
                       <span className="font-bold text-xs text-primary">#BD-{unit.zoneId}-{unit.plotNo}</span>
                       <span className="font-bold text-sm text-on-surface">{unit.price.toLocaleString()} ج.م</span>
                     </div>
-                    <p className="text-xs text-on-surface-variant line-clamp-1">{unit.description || 'وحدة سكنية متميزة'}</p>
+                    <p className="text-xs text-on-surface-variant line-clamp-1 break-words">{unit.description || 'وحدة سكنية متميزة'}</p>
                     <div className="flex items-center justify-between pt-2 border-t border-surface-container-high/50 text-[11px] text-on-surface-variant">
                       <span>المساحة: <strong>{unit.area} م²</strong></span>
                       <span>الاستلام: <strong>{unit.deliveryNote || 'استلام فوري'}</strong></span>
