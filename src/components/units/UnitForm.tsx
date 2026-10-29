@@ -602,8 +602,8 @@ export default function UnitForm({
               <Camera className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-black text-on-surface">معرض الصور والفيديو (Cloudinary)</h2>
-              <p className="text-[11px] text-on-surface-variant">رفع الصور والمخططات وفيديوهات المعاينة</p>
+              <h2 className="text-sm font-black text-on-surface">معرض الصور والفيديو</h2>
+              <p className="text-[11px] text-on-surface-variant">رفع الصور والمخططات وفيديوهات المعاينة للوحدة</p>
             </div>
           </div>
 

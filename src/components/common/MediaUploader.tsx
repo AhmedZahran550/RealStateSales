@@ -25,6 +25,7 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadStatusText, setUploadStatusText] = useState<string>('');
   const [isDragging, setIsDragging] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [manualUrl, setManualUrl] = useState('');
@@ -42,19 +43,28 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
 
     const fileList = Array.from(files);
     const newMediaItems: UnitMedia[] = [];
+    let failedCount = 0;
 
-    try {
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i];
-        const isVideo = file.type.startsWith('video/');
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      const isVideo = file.type.startsWith('video/');
+      const fileNumber = i + 1;
+      const totalFiles = fileList.length;
 
-        // تحديث التقدم بناء على الملف الحالي والنسبة المئوية
-        const baseProgress = (i / fileList.length) * 100;
+      setUploadStatusText(
+        totalFiles > 1
+          ? `جاري رفع وحفظ الملف (${fileNumber} من ${totalFiles})...`
+          : 'جاري رفع وحفظ الملف...'
+      );
+
+      const baseProgress = (i / totalFiles) * 100;
+
+      try {
         const result = await uploadMediaToCloudinary(
           file,
           `el-waha/units/${unitId || 'new'}`,
           (percent) => {
-            setUploadProgress(Math.round(baseProgress + (percent / fileList.length)));
+            setUploadProgress(Math.round(baseProgress + (percent / totalFiles)));
           }
         );
 
@@ -68,19 +78,29 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
           sizeBytes: result.sizeBytes,
           createdAt: new Date().toISOString(),
         });
+      } catch (err: unknown) {
+        console.error(`تعذر رفع الملف ${file.name}:`, err);
+        failedCount++;
       }
+    }
 
+    if (newMediaItems.length > 0) {
       onChange([...media, ...newMediaItems]);
-    } catch (err: unknown) {
-      console.error('فشل رفع الملفات:', err);
-      const errorMsg = err instanceof Error ? err.message : 'حدث خطأ أثناء رفع الملفات إلى Cloudinary';
-      setUploadError(errorMsg);
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+    }
+
+    if (failedCount > 0) {
+      if (newMediaItems.length === 0) {
+        setUploadError('تعذر رفع الملفات، يرجى التحقق من الملفات والاتصال بالإنترنت ثم المحاولة مرة أخرى.');
+      } else {
+        setUploadError(`تم رفع ${newMediaItems.length} ملفات بنجاح، بينما تعذر رفع ${failedCount} ملفات.`);
       }
+    }
+
+    setIsUploading(false);
+    setUploadProgress(0);
+    setUploadStatusText('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -121,7 +141,7 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
       <div className="flex items-center justify-between">
         <div>
           <label className="block font-bold text-on-surface text-sm">
-            معرض صور وفيديوهات الوحدة (Cloudinary)
+            معرض صور وفيديوهات الوحدة
           </label>
           <p className="text-xs text-on-surface-variant mt-0.5">
             ارفع صور أو فيديوهات عالية الجودة لتظهر للعملاء ومشاركتها عبر واتساب
@@ -130,7 +150,7 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
         <button
           type="button"
           onClick={() => setShowUrlInput(!showUrlInput)}
-          className="text-xs text-warning hover:underline flex items-center gap-1 font-bold cursor-pointer"
+          className="text-xs text-primary hover:underline flex items-center gap-1 font-bold cursor-pointer"
         >
           {showUrlInput ? 'إلغاء الرابط اليدوي' : '+ إضافة رابط خارجي'}
         </button>
@@ -143,10 +163,10 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
             <button
               type="button"
               onClick={() => setManualKind('image')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
                 manualKind === 'image'
-                  ? 'bg-warning text-white'
-                  : 'bg-surface-container-high  text-on-surface-variant '
+                  ? 'bg-primary text-on-primary'
+                  : 'bg-surface-container-high text-on-surface-variant'
               }`}
             >
               <ImageIcon className="w-3.5 h-3.5" /> صورة
@@ -154,10 +174,10 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
             <button
               type="button"
               onClick={() => setManualKind('video')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
                 manualKind === 'video'
-                  ? 'bg-warning text-white'
-                  : 'bg-surface-container-high  text-on-surface-variant '
+                  ? 'bg-primary text-on-primary'
+                  : 'bg-surface-container-high text-on-surface-variant'
               }`}
             >
               <VideoIcon className="w-3.5 h-3.5" /> فيديو
@@ -169,21 +189,21 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
               placeholder="رابط الصورة أو الفيديو المباشر (https://...)"
               value={manualUrl}
               onChange={(e) => setManualUrl(e.target.value)}
-              className="w-full p-2 rounded-xl text-xs border border-outline-variant bg-white text-on-surface font-mono text-left"
+              className="w-full p-2 rounded-xl text-xs border border-outline-variant bg-surface text-on-surface font-mono text-left focus:outline-hidden focus:border-primary"
             />
             <input
               type="text"
               placeholder="وصف مختصر (مثلاً: واجهة بحري، الصالة، الغرفة الرئيسية)"
               value={manualCaption}
               onChange={(e) => setManualCaption(e.target.value)}
-              className="w-full p-2 rounded-xl text-xs border border-outline-variant bg-white text-on-surface "
+              className="w-full p-2 rounded-xl text-xs border border-outline-variant bg-surface text-on-surface focus:outline-hidden focus:border-primary"
             />
           </div>
           <button
             type="button"
             onClick={handleAddManualUrl}
             disabled={!manualUrl.trim()}
-            className="px-4 py-1.5 rounded-xl bg-warning hover:bg-warning text-white font-bold text-xs disabled:opacity-50 transition cursor-pointer"
+            className="btn-primary px-4 py-1.5 text-xs"
           >
             إضافة الرابط للمعرض
           </button>
@@ -205,9 +225,9 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
         onClick={() => !isUploading && fileInputRef.current?.click()}
         className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
           isDragging
-            ? 'border-warning bg-warning-container/50 '
-            : 'border-outline-variant  bg-surface-container-low/50  hover:border-warning hover:bg-warning-container/30 '
-        } ${isUploading ? 'opacity-80 pointer-events-none' : ''}`}
+            ? 'border-primary bg-primary-container/20'
+            : 'border-outline-variant bg-surface-container-low/50 hover:border-primary hover:bg-surface-container-low'
+        } ${isUploading ? 'opacity-90 pointer-events-none' : ''}`}
       >
         <input
           ref={fileInputRef}
@@ -219,27 +239,30 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
         />
 
         {isUploading ? (
-          <div className="py-3 flex flex-col items-center gap-2">
-            <Loader2 className="w-8 h-8 text-warning animate-spin" />
-            <p className="text-xs font-bold text-warning ">
-              جاري الرفع والمعالجة على سحابة Cloudinary... {uploadProgress > 0 && `${uploadProgress}%`}
+          <div className="py-4 flex flex-col items-center gap-2.5">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <p className="text-xs font-bold text-on-surface">
+              {uploadStatusText || 'جاري معالجة وحفظ الوسائط...'} {uploadProgress > 0 && `${uploadProgress}%`}
             </p>
             {uploadProgress > 0 && (
-              <div className="w-48 h-2 bg-surface-container-high rounded-full overflow-hidden mt-1">
+              <div className="w-56 h-2 bg-surface-container-high rounded-full overflow-hidden mt-1 shadow-inner">
                 <div
-                  className="h-full bg-warning transition-all duration-300 rounded-full"
+                  className="h-full bg-primary transition-all duration-300 rounded-full"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
             )}
+            <span className="text-[11px] text-on-surface-variant font-medium">
+              يتم حفظ الوسائط بجودة عالية وربطها بالوحدة
+            </span>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <div className="w-12 h-12 rounded-2xl bg-warning-container text-warning flex items-center justify-center shadow-xs">
+            <div className="w-12 h-12 rounded-2xl bg-surface-container-high text-primary flex items-center justify-center shadow-xs">
               <UploadCloud className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm font-bold text-on-surface ">
+              <p className="text-sm font-bold text-on-surface">
                 اضغط هنا لاختيار صور وفيديوهات أو اسحبها وأفلتها هنا
               </p>
               <p className="text-xs text-on-surface-variant mt-1">
@@ -253,7 +276,7 @@ export default function MediaUploader({ media, onChange, unitId }: MediaUploader
       {/* رسالة الخطأ إن وُجدت */}
       {uploadError && (
         <div className="p-3 rounded-xl bg-error-container border border-error text-on-error-container text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-error shrink-0" />
+          <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{uploadError}</span>
         </div>
       )}

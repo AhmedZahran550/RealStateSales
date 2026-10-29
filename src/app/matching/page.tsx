@@ -521,7 +521,7 @@ function MatchingContent() {
 
 export default function MatchingPage() {
   return (
-    <React.Suspense fallback={<div className="p-8 text-center text-xs text-on-surface-variant font-bold">جاري تحميل خوارزمية المطابقة...</div>}>
+    <React.Suspense fallback={<div className="p-8 text-center text-xs text-on-surface-variant font-bold">جاري تجهيز محرك مطابقة الوحدات والعملاء...</div>}>
       <MatchingContent />
     </React.Suspense>
   );

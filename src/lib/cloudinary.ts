@@ -178,14 +178,22 @@ export async function uploadMediaToCloudinary(
             try {
               resolve(JSON.parse(xhr.responseText));
             } catch {
-              reject(new Error('فشل قراءة رد السيرفر'));
+              reject(new Error('تعذر معالجة استجابة خدمة التخزين'));
             }
           } else {
-            reject(new Error(`فشل الرفع المباشر إلى Cloudinary: ${xhr.statusText}`));
+            let detailed = '';
+            try {
+              const parsed = JSON.parse(xhr.responseText);
+              detailed = parsed?.error?.message || '';
+            } catch {
+              detailed = xhr.statusText;
+            }
+            console.warn('تنبيه: تعذر الرفع المباشر:', detailed);
+            reject(new Error(detailed || 'فشل الرفع المباشر'));
           }
         };
 
-        xhr.onerror = () => reject(new Error('حدث خطأ في شبكة الاتصال بـ Cloudinary'));
+        xhr.onerror = () => reject(new Error('تعذر الاتصال بخدمة رفع الملفات'));
         xhr.send(formData);
       });
 
@@ -198,7 +206,7 @@ export async function uploadMediaToCloudinary(
         originalFilename: file.name,
       };
     } catch (presetError) {
-      console.warn('فشل الرفع المباشر بـ Preset، جاري المحاولة عبر API الخادم الداخلي:', presetError);
+      console.warn('فشل الرفع المباشر عبر Preset، جاري المحاولة الاحتياطية عبر خادم التطبيق:', presetError);
     }
   }
 
@@ -241,17 +249,22 @@ export async function uploadMediaToCloudinary(
               originalFilename: file.name,
             });
           } else {
-            reject(new Error(data.error || 'لم يتم استلام رابط الملف'));
+            reject(new Error('لم يتم استلام رابط الملف المرفوع'));
           }
         } catch {
-          reject(new Error('فشل تحليل استجابة السيرفر'));
+          reject(new Error('تعذر معالجة استجابة الخادم'));
         }
       } else {
         try {
           const errRes = JSON.parse(xhr.responseText);
-          reject(new Error(errRes.error || `خطأ سيرفر: ${xhr.status}`));
+          const raw = errRes.error || '';
+          const safeMessage =
+            raw && !raw.includes('Cloudinary') && !raw.includes('preset') && !raw.includes('خطأ سيرفر')
+              ? raw
+              : 'تعذر رفع الملف حالياً، يرجى التحقق من اتصالك والمحاولة مرة أخرى';
+          reject(new Error(safeMessage));
         } catch {
-          reject(new Error(`خطأ سيرفر: ${xhr.status}`));
+          reject(new Error('تعذر رفع الملف، يرجى المحاولة مرة أخرى'));
         }
       }
     };

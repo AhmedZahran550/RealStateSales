@@ -173,11 +173,10 @@ export default function CompanyProfilePage() {
             <button
               type="button"
               onClick={() => setActiveTab('profile')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-                activeTab === 'profile'
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${activeTab === 'profile'
                   ? 'bg-primary text-on-primary shadow-sm'
                   : 'bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
-              }`}
+                }`}
             >
               <Building2 className="w-4 h-4" />
               <span>بيانات الشركة والشعار</span>
@@ -185,11 +184,10 @@ export default function CompanyProfilePage() {
             <button
               type="button"
               onClick={() => setActiveTab('settings')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-                activeTab === 'settings'
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${activeTab === 'settings'
                   ? 'bg-primary text-on-primary shadow-sm'
                   : 'bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
-              }`}
+                }`}
             >
               <Sliders className="w-4 h-4" />
               <span>إعدادات العمليات والتوزيع</span>
@@ -200,11 +198,10 @@ export default function CompanyProfilePage() {
         {/* Feedback Alert */}
         {feedback && (
           <div
-            className={`p-4 rounded-xl flex items-center gap-3 text-xs font-bold animate-in fade-in ${
-              feedback.type === 'success'
+            className={`p-4 rounded-xl flex items-center gap-3 text-xs font-bold animate-in fade-in ${feedback.type === 'success'
                 ? 'bg-success-container text-on-success-container border border-success-container'
                 : 'bg-error-container text-on-error-container border border-error-container'
-            }`}
+              }`}
           >
             {feedback.type === 'success' ? (
               <CheckCircle className="w-5 h-5 shrink-0 text-success" />
@@ -244,9 +241,7 @@ export default function CompanyProfilePage() {
                     />
                     <div className="mt-3 pt-3 border-t border-surface-container-high/40 flex items-center gap-2 text-[11px] text-on-surface-variant">
                       <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <span>
-                        ميزة التخزين النظيف: عند رفع شعار جديد يتم استبدال الملف فورياً في Cloudinary Storage دون استهلاك مساحة زائدة، وعند النقر على إزالة يتم مسح الملف تلقائياً.
-                      </span>
+
                     </div>
                   </div>
                 </div>
