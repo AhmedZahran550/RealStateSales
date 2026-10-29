@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   PublicUnit,
   UNIT_KIND_LABELS,
@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 export interface ReservationModalProps {
-  unit: PublicUnit;
+  unit: PublicUnit | null;
   companyId: string;
   isOpen: boolean;
   onClose: () => void;
@@ -44,16 +44,55 @@ export default function ReservationModal({
   companyPhone,
   companyName,
 }: ReservationModalProps) {
+  // 1. جميع الخطافات تُستدعى في قمة المكون بشكل غير مشروط
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
-  const [preferredDate, setPreferredDate] = useState('');
+  // تاريخ افتراضي ذكي: تاريخ الغد لتسهيل الاختيار الفوري على الزائر
+  const [preferredDate, setPreferredDate] = useState(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  });
   const [period, setPeriod] = useState<ReservationPeriod>('morning');
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  if (!isOpen) return null;
+  // رابط واتساب للمتابعة الفورية بعد الحجز (مستدعى في القمة بأمان)
+  const followUpWaUrl = useMemo(() => {
+    if (!companyPhone || !unit) return '';
+    let clean = companyPhone.replace(/[^0-9]/g, '');
+    if (clean.startsWith('01')) {
+      clean = '2' + clean;
+    }
+    const unitTitle = UNIT_KIND_LABELS[unit.unitKind] || 'الوحدة';
+    const msg = `مرحباً${companyName ? ` ${companyName}` : ''}، قمت بتسجيل طلب معاينة لـ ${unitTitle} باسم (${customerName || 'عميل'}) بتاريخ ${preferredDate || 'المحدد'}. أود المتابعة معكم لتأكيد الموعد.`;
+    return `https://wa.me/${clean}?text=${encodeURIComponent(msg)}`;
+  }, [companyPhone, companyName, unit, customerName, preferredDate]);
+
+  // التحكم بإغلاق المودال بمفتاح Escape ومنع تمرير الصفحة في الخلفية
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  // 2. شرط الخروج المبكر يقع حصراً بعد اكتمال كافة الخطافات
+  if (!isOpen || !unit) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +102,8 @@ export default function ReservationModal({
       setError('يرجى إدخال الاسم بالكامل للتواصل');
       return;
     }
-    if (phone.trim().length < 8) {
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length < 8) {
       setError('يرجى إدخال رقم هاتف صحيح للتواصل');
       return;
     }
@@ -94,25 +134,15 @@ export default function ReservationModal({
   const close = () => {
     setCustomerName('');
     setPhone('');
-    setPreferredDate('');
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setPreferredDate(tomorrow.toISOString().split('T')[0]);
     setPeriod('morning');
     setNote('');
     setError(null);
     setIsSuccess(false);
     onClose();
   };
-
-  // رابط واتساب للمتابعة الفورية بعد الحجز
-  const followUpWaUrl = React.useMemo(() => {
-    if (!companyPhone) return '';
-    let clean = companyPhone.replace(/[^0-9]/g, '');
-    if (clean.startsWith('01')) {
-      clean = '2' + clean;
-    }
-    const unitTitle = UNIT_KIND_LABELS[unit.unitKind] || 'الوحدة';
-    const msg = `مرحباً${companyName ? ` ${companyName}` : ''}، قمت بتسجيل طلب معاينة لـ ${unitTitle} باسم (${customerName || 'عميل'}) بتاريخ ${preferredDate || 'المحدد'}. أود المتابعة معكم لتأكيد الموعد.`;
-    return `https://wa.me/${clean}?text=${encodeURIComponent(msg)}`;
-  }, [companyPhone, companyName, unit, customerName, preferredDate]);
 
   return (
     <div
@@ -238,6 +268,9 @@ export default function ReservationModal({
                   className="input-base w-full min-h-[44px] py-2.5 pr-10 pl-3 text-xs sm:text-sm text-left font-mono"
                 />
               </div>
+              <span className="text-[10px] text-on-surface-variant mt-0.5 block">
+                مثال: 01012345678 (سيتم التواصل معك هاتفياً أو عبر واتساب)
+              </span>
             </div>
 
             {/* تاريخ المعاينة المفضل */}
@@ -313,7 +346,7 @@ export default function ReservationModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="btn-primary w-full min-h-[46px] py-3 text-xs sm:text-sm font-bold shadow-md hover:shadow-xl transition-all disabled:opacity-60"
+              className="btn-primary w-full min-h-[46px] py-3 text-xs sm:text-sm font-bold shadow-md hover:shadow-xl transition-all disabled:opacity-60 cursor-pointer"
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center gap-2">

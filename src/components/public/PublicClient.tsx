@@ -559,14 +559,18 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
         companyName={company.name}
       />
 
-      <ReservationModal
-        unit={reservationUnit!}
-        companyId={company.id}
-        isOpen={Boolean(reservationUnit)}
-        onClose={() => setReservationUnit(null)}
-        companyPhone={company.phone}
-        companyName={company.name}
-      />
+      {/* مودال حجز موعد المعاينة */}
+      {reservationUnit && (
+        <ReservationModal
+          key={reservationUnit.id}
+          unit={reservationUnit}
+          companyId={company.id}
+          isOpen={true}
+          onClose={() => setReservationUnit(null)}
+          companyPhone={company.phone}
+          companyName={company.name}
+        />
+      )}
     </div>
   );
 }
