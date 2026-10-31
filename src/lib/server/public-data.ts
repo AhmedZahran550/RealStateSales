@@ -120,16 +120,16 @@ export async function getPublicPageData(
       .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
       .map(
         (m: any): UnitMedia => ({
-        id: m.id,
-        unitId: m.unit_id,
-        kind: m.kind,
-        storagePath: m.storage_path || undefined,
-        externalUrl: m.external_url || undefined,
-        caption: m.caption || undefined,
-        sortOrder: m.sort_order ?? 0,
-        createdAt: m.created_at,
-      })
-    ),
+          id: m.id,
+          unitId: m.unit_id,
+          kind: m.kind,
+          storagePath: m.storage_path || undefined,
+          externalUrl: m.external_url || undefined,
+          caption: m.caption || undefined,
+          sortOrder: m.sort_order ?? 0,
+          createdAt: m.created_at,
+        })
+      ),
   }));
 
   const gallery: GalleryItem[] = (galleryRes.data || []).map((g: any) => ({
@@ -238,7 +238,17 @@ export async function getPublicUnitData(unitId: string): Promise<{
   const embeddedZone = Array.isArray(dbUnit.buildings?.zones)
     ? dbUnit.buildings?.zones?.[0]
     : dbUnit.buildings?.zones;
-  const zoneName = (embeddedZone as any)?.name || undefined;
+  let zoneName = (embeddedZone as any)?.name || undefined;
+
+  // جلب اسم المنطقة احتياطياً في حال تعذر دمجها تلقائياً
+  if (!zoneName && dbUnit.buildings?.zone_id) {
+    const { data: directZone } = await serverSupabase
+      .from('zones')
+      .select('name')
+      .eq('id', dbUnit.buildings.zone_id)
+      .maybeSingle();
+    zoneName = directZone?.name || undefined;
+  }
 
   const sortedMedia: UnitMedia[] = (dbUnit.unit_media || [])
     .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))

@@ -457,6 +457,7 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                       onView={setSelectedUnit}
                       companyPhone={company.phone}
                       companyName={company.name}
+                      companyId={company.id}
                     />
                   ))}
                 </div>
@@ -557,6 +558,7 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
         }}
         companyPhone={company.phone}
         companyName={company.name}
+        companyId={company.id}
       />
 
       {/* مودال حجز موعد المعاينة */}

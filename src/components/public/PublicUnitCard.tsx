@@ -22,6 +22,7 @@ export interface PublicUnitCardProps {
   onView: (unit: PublicUnit) => void;
   companyPhone?: string;
   companyName?: string;
+  companyId?: string;
 }
 
 export default function PublicUnitCard({
@@ -30,6 +31,7 @@ export default function PublicUnitCard({
   onView,
   companyPhone,
   companyName,
+  companyId,
 }: PublicUnitCardProps) {
   const primaryImage = firstImageUrl(unit.media);
   const imagesCount = unit.media.filter((m) => m.kind === 'image').length;
