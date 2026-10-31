@@ -9,8 +9,9 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/auth/login') ||
     pathname.startsWith('/api/upload') ||
-    // الصفحة العامة للشركات وحجوزاتها العامة (بدون تسجيل دخول)
+    // الصفحة العامة للشركات والوحدات وحجوزاتها العامة (بدون تسجيل دخول)
     pathname.startsWith('/p/') ||
+    pathname.startsWith('/u/') ||
     pathname.startsWith('/api/public') ||
     pathname === '/favicon.ico' ||
     pathname.endsWith('.svg') ||

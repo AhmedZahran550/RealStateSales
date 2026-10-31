@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import {
   PublicUnit,
   UNIT_KIND_LABELS,
@@ -27,6 +28,7 @@ import {
   Camera,
   Share2,
   Check,
+  ExternalLink,
 } from 'lucide-react';
 
 export interface PublicUnitDetailModalProps {
@@ -37,6 +39,7 @@ export interface PublicUnitDetailModalProps {
   onReserve: (unit: PublicUnit) => void;
   companyPhone?: string;
   companyName?: string;
+  companyId?: string;
 }
 
 export default function PublicUnitDetailModal({
@@ -47,6 +50,7 @@ export default function PublicUnitDetailModal({
   onReserve,
   companyPhone,
   companyName,
+  companyId,
 }: PublicUnitDetailModalProps) {
   const images = useMemo(() => (unit ? allImageUrls(unit.media) : []), [unit]);
   const videos = useMemo(
@@ -110,10 +114,16 @@ export default function PublicUnitDetailModal({
     return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
   }, [companyPhone, companyName, unit, settings.showPrice]);
 
+  const unitFullUrl = useMemo(() => {
+    if (!unit) return '';
+    return companyId ? `/p/${companyId}/u/${unit.id}` : `/u/${unit.id}`;
+  }, [unit, companyId]);
+
   const handleCopyShare = async () => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !unit) return;
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      const shareUrl = `${window.location.origin}${unitFullUrl}`;
+      await navigator.clipboard.writeText(shareUrl);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
     } catch {
@@ -182,12 +192,24 @@ export default function PublicUnitDetailModal({
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
+            {unitFullUrl && (
+              <Link
+                href={unitFullUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-h-[40px] min-w-[40px] p-2 rounded-xl hover:bg-surface-container-high text-on-surface-variant cursor-pointer transition-colors flex items-center justify-center"
+                title="عرض الوحدة في صفحة مستقلة كاملة"
+                aria-label="عرض الوحدة في صفحة مستقلة كاملة"
+              >
+                <ExternalLink className="w-5 h-5" />
+              </Link>
+            )}
             <button
               type="button"
               onClick={handleCopyShare}
               className="min-h-[40px] min-w-[40px] p-2 rounded-xl hover:bg-surface-container-high text-on-surface-variant cursor-pointer transition-colors flex items-center justify-center"
-              title="مشاركة رابط الصفحة"
-              aria-label="مشاركة رابط الصفحة"
+              title="مشاركة رابط الوحدة"
+              aria-label="مشاركة رابط الوحدة"
             >
               {copiedLink ? <Check className="w-5 h-5 text-success" /> : <Share2 className="w-5 h-5" />}
             </button>
