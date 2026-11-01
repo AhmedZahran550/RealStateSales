@@ -84,33 +84,30 @@ export default function BrokerAgendaTab({
             <button
               type="button"
               onClick={() => setFilter('all')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
-                filter === 'all'
-                  ? 'bg-primary text-on-primary shadow-xs'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${filter === 'all'
+                ? 'bg-primary text-on-primary shadow-xs'
+                : 'text-on-surface-variant hover:text-on-surface'
+                }`}
             >
               الكل ({customers.length})
             </button>
             <button
               type="button"
               onClick={() => setFilter('due')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
-                filter === 'due'
-                  ? 'bg-primary text-on-primary shadow-xs'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${filter === 'due'
+                ? 'bg-primary text-on-primary shadow-xs'
+                : 'text-on-surface-variant hover:text-on-surface'
+                }`}
             >
               اليوم
             </button>
             <button
               type="button"
               onClick={() => setFilter('investor')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
-                filter === 'investor'
-                  ? 'bg-primary text-on-primary shadow-xs'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${filter === 'investor'
+                ? 'bg-primary text-on-primary shadow-xs'
+                : 'text-on-surface-variant hover:text-on-surface'
+                }`}
             >
               مستثمرين
             </button>
@@ -132,11 +129,10 @@ export default function BrokerAgendaTab({
             return (
               <div
                 key={lead.id}
-                className={`rounded-2xl p-4 sm:p-5 transition-all border border-outline-variant/60 shadow-xs hover:shadow-sm ${
-                  isDone
-                    ? 'opacity-60 bg-surface-container-low'
-                    : 'bg-surface-container-lowest hover:border-primary/40'
-                }`}
+                className={`rounded-2xl p-4 sm:p-5 transition-all border border-outline-variant/60 shadow-xs hover:shadow-sm ${isDone
+                  ? 'opacity-60 bg-surface-container-low'
+                  : 'bg-surface-container-lowest hover:border-primary/40'
+                  }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   {/* Lead Info */}
@@ -159,12 +155,12 @@ export default function BrokerAgendaTab({
                           {lead.stage === 'lead'
                             ? 'عميل جديد'
                             : lead.stage === 'viewed'
-                            ? 'تمت المعاينة'
-                            : lead.stage === 'negotiating'
-                            ? 'قيد التفاوض'
-                            : lead.stage === 'reserved'
-                            ? 'محجوز'
-                            : 'استفسار'}
+                              ? 'تمت المعاينة'
+                              : lead.stage === 'negotiating'
+                                ? 'قيد التفاوض'
+                                : lead.stage === 'reserved'
+                                  ? 'محجوز'
+                                  : 'استفسار'}
                         </span>
 
                         {lead.budget && lead.budget > 0 ? (
@@ -195,9 +191,9 @@ export default function BrokerAgendaTab({
                     <span>
                       {lead.nextFollowupAt
                         ? (() => {
-                            const f = formatArabicFollowupDate(lead.nextFollowupAt);
-                            return `${f.dayName} • ${f.formattedTime}`;
-                          })()
+                          const f = formatArabicFollowupDate(lead.nextFollowupAt);
+                          return `${f.dayName} • ${f.formattedTime}`;
+                        })()
                         : 'متابعة مرنة'}
                     </span>
                   </div>
@@ -230,9 +226,8 @@ export default function BrokerAgendaTab({
                       type="button"
                       disabled={isDone}
                       onClick={() => onMarkDone(lead.id)}
-                      className={`btn-primary px-4 py-2 text-xs font-bold inline-flex items-center justify-center gap-1.5 min-h-[40px] ${
-                        isDone ? 'opacity-60 cursor-default pointer-events-none' : ''
-                      }`}
+                      className={`btn-primary px-4 py-2 text-xs font-bold inline-flex items-center justify-center gap-1.5 min-h-[40px] ${isDone ? 'opacity-60 cursor-default pointer-events-none' : ''
+                        }`}
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>{isDone ? 'تم التواصل وتحديث المرحلة' : 'تم الاتصال وتحديد موعد'}</span>
