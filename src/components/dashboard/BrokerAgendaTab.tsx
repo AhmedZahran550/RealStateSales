@@ -9,11 +9,10 @@ import {
   CheckCircle2,
   Clock,
   History,
-  AlertCircle,
   Sparkles,
-  ChevronLeft,
-  CalendarCheck,
+  ArrowLeft,
   Search,
+  UserPlus,
 } from 'lucide-react';
 
 interface BrokerAgendaTabProps {
@@ -81,7 +80,7 @@ export default function BrokerAgendaTab({
             <Search className="w-3.5 h-3.5 text-on-surface-variant absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
-          <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-xl border border-surface-container-high/40">
+          <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-xl border border-outline-variant/50">
             <button
               type="button"
               onClick={() => setFilter('all')}
@@ -133,14 +132,16 @@ export default function BrokerAgendaTab({
             return (
               <div
                 key={lead.id}
-                className={`card p-4 hover:shadow-md transition-all border border-surface-container-high/60 ${
-                  isDone ? 'opacity-50 bg-surface-container-low' : 'bg-surface-container-lowest'
+                className={`rounded-2xl p-4 sm:p-5 transition-all border border-outline-variant/60 shadow-xs hover:shadow-sm ${
+                  isDone
+                    ? 'opacity-60 bg-surface-container-low'
+                    : 'bg-surface-container-lowest hover:border-primary/40'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   {/* Lead Info */}
                   <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 text-primary font-black text-sm flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary font-black text-sm flex items-center justify-center shrink-0">
                       {lead.name ? lead.name.charAt(0) : 'ع'}
                     </div>
 
@@ -154,7 +155,7 @@ export default function BrokerAgendaTab({
                           {lead.name}
                         </button>
 
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-high text-primary">
+                        <span className="badge badge-neutral text-[10px]">
                           {lead.stage === 'lead'
                             ? 'عميل جديد'
                             : lead.stage === 'viewed'
@@ -167,13 +168,13 @@ export default function BrokerAgendaTab({
                         </span>
 
                         {lead.budget && lead.budget > 0 ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success-container text-success">
+                          <span className="badge badge-success text-[10px] font-mono">
                             الميزانية: {(lead.budget / 1_000_000).toFixed(1)} مليون ج.م
                           </span>
                         ) : null}
                       </div>
 
-                      <p className="text-xs text-on-surface-variant line-clamp-1 mt-0.5">
+                      <p className="text-xs text-on-surface-variant line-clamp-1 mt-1">
                         {lead.notes || 'اهتمام بوحدات الحي المتميز والفرص الاستثمارية'}
                       </p>
 
@@ -189,7 +190,7 @@ export default function BrokerAgendaTab({
                   </div>
 
                   {/* Date & Time Badge */}
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container-low border border-surface-container-high/40 text-xs font-bold text-on-surface shrink-0 self-start sm:self-auto">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container-low border border-outline-variant/40 text-xs font-bold text-on-surface shrink-0 self-start sm:self-auto">
                     <Clock className="w-3.5 h-3.5 text-primary" />
                     <span>
                       {lead.nextFollowupAt
@@ -203,23 +204,23 @@ export default function BrokerAgendaTab({
                 </div>
 
                 {/* Direct Action Buttons */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mt-4 pt-3 border-t border-surface-container-high/40">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mt-4 pt-3 border-t border-outline-variant/40">
                   <div className="flex items-center gap-2 flex-wrap">
                     <a
                       href={`tel:${lead.phone}`}
-                      className="flex-1 sm:flex-initial px-3 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold inline-flex items-center justify-center gap-1.5 transition min-h-[40px]"
+                      className="btn-tonal px-3 py-2 text-xs font-bold inline-flex items-center justify-center gap-1.5 min-h-[40px]"
                     >
                       <Phone className="w-3.5 h-3.5 text-primary" />
-                      <span dir="ltr">{lead.phone}</span>
+                      <span dir="ltr" className="font-mono">{lead.phone}</span>
                     </a>
 
                     <a
                       href={waUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex-1 sm:flex-initial px-3 py-2 rounded-xl bg-success-container hover:bg-success-container/70 text-success text-xs font-bold inline-flex items-center justify-center gap-1.5 transition min-h-[40px]"
+                      className="px-3 py-2 rounded-xl bg-success-container hover:bg-success-container/70 text-on-success-container text-xs font-bold inline-flex items-center justify-center gap-1.5 transition min-h-[40px]"
                     >
-                      <MessageCircle className="w-3.5 h-3.5" />
+                      <MessageCircle className="w-3.5 h-3.5 text-success" />
                       <span>واتساب مباشر</span>
                     </a>
                   </div>
@@ -229,10 +230,8 @@ export default function BrokerAgendaTab({
                       type="button"
                       disabled={isDone}
                       onClick={() => onMarkDone(lead.id)}
-                      className={`flex-1 sm:flex-initial px-3 py-2 rounded-xl text-xs font-bold transition inline-flex items-center justify-center gap-1.5 cursor-pointer min-h-[40px] ${
-                        isDone
-                          ? 'bg-success-container text-success cursor-default'
-                          : 'bg-primary text-on-primary hover:bg-primary-strong shadow-xs'
+                      className={`btn-primary px-4 py-2 text-xs font-bold inline-flex items-center justify-center gap-1.5 min-h-[40px] ${
+                        isDone ? 'opacity-60 cursor-default pointer-events-none' : ''
                       }`}
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
@@ -242,10 +241,10 @@ export default function BrokerAgendaTab({
                     <button
                       type="button"
                       onClick={() => onSelectCustomer(lead)}
-                      className="px-2.5 py-1.5 rounded-xl bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface text-xs font-bold transition cursor-pointer"
+                      className="btn-tonal p-2.5 min-h-[40px] min-w-[40px] flex items-center justify-center"
                       title="فتح ملف العميل الكامل"
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <ArrowLeft className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -253,20 +252,21 @@ export default function BrokerAgendaTab({
             );
           })
         ) : (
-          <div className="p-8 rounded-2xl bg-surface-container-low border border-surface-container-high/40 text-center flex flex-col items-center justify-center">
-            <div className="w-12 h-12 rounded-2xl bg-success-container text-success flex items-center justify-center mb-3">
+          <div className="empty-state p-8 rounded-2xl bg-surface-container-low border border-dashed border-outline-variant text-center flex flex-col items-center justify-center">
+            <div className="empty-state-icon mx-auto w-12 h-12 rounded-2xl bg-success-container text-success flex items-center justify-center mb-3">
               <Sparkles className="w-6 h-6" />
             </div>
-            <h3 className="text-sm font-black text-on-surface">رائع! لا توجد متابعات متأخرة حالياً</h3>
-            <p className="text-xs text-on-surface-variant max-w-sm mt-1">
+            <h3 className="empty-state-title text-sm font-black text-on-surface">رائع! لا توجد متابعات متأخرة حالياً</h3>
+            <p className="empty-state-hint text-xs text-on-surface-variant max-w-sm mt-1">
               أتممت مواعيد الاتصال بنجاح، يمكنك تسجيل عميل جديد أو مشاركة العروض المتاحة مع المشترين.
             </p>
             <button
               type="button"
               onClick={onNewCustomer}
-              className="mt-4 px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-bold shadow-xs hover:bg-primary-strong transition cursor-pointer"
+              className="btn-primary mt-4 px-4 py-2 text-xs font-bold inline-flex items-center gap-1.5"
             >
-              + تسجيل عميل جديد الآن
+              <UserPlus className="w-4 h-4" />
+              <span>+ تسجيل عميل جديد الآن</span>
             </button>
           </div>
         )}

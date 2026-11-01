@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import ProfileModal from '@/components/ProfileModal';
 import { formatArabicFollowupDate } from '@/lib/date-utils';
+import { Search, X, Menu } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -74,7 +75,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const isLoginPage = pathname === '/login';
   // الصفحة العامة تُعرض بدون الهيكل الداخلي (بدون قائمة جانبية أو بحث)
-  const isPublicPage = pathname.startsWith('/p/');
+  const isPublicPage =
+    pathname.startsWith('/p/') ||
+    pathname.startsWith('/c/') ||
+    pathname.startsWith('/u/');
 
   // If login page, render plain without shell
   if (isLoginPage || isPublicPage || !currentUser) {
@@ -543,7 +547,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* TOP HEADER (h-16 on mobile, h-20 on desktop) */}
       <header className="fixed top-0 right-0 lg:right-72 left-0 h-16 lg:h-20 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.03)] z-40 px-3 sm:px-space-md lg:px-space-lg flex items-center justify-between gap-2 sm:gap-space-md border-b border-surface-container-high/40">
         {/* Right side: Mobile Menu Toggle & Fast Search */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-xl">
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-md">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="lg:hidden p-1.5 sm:p-2 rounded-xl bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container-low cursor-pointer shrink-0"
@@ -567,7 +571,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   ? 'بحث في وحدات الشركة أو كود الوحدة...'
                   : 'بحث بالوحدات أو العملاء...'
               }
-              className="w-full border border-outline-variant bg-white rounded-xl py-2 sm:py-space-sm pr-9 sm:pr-11 pl-7 sm:pl-space-md text-on-surface placeholder:text-outline font-semibold focus:outline-none focus:ring-2 focus:ring-primary shadow-xs text-xs truncate"
+              className="w-full border border-outline-variant bg-surface-container-lowest rounded-xl py-2 sm:py-space-sm pr-9 sm:pr-11 pl-7 sm:pl-space-md text-on-surface placeholder:text-outline font-semibold focus:outline-none focus:ring-2 focus:ring-primary shadow-xs text-xs truncate transition"
             />
             {searchTerm && (
               <button
@@ -763,7 +767,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* MAIN CONTENT AREA */}
       <div className="pr-0 lg:pr-72 pt-16 lg:pt-20 flex-1 flex flex-col">
-        <main className="flex-1 w-full p-3 sm:p-5 lg:p-space-lg pb-24 lg:pb-space-lg max-w-full overflow-x-hidden">{children}</main>
+        <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 overflow-x-hidden">{children}</main>
       </div>
 
       {/* MOBILE BOTTOM NAVIGATION BAR */}

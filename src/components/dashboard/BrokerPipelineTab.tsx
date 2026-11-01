@@ -4,13 +4,11 @@ import React from 'react';
 import Link from 'next/link';
 import { Customer } from '@/lib/types';
 import {
-  Layers,
-  ArrowRight,
   TrendingUp,
-  CheckCircle2,
-  Calendar,
   FileCheck,
   ExternalLink,
+  ArrowLeft,
+  Kanban,
 } from 'lucide-react';
 
 interface BrokerPipelineTabProps {
@@ -49,114 +47,131 @@ export default function BrokerPipelineTab({ customers }: BrokerPipelineTabProps)
 
         <Link
           href="/customers?view=pipeline"
-          className="px-3.5 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold inline-flex items-center gap-1.5 transition border border-surface-container-high shadow-xs self-start sm:self-auto"
+          className="btn-tonal px-3.5 py-2 text-xs font-bold inline-flex items-center gap-1.5 self-start sm:self-auto min-h-[38px]"
         >
+          <Kanban className="w-3.5 h-3.5 text-primary" />
           <span>لوحة كانبان الكاملة</span>
-          <ExternalLink className="w-3.5 h-3.5 text-primary" />
+          <ExternalLink className="w-3 h-3 text-on-surface-variant" />
         </Link>
       </div>
 
       {/* 4 Stages Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Stage 1: New Leads */}
-        <div className="card p-4 space-y-3 border border-surface-container-high/60">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-on-surface-variant">1. استفسارات وعملاء جدد</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-high text-primary">
-              {leadPct}%
-            </span>
+        <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 space-y-3 shadow-xs hover:border-primary/40 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-on-surface-variant">1. استفسارات وعملاء جدد</span>
+              <span className="badge badge-neutral text-[10px] font-mono">
+                {leadPct}%
+              </span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black text-primary tabular-nums">{newLeads.length}</span>
+              <span className="text-xs text-on-surface-variant font-bold">عميل</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-primary">{newLeads.length}</span>
-            <span className="text-xs text-on-surface-variant font-bold">عميل</span>
+          <div>
+            <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mb-2">
+              <div className="bg-primary h-full rounded-full transition-all duration-500" style={{ width: `${leadPct}%` }} />
+            </div>
+            <p className="text-[11px] text-on-surface-variant">بانتظار تحديد موعد معاينة أولية</p>
           </div>
-          <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-            <div className="bg-primary h-full rounded-full transition-all duration-500" style={{ width: `${leadPct}%` }} />
-          </div>
-          <p className="text-[11px] text-on-surface-variant">بانتظار تحديد موعد معاينة أولية</p>
         </div>
 
         {/* Stage 2: Viewed */}
-        <div className="card p-4 space-y-3 border border-surface-container-high/60">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-on-surface-variant">2. تمت المعاينة الميدانية</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-accent-indigo-container text-on-accent-indigo-container">
-              {viewedPct}%
-            </span>
+        <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 space-y-3 shadow-xs hover:border-primary/40 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-on-surface-variant">2. تمت المعاينة الميدانية</span>
+              <span className="badge badge-accent-indigo text-[10px] font-mono">
+                {viewedPct}%
+              </span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black text-on-surface tabular-nums">{viewedLeads.length}</span>
+              <span className="text-xs text-on-surface-variant font-bold">عميل</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-on-surface">{viewedLeads.length}</span>
-            <span className="text-xs text-on-surface-variant font-bold">عميل</span>
+          <div>
+            <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mb-2">
+              <div
+                className="bg-primary h-full rounded-full transition-all duration-500"
+                style={{ width: `${viewedPct}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-on-surface-variant">تم فحص الموقع ومطالعة الوحدات</p>
           </div>
-          <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-primary h-full rounded-full transition-all duration-500"
-              style={{ width: `${viewedPct}%` }}
-            />
-          </div>
-          <p className="text-[11px] text-on-surface-variant">تم فحص الموقع ومطالعة الوحدات</p>
         </div>
 
         {/* Stage 3: Negotiating */}
-        <div className="card p-4 space-y-3 border border-surface-container-high/60">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-on-surface-variant">3. مرحلة التفاوض والعروض</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary-container text-on-secondary">
-              {negPct}%
-            </span>
+        <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 space-y-3 shadow-xs hover:border-primary/40 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-on-surface-variant">3. مرحلة التفاوض والعروض</span>
+              <span className="badge badge-accent-purple text-[10px] font-mono">
+                {negPct}%
+              </span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black text-on-surface tabular-nums">{negotiatingLeads.length}</span>
+              <span className="text-xs text-on-surface-variant font-bold">عميل</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-on-surface">{negotiatingLeads.length}</span>
-            <span className="text-xs text-on-surface-variant font-bold">عميل</span>
+          <div>
+            <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mb-2">
+              <div
+                className="bg-secondary h-full rounded-full transition-all duration-500"
+                style={{ width: `${negPct}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-on-surface-variant">
+              قيمة الصفقات: <strong className="text-on-surface font-mono">{(negotiatingTotalValue / 1_000_000).toFixed(1)}M ج.م</strong>
+            </p>
           </div>
-          <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-secondary h-full rounded-full transition-all duration-500"
-              style={{ width: `${negPct}%` }}
-            />
-          </div>
-          <p className="text-[11px] text-on-surface-variant">
-            قيمة الصفقات: {(negotiatingTotalValue / 1_000_000).toFixed(1)}M ج.م
-          </p>
         </div>
 
         {/* Stage 4: Closed / Reserved */}
-        <div className="card p-4 space-y-3 border border-surface-container-high/60">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-on-surface-variant">4. حجز مؤقت وإبرام عقود</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success-container text-success">
-              {closedPct}%
-            </span>
+        <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 space-y-3 shadow-xs hover:border-primary/40 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-on-surface-variant">4. حجز مؤقت وإبرام عقود</span>
+              <span className="badge badge-success text-[10px] font-mono">
+                {closedPct}%
+              </span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black text-success tabular-nums">{closedLeads.length}</span>
+              <span className="text-xs text-on-surface-variant font-bold">صفقة</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-success">{closedLeads.length}</span>
-            <span className="text-xs text-on-surface-variant font-bold">صفقة</span>
+          <div>
+            <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mb-2">
+              <div
+                className="bg-success h-full rounded-full transition-all duration-500"
+                style={{ width: `${closedPct}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-on-surface-variant font-semibold">معدل الإغلاق الكلي للوسيط</p>
           </div>
-          <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-success h-full rounded-full transition-all duration-500"
-              style={{ width: `${closedPct}%` }}
-            />
-          </div>
-          <p className="text-[11px] text-success font-bold">معدل الإغلاق الكلي للوسيط</p>
         </div>
       </div>
 
       {/* Summary Box */}
-      <div className="card p-4 bg-surface-container-low border border-surface-container-high/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <FileCheck className="w-4 h-4 text-primary shrink-0" />
-          <span className="text-xs text-on-surface">
-            لديك <strong>{customers.length}</strong> عميلاً مسجلين في مسار الصفقات. العمولات المستحقة تُحسب تلقائياً بنسبة 2.5% فور الوصول لمرحلة التفاوض والحجز.
+      <div className="rounded-2xl p-4 sm:p-5 bg-surface-container-low border border-outline-variant/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <FileCheck className="w-5 h-5 text-primary shrink-0" />
+          <span className="text-xs text-on-surface leading-relaxed">
+            لديك <strong className="font-mono font-bold text-primary">{customers.length}</strong> عميلاً مسجلين في مسار الصفقات. العمولات المستحقة تُحسب تلقائياً بنسبة 2.5% فور الوصول لمرحلة التفاوض والحجز.
           </span>
         </div>
 
         <Link
           href="/matching"
-          className="px-3.5 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary-strong transition shadow-xs inline-flex items-center gap-1 shrink-0 self-start sm:self-auto"
+          className="btn-primary px-4 py-2 text-xs font-bold inline-flex items-center gap-1.5 shrink-0 self-start sm:self-auto min-h-[38px]"
         >
           <span>مطابقة سريعة مع الوحدات</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-3.5 h-3.5" />
         </Link>
       </div>
     </div>

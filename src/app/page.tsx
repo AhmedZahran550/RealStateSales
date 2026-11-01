@@ -13,6 +13,31 @@ import BrokerStatsBento from '@/components/dashboard/BrokerStatsBento';
 import BrokerAgendaTab from '@/components/dashboard/BrokerAgendaTab';
 import BrokerPipelineTab from '@/components/dashboard/BrokerPipelineTab';
 import BrokerQuickShareTab from '@/components/dashboard/BrokerQuickShareTab';
+import {
+  Building2,
+  Users,
+  CheckCircle2,
+  Handshake,
+  Store,
+  MapPin,
+  Calendar,
+  DollarSign,
+  Layers,
+  ExternalLink,
+  MessageCircle,
+  Plus,
+  Compass,
+  ArrowLeft,
+  ArrowUpRight,
+  TrendingUp,
+  Clock,
+  Sparkles,
+  Phone,
+  CheckCircle,
+  UserPlus,
+  Share2,
+  Map,
+} from 'lucide-react';
 
 export default function DashboardPage() {
   const {
@@ -85,8 +110,8 @@ export default function DashboardPage() {
       )}
         {/* 1. Header Banner */}
         <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-4 sm:p-6 lg:p-space-lg shadow-sm border border-surface-container-high/40">
-          <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-warning-container blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -right-16 w-56 h-56 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
+
+
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-md">
             <div className="flex flex-col gap-space-xs">
@@ -110,161 +135,140 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-space-sm w-full sm:w-auto shrink-0">
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
               <Link
                 href="/admin/company"
-                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px]"
+                className="btn-primary px-4 py-2 text-xs font-bold inline-flex items-center gap-1.5 min-h-[40px]"
               >
-                <span className="material-symbols-outlined text-[20px]">store</span>
+                <Store className="w-4 h-4" />
                 <span>ملف الشركة والشعار</span>
               </Link>
               <Link
                 href="/admin/users"
-                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px] border border-surface-container-high"
+                className="btn-tonal px-3.5 py-2 text-xs font-bold inline-flex items-center gap-1.5 min-h-[40px]"
               >
-                <span className="material-symbols-outlined text-[20px]">manage_accounts</span>
+                <Users className="w-4 h-4" />
                 <span>إدارة وسطاء الشركة</span>
               </Link>
               <Link
                 href="/admin/zones"
-                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px] border border-surface-container-high"
+                className="btn-tonal px-3.5 py-2 text-xs font-bold inline-flex items-center gap-1.5 min-h-[40px]"
               >
-                <span className="material-symbols-outlined text-[20px]">explore</span>
+                <Compass className="w-4 h-4" />
                 <span>المناطق والمجاورات</span>
               </Link>
               <Link
                 href="/units"
-                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[42px] border border-surface-container-high"
+                className="btn-tonal px-3.5 py-2 text-xs font-bold inline-flex items-center gap-1.5 min-h-[40px]"
               >
-                <span className="material-symbols-outlined text-[20px]">apartment</span>
-                <span>استعراض محفظة الوحدات</span>
+                <Building2 className="w-4 h-4" />
+                <span>استعراض المحفظة</span>
               </Link>
             </div>
           </div>
         </div>
 
         {/* 2. Key Metrics Row (4 Admin Stats) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
           {/* Stat 1: Total Users */}
-          <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm border border-surface-container-high/40">
-            <div className="flex items-start justify-between mb-space-sm">
-              <div className="w-12 h-12 rounded-xl bg-warning-container text-warning flex items-center justify-center">
-                <span className="material-symbols-outlined text-[26px]">manage_accounts</span>
-              </div>
-              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-warning-container text-warning font-bold text-xs">
-                وسطاء الشركة
-              </span>
-            </div>
+          <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 hover:border-primary/50 transition-all flex flex-col justify-between group shadow-xs hover:shadow-sm">
             <div>
-              <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
-                فريق الوسطاء المسجلين
-              </span>
-              <div className="flex items-baseline gap-space-xs">
-                <span className="text-on-surface font-extrabold tracking-tight text-3xl">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-on-surface-variant">فريق الوسطاء المسجلين</span>
+                <div className="w-9 h-9 rounded-xl bg-warning-container text-on-warning-container flex items-center justify-center transition-transform group-hover:scale-105">
+                  <Users className="w-4 h-4 text-warning" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-black text-on-surface tabular-nums">
                   {companyBrokers.length}
                 </span>
-                <span className="text-on-surface-variant font-bold text-xs">وسيط</span>
+                <span className="text-xs text-on-surface-variant font-bold">وسيط معتمد</span>
               </div>
             </div>
-            <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2">
-              <Link href="/admin/users" className="text-warning font-bold hover:underline text-xs flex items-center gap-1">
+            <div className="mt-3 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-xs">
+              <Link href="/admin/users" className="text-warning font-bold hover:underline flex items-center gap-1">
                 <span>إدارة وإضافة وسطاء</span>
-                <span className="material-symbols-outlined text-sm">arrow_back</span>
+                <ArrowLeft className="w-3.5 h-3.5" />
               </Link>
             </div>
           </div>
 
           {/* Stat 2: Total Units */}
-          <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm border border-surface-container-high/40">
-            <div className="flex items-start justify-between mb-space-sm">
-              <div className="w-12 h-12 rounded-xl bg-primary-fixed text-primary flex items-center justify-center">
-                <span className="material-symbols-outlined text-[26px]">apartment</span>
-              </div>
-              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs">
-                محفظة الوحدات
-              </span>
-            </div>
+          <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 hover:border-primary/50 transition-all flex flex-col justify-between group shadow-xs hover:shadow-sm">
             <div>
-              <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
-                إجمالي الوحدات المسجلة
-              </span>
-              <div className="flex items-baseline gap-space-xs">
-                <span className="text-on-surface font-extrabold tracking-tight text-3xl">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-on-surface-variant">محفظة الوحدات المسجلة</span>
+                <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center transition-transform group-hover:scale-105">
+                  <Building2 className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-black text-primary tabular-nums">
                   {myUnits.length}
                 </span>
-                <span className="text-on-surface-variant font-bold text-xs">وحدة</span>
+                <span className="text-xs text-on-surface-variant font-bold">وحدة</span>
               </div>
             </div>
-            <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2 text-xs">
+            <div className="mt-3 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-xs">
               <Link href="/admin/zones" className="text-primary font-bold hover:underline flex items-center gap-1">
                 <span>{zones.length} منطقة ومجاورة مسجلة</span>
-                <span className="material-symbols-outlined text-sm">arrow_back</span>
+                <ArrowLeft className="w-3.5 h-3.5" />
               </Link>
-              <span className="material-symbols-outlined text-primary text-[18px]">explore</span>
             </div>
           </div>
 
           {/* Stat 3: Available Units & Value */}
-          <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm border border-surface-container-high/40">
-            <div className="flex items-start justify-between mb-space-sm">
-              <div className="w-12 h-12 rounded-xl bg-success-container text-success flex items-center justify-center">
-                <span className="material-symbols-outlined text-[26px]">check_circle</span>
-              </div>
-              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-success-container text-success font-bold text-xs">
-                متاح للبيع
-              </span>
-            </div>
+          <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 hover:border-primary/50 transition-all flex flex-col justify-between group shadow-xs hover:shadow-sm">
             <div>
-              <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
-                المعروض المتاح حالياً
-              </span>
-              <div className="flex items-baseline gap-space-xs">
-                <span className="text-success font-extrabold tracking-tight text-3xl">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-on-surface-variant">المعروض المتاح حالياً</span>
+                <div className="w-9 h-9 rounded-xl bg-success-container text-success flex items-center justify-center transition-transform group-hover:scale-105">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-black text-success tabular-nums">
                   {availableUnits.length}
                 </span>
-                <span className="text-on-surface-variant font-bold text-xs">وحدة</span>
+                <span className="text-xs text-on-surface-variant font-bold">وحدة متاحة</span>
               </div>
             </div>
-            <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2 text-xs">
+            <div className="mt-3 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-xs text-on-surface-variant">
               <span>بقيمة: <strong className="text-on-surface">{(totalInventoryValue / 1_000_000).toFixed(1)} مليون ج.م</strong></span>
-              <span className="material-symbols-outlined text-success text-[18px]">attach_money</span>
+              <DollarSign className="w-3.5 h-3.5 text-success" />
             </div>
           </div>
 
           {/* Stat 4: Reserved and Sold Units */}
-          <div className="relative overflow-hidden bg-surface-container-lowest rounded-2xl p-space-md shadow-sm border border-surface-container-high/40">
-            <div className="flex items-start justify-between mb-space-sm">
-              <div className="w-12 h-12 rounded-xl bg-secondary-fixed text-on-secondary-fixed-variant flex items-center justify-center">
-                <span className="material-symbols-outlined text-[26px]">handshake</span>
-              </div>
-              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-bold text-xs">
-                حجز وتعاقد
-              </span>
-            </div>
+          <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 hover:border-primary/50 transition-all flex flex-col justify-between group shadow-xs hover:shadow-sm">
             <div>
-              <span className="text-on-surface-variant uppercase tracking-wider block mb-1 text-xs">
-                حجز مؤقت ومباع
-              </span>
-              <div className="flex items-baseline gap-space-xs">
-                <span className="text-secondary font-extrabold tracking-tight text-3xl">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-on-surface-variant">حركات الحجز والتعاقد</span>
+                <div className="w-9 h-9 rounded-xl bg-accent-purple-container text-on-accent-purple-container flex items-center justify-center transition-transform group-hover:scale-105">
+                  <Handshake className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-black text-on-surface tabular-nums">
                   {totalReservedUnits + totalSoldUnits}
                 </span>
-                <span className="text-on-surface-variant font-bold text-xs">وحدة</span>
+                <span className="text-xs text-on-surface-variant font-bold">وحدة</span>
               </div>
             </div>
-            <div className="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant border-t border-surface-container-low pt-2 text-xs">
+            <div className="mt-3 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-xs text-on-surface-variant">
               <span>{totalReservedUnits} حجز مؤقت • {totalSoldUnits} مباعة</span>
-              <span className="material-symbols-outlined text-secondary text-[18px]">verified</span>
+              <CheckCircle className="w-3.5 h-3.5 text-primary" />
             </div>
           </div>
         </div>
 
         {/* 3. Brokers Directory Section */}
-        <div className="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm border border-surface-container-high/40">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-xs mb-space-md pb-space-sm border-b border-surface-container-high/30">
+        <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 sm:p-6 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 pb-3 border-b border-outline-variant/40">
             <div>
-              <h2 className="text-on-surface font-bold text-xl flex items-center gap-2">
-                <span className="material-symbols-outlined text-warning">group</span>
+              <h2 className="text-on-surface font-black text-lg flex items-center gap-2">
+                <Users className="w-5 h-5 text-warning" />
                 <span>وسطاء وفريق عمل الشركة ({companyBrokers.length})</span>
               </h2>
               <p className="text-on-surface-variant text-xs mt-0.5">
@@ -275,28 +279,32 @@ export default function DashboardPage() {
               href="/admin/users"
               className="text-xs font-bold text-warning hover:underline flex items-center gap-1 self-start sm:self-auto"
             >
-              <span>إدارة وتعديل الحسابات بالكامل</span>
-              <span className="material-symbols-outlined text-sm">arrow_back</span>
+              <span>إدارة وتعديل الحسابات</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           {companyBrokers.length === 0 ? (
-            <div className="p-8 text-center rounded-2xl bg-surface-container-low border border-dashed border-surface-container-high">
-              <span className="material-symbols-outlined text-4xl text-warning mb-2">person_add</span>
-              <h3 className="font-bold text-sm text-on-surface mb-1">لا يوجد وسطاء مسجلين تحت شركتك بعد</h3>
-              <p className="text-xs text-on-surface-variant mb-4">
+            <div className="empty-state p-8 text-center rounded-2xl bg-surface-container-low border border-dashed border-outline-variant">
+              <div className="empty-state-icon mx-auto w-12 h-12 rounded-2xl bg-warning-container text-on-warning-container flex items-center justify-center mb-3">
+                <UserPlus className="w-6 h-6 text-warning" />
+              </div>
+              <h3 className="empty-state-title font-bold text-sm text-on-surface mb-1">
+                لا يوجد وسطاء مسجلين تحت شركتك بعد
+              </h3>
+              <p className="empty-state-hint text-xs text-on-surface-variant mb-4">
                 أضف وسطاء مبيعات لتمكينهم من الاطلاع على وحدات الشركة ومشاركتها مع عملائهم
               </p>
               <Link
                 href="/admin/users"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-warning hover:bg-warning text-white font-bold text-xs shadow-sm transition"
+                className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-xs font-bold"
               >
-                <span className="material-symbols-outlined text-[18px]">add</span>
-                <span>+ إضافة وسيط جديد للشركة</span>
+                <Plus className="w-4 h-4" />
+                <span>إضافة وسيط جديد للشركة</span>
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {companyBrokers.map((u) => {
                 const cleanPhone = (u.phone || '').replace(/\D/g, '');
                 const whatsappUrl = cleanPhone
@@ -306,24 +314,24 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={u.id}
-                    className="p-4 rounded-xl bg-surface-container-low border border-surface-container-high/50 hover:border-warning/50 transition-all flex flex-col justify-between gap-3 shadow-xs"
+                    className="p-4 rounded-xl bg-surface-container-low border border-outline-variant/60 hover:border-warning/50 transition-all flex flex-col justify-between gap-3 shadow-xs"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-warning text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                        <div className="w-10 h-10 rounded-xl bg-warning text-on-warning font-black flex items-center justify-center text-sm shadow-xs">
                           {u.fullName.charAt(0)}
                         </div>
                         <div>
                           <h3 className="font-bold text-sm text-on-surface">{u.fullName}</h3>
-                          <p className="text-xs text-warning font-mono font-semibold">@{u.username}</p>
+                          <p className="text-xs text-on-surface-variant font-mono font-semibold">@{u.username}</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-success-container text-success border border-success">
+                      <span className="badge badge-success text-[10px]">
                         وسيط معتمد
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-surface-container-high/40">
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-2.5 border-t border-outline-variant/40">
                       <div>
                         <span className="text-[11px] text-on-surface-variant block">رقم الهاتف:</span>
                         <span className="font-bold font-mono text-on-surface" dir="ltr">
@@ -339,12 +347,12 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-2 border-t border-surface-container-high/40">
+                    <div className="flex items-center gap-2 pt-2.5 border-t border-outline-variant/40">
                       <Link
                         href="/admin/users"
-                        className="flex-1 py-1.5 px-2 rounded-lg bg-warning-container hover:bg-warning-container text-warning text-center text-xs font-bold transition flex items-center justify-center gap-1"
+                        className="btn-tonal flex-1 py-1.5 px-2 text-center text-xs font-bold inline-flex items-center justify-center gap-1 min-h-[36px]"
                       >
-                        <span className="material-symbols-outlined text-[16px]">manage_accounts</span>
+                        <Users className="w-3.5 h-3.5" />
                         <span>إدارة وتعديل</span>
                       </Link>
                       {whatsappUrl ? (
@@ -352,13 +360,13 @@ export default function DashboardPage() {
                           href={whatsappUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 py-1.5 px-2 rounded-lg bg-success-container hover:bg-success-container text-success text-center text-xs font-bold transition flex items-center justify-center gap-1"
+                          className="flex-1 py-1.5 px-2 rounded-xl bg-success-container hover:bg-success-container text-on-success-container text-center text-xs font-bold transition inline-flex items-center justify-center gap-1 min-h-[36px]"
                         >
-                          <span className="material-symbols-outlined text-[16px]">chat</span>
+                          <MessageCircle className="w-3.5 h-3.5 text-success" />
                           <span>مراسلة واتساب</span>
                         </a>
                       ) : (
-                        <span className="flex-1 py-1.5 px-2 rounded-lg bg-surface-container text-on-surface-variant text-center text-[11px]">
+                        <span className="flex-1 py-1.5 px-2 rounded-xl bg-surface-container text-on-surface-variant text-center text-[11px] min-h-[36px] flex items-center justify-center">
                           بدون هاتف
                         </span>
                       )}
@@ -371,11 +379,11 @@ export default function DashboardPage() {
         </div>
 
         {/* 4. Latest Units Overview */}
-        <div className="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm border border-surface-container-high/40">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-xs mb-space-md pb-space-sm border-b border-surface-container-high/30">
+        <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 sm:p-6 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 pb-3 border-b border-outline-variant/40">
             <div>
-              <h2 className="text-on-surface font-bold text-xl flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">apartment</span>
+              <h2 className="text-on-surface font-black text-lg flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-primary" />
                 <span>أحدث وحدات محفظة الشركة</span>
               </h2>
               <p className="text-on-surface-variant text-xs mt-0.5">
@@ -387,57 +395,87 @@ export default function DashboardPage() {
               className="text-xs font-bold text-primary hover:underline flex items-center gap-1 self-start sm:self-auto"
             >
               <span>عرض كافة وحدات ومباني الشركة ({myUnits.length})</span>
-              <span className="material-symbols-outlined text-sm">arrow_back</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {myUnits.slice(0, 6).map((unit) => {
-              const img =
-                firstImageUrl(unit.media) ||
-                'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
-
-              const statusBadge =
+              const img = firstImageUrl(unit.media);
+              const statusClass =
                 unit.status === 'available'
-                  ? { text: 'متاح للبيع', bg: 'bg-success text-white' }
+                  ? 'badge-success'
                   : unit.status === 'reserved'
-                  ? { text: 'حجز مؤقت', bg: 'bg-warning text-white' }
-                  : { text: 'تم البيع', bg: 'bg-error text-white' };
+                  ? 'badge-warning'
+                  : 'badge-error';
+              const statusLabel =
+                unit.status === 'available'
+                  ? 'متاح للبيع'
+                  : unit.status === 'reserved'
+                  ? 'حجز مؤقت'
+                  : 'تم البيع';
 
               return (
                 <div
                   key={unit.id}
-                  className="bg-surface-container-low rounded-2xl overflow-hidden border border-surface-container-high/60 shadow-xs flex flex-col justify-between"
+                  className="rounded-2xl overflow-hidden border border-outline-variant/60 bg-surface-container-low shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
                 >
-                  <div className="relative h-44 w-full">
-                    <img src={img} alt={`قطعة ${unit.plotNo}`} className="w-full h-full object-cover" />
-                    <div className="absolute top-2 right-2 flex flex-col gap-1 max-w-[60%]">
-                      <span className="px-2 py-0.5 rounded-lg bg-surface-container-lowest/90 font-bold text-[11px] text-primary shadow-xs truncate block">
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-black">
+                    {img ? (
+                      <img
+                        src={img}
+                        alt={`قطعة ${unit.plotNo}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full hero-gradient flex flex-col items-center justify-center gap-1.5 text-white/90">
+                        <Building2 className="w-8 h-8 opacity-80" />
+                        <span className="text-[11px] font-bold opacity-80">معاينة معمارية</span>
+                      </div>
+                    )}
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
+
+                    <div className="absolute top-2.5 right-2.5 flex flex-col gap-1 max-w-[70%]">
+                      <span className="px-2.5 py-1 rounded-lg bg-black/70 text-white font-bold text-[11px] backdrop-blur-md shadow-xs truncate block">
                         {zoneDisplayName(unit.zoneId, zones)} • قطعة {unit.plotNo}
                       </span>
                     </div>
-                    <div className="absolute top-2 left-2">
-                      <span className={`px-2 py-0.5 rounded-lg font-bold text-[11px] shadow-xs ${statusBadge.bg}`}>
-                        {statusBadge.text}
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className={`badge ${statusClass} text-[10px]`}>
+                        {statusLabel}
+                      </span>
+                    </div>
+
+                    <div className="absolute bottom-2.5 right-2.5 left-2.5 flex items-center justify-between text-white">
+                      <span className="font-mono text-xs font-bold text-white/90">
+                        #BD-{unit.zoneId}-{unit.plotNo}
+                      </span>
+                      <span className="price-pill text-xs">
+                        {unit.price.toLocaleString('ar-EG')} ج.م
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-3.5 flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-primary">#BD-{unit.zoneId}-{unit.plotNo}</span>
-                      <span className="font-bold text-sm text-on-surface">{unit.price.toLocaleString()} ج.م</span>
-                    </div>
-                    <p className="text-xs text-on-surface-variant line-clamp-1 break-words">{unit.description || 'وحدة سكنية متميزة'}</p>
-                    <div className="flex items-center justify-between pt-2 border-t border-surface-container-high/50 text-[11px] text-on-surface-variant">
-                      <span>المساحة: <strong>{unit.area} م²</strong></span>
-                      <span>الاستلام: <strong>{unit.deliveryNote || 'استلام فوري'}</strong></span>
+                  <div className="p-4 flex flex-col gap-2.5">
+                    <p className="text-xs text-on-surface-variant line-clamp-1 break-words">
+                      {unit.description || 'وحدة سكنية متميزة بالحي المتميز'}
+                    </p>
+                    <div className="flex items-center justify-between pt-2 border-t border-outline-variant/40 text-[11px] text-on-surface-variant">
+                      <span>
+                        المساحة: <strong className="text-on-surface font-mono">{unit.area} م²</strong>
+                      </span>
+                      <span>
+                        الاستلام: <strong className="text-on-surface">{unit.deliveryNote || 'استلام فوري'}</strong>
+                      </span>
                     </div>
                     <Link
                       href={`/units/${unit.id}`}
-                      className="w-full mt-1 py-1.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold text-xs transition flex items-center justify-center"
+                      className="btn-primary w-full mt-1 py-2 text-xs font-bold inline-flex items-center justify-center gap-1.5 min-h-[38px]"
                     >
-                      عرض التفاصيل الكاملة
+                      <span>عرض التفاصيل الكاملة</span>
+                      <ArrowLeft className="w-3.5 h-3.5" />
                     </Link>
                   </div>
                 </div>
@@ -495,22 +533,22 @@ export default function DashboardPage() {
       {/* Toast */}
       {toastMessage && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-inverse-surface text-inverse-on-surface shadow-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
-          <span className="material-symbols-outlined text-[18px] text-primary-fixed">check_circle</span>
+          <CheckCircle2 className="w-4 h-4 text-primary-fixed" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* 1. Greeting & Quick Command Actions Bar */}
-      <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-4 sm:p-6 shadow-sm border border-surface-container-high/40">
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex flex-col gap-1">
+      <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-5 sm:p-6 shadow-xs border border-outline-variant/60">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-xs">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 لوحة عمليات الوسيط
               </span>
               <span className="text-on-surface-variant flex items-center gap-1 text-xs">
-                <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                <Calendar className="w-3.5 h-3.5" />
                 {todayArabic}
               </span>
             </div>
@@ -528,33 +566,33 @@ export default function DashboardPage() {
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <Link
               href="/customers/new"
-              className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-xs min-h-[40px] inline-flex items-center gap-1.5"
+              className="btn-primary px-4 py-2.5 text-xs font-bold inline-flex items-center gap-1.5 min-h-[40px]"
             >
-              <span className="material-symbols-outlined text-[20px]">person_add</span>
+              <UserPlus className="w-4 h-4" />
               <span>+ تسجيل عميل جديد</span>
             </Link>
 
             <Link
               href="/matching"
-              className="px-3.5 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition shadow-xs text-xs min-h-[40px] inline-flex items-center gap-1.5 border border-surface-container-high"
+              className="btn-tonal px-3.5 py-2.5 text-xs font-bold inline-flex items-center gap-1.5 min-h-[40px]"
             >
-              <span className="material-symbols-outlined text-[18px] text-primary">handshake</span>
+              <Handshake className="w-4 h-4 text-primary" />
               <span>مطابقة سريعة</span>
             </Link>
 
             <Link
               href="/map"
-              className="px-3.5 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition shadow-xs text-xs min-h-[40px] inline-flex items-center gap-1.5 border border-surface-container-high"
+              className="btn-tonal px-3.5 py-2.5 text-xs font-bold inline-flex items-center gap-1.5 min-h-[40px]"
             >
-              <span className="material-symbols-outlined text-[18px] text-primary">map</span>
+              <Map className="w-4 h-4 text-primary" />
               <span>الخريطة</span>
             </Link>
 
             <Link
               href="/units"
-              className="px-3.5 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold transition shadow-xs text-xs min-h-[40px] inline-flex items-center gap-1.5 border border-surface-container-high"
+              className="btn-tonal px-3.5 py-2.5 text-xs font-bold inline-flex items-center gap-1.5 min-h-[40px]"
             >
-              <span className="material-symbols-outlined text-[18px] text-primary">apartment</span>
+              <Building2 className="w-4 h-4 text-primary" />
               <span>كل المحفظة</span>
             </Link>
           </div>
@@ -574,19 +612,19 @@ export default function DashboardPage() {
       />
 
       {/* 3. Streamlined Operation Hub (Navigation Tabs) */}
-      <div className="card p-4 sm:p-5 space-y-4">
+      <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 space-y-4 shadow-xs">
         {/* Tab Buttons */}
-        <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-surface-container-high/40">
+        <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-outline-variant/40">
           <button
             type="button"
             onClick={() => setBrokerTab('agenda')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
               brokerTab === 'agenda'
-                ? 'bg-primary text-on-primary shadow-sm'
+                ? 'bg-primary text-on-primary shadow-xs'
                 : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">alarm</span>
+            <Clock className="w-4 h-4" />
             <span>متابعات ومواعيد اليوم</span>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
@@ -604,11 +642,11 @@ export default function DashboardPage() {
             onClick={() => setBrokerTab('pipeline')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
               brokerTab === 'pipeline'
-                ? 'bg-primary text-on-primary shadow-sm'
+                ? 'bg-primary text-on-primary shadow-xs'
                 : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">view_kanban</span>
+            <TrendingUp className="w-4 h-4" />
             <span>مسار الصفقات (Pipeline)</span>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
@@ -626,11 +664,11 @@ export default function DashboardPage() {
             onClick={() => setBrokerTab('share')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
               brokerTab === 'share'
-                ? 'bg-primary text-on-primary shadow-sm'
+                ? 'bg-primary text-on-primary shadow-xs'
                 : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">share</span>
+            <Share2 className="w-4 h-4" />
             <span>عروض سريعة للمشاركة بالواتساب</span>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-black ${

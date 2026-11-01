@@ -5,16 +5,17 @@ import Link from 'next/link';
 import { Unit, Zone, UserProfile } from '@/lib/types';
 import { zoneDisplayName } from '@/lib/zone-utils';
 import { createUnitWhatsAppUrl } from '@/lib/shareUtils';
+import { firstImageUrl } from '@/lib/public-utils';
 import {
   Share2,
   ExternalLink,
   Square,
   Layers,
-  ArrowRight,
+  ArrowLeft,
   Search,
-  Filter,
   Eye,
-  CheckCircle,
+  Building2,
+  MessageCircle,
 } from 'lucide-react';
 
 interface BrokerQuickShareTabProps {
@@ -64,7 +65,7 @@ export default function BrokerQuickShareTab({
           <div>
             <h2 className="text-sm font-black text-on-surface">عروض مميزة للمشاركة السريعة (واتساب)</h2>
             <p className="text-[11px] text-on-surface-variant">
-              وحدات متاحة حالياً جاهزة للمشاركة الفورية مع المشترين بضغطة زر
+              وحدات متاحة حالياً جاهزة للمشاركة الفورية مع المشترين برابط المعاينة المباشر
             </p>
           </div>
         </div>
@@ -96,81 +97,88 @@ export default function BrokerQuickShareTab({
 
           <Link
             href="/units"
-            className="px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold inline-flex items-center gap-1 transition"
+            className="btn-tonal px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1 min-h-[36px]"
           >
             <span>كل المحفظة</span>
-            <ExternalLink className="w-3 h-3 text-primary" />
+            <ExternalLink className="w-3 h-3 text-on-surface-variant" />
           </Link>
         </div>
       </div>
 
       {/* Units Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {filtered.slice(0, 9).map((unit) => {
-          const img =
-            unit.media?.[0]?.externalUrl ||
-            unit.media?.[0]?.storagePath ||
-            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
-
+          const img = firstImageUrl(unit.media);
           const waUrl = createUnitWhatsAppUrl(unit, currentUser, undefined, zones);
 
           return (
             <div
               key={unit.id}
-              className="card overflow-hidden hover:shadow-md transition-all border border-surface-container-high/60 flex flex-col justify-between group"
+              className="rounded-2xl overflow-hidden border border-outline-variant/60 bg-surface-container-lowest hover:border-primary/40 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between group"
             >
-              {/* Image & Badges */}
-              <div className="relative h-40 w-full overflow-hidden bg-surface-container-low">
-                <img
-                  src={img}
-                  alt={`قطعة ${unit.plotNo}`}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-lg bg-primary text-on-primary font-bold text-[10px] shadow-sm">
-                  متاح حصرياً
+              {/* Image & Badges with Scrim */}
+              <div className="relative aspect-[16/10] w-full overflow-hidden bg-black">
+                {img ? (
+                  <img
+                    src={img}
+                    alt={`قطعة ${unit.plotNo}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full hero-gradient flex flex-col items-center justify-center gap-1.5 text-white/90">
+                    <Building2 className="w-8 h-8 opacity-80" />
+                    <span className="text-[11px] font-bold opacity-80">معاينة معمارية</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
+
+                <span className="badge badge-success absolute top-2.5 right-2.5 text-[10px]">
+                  متاح للبيع
                 </span>
-                <span className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-md bg-inverse-surface/80 backdrop-blur-sm text-inverse-on-surface text-[10px] font-mono">
+                <span className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-white text-[10px] font-mono">
                   قطعة {unit.plotNo}
                 </span>
               </div>
 
               {/* Details */}
-              <div className="p-3.5 space-y-2.5 flex-1 min-w-0 flex flex-col justify-between">
+              <div className="p-4 space-y-2.5 flex-1 min-w-0 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between text-[11px] text-on-surface-variant mb-1">
-                    <span className="font-bold text-primary">الحي المتميز</span>
-                    <span>{zoneDisplayName(unit.zoneId, zones)}</span>
+                    <span className="font-bold text-primary">{zoneDisplayName(unit.zoneId, zones)}</span>
+                    <span className="font-mono font-bold text-on-surface-variant">#BD-{unit.zoneId}-{unit.plotNo}</span>
                   </div>
 
                   <h3 className="text-xs font-black text-on-surface line-clamp-1 break-words">
-                    {unit.description || `وحدة فاخرة قطعة ${unit.plotNo}`}
+                    {unit.description || `وحدة سكنية فاخرة قطعة ${unit.plotNo}`}
                   </h3>
 
                   <div className="flex items-center gap-3 my-2 text-xs text-on-surface-variant">
                     <div className="flex items-center gap-1">
                       <Square className="w-3.5 h-3.5 text-primary" />
-                      <span>{unit.area} م²</span>
+                      <span className="font-mono tabular-nums">{unit.area} م²</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Layers className="w-3.5 h-3.5 text-primary" />
-                      <span>{unit.deliveryNote || 'فوري'}</span>
+                      <span>{unit.deliveryNote || 'استلام فوري'}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-surface-container-high/40 flex items-center justify-between">
+                <div className="pt-2.5 border-t border-outline-variant/40 flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-[10px] text-on-surface-variant block">السعر</span>
-                    <span className="text-sm font-black text-on-surface">
-                      {unit.price.toLocaleString()} ج.م
+                    <span className="text-[10px] text-on-surface-variant block">السعر الإجمالي</span>
+                    <span className="text-sm font-black text-on-surface font-mono">
+                      {unit.price.toLocaleString('ar-EG')} <span className="text-[10px] font-bold text-on-surface-variant">ج.م</span>
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       type="button"
                       onClick={() => onSelectUnit(unit)}
-                      className="px-2.5 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold transition cursor-pointer"
+                      className="btn-tonal p-2 min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
+                      title="معاينة تفاصيل الوحدة"
                     >
                       <Eye className="w-3.5 h-3.5" />
                     </button>
@@ -179,10 +187,10 @@ export default function BrokerQuickShareTab({
                       href={waUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-3 py-1.5 rounded-xl bg-success-container hover:bg-success-container/70 text-success text-xs font-bold inline-flex items-center gap-1 transition shadow-xs"
+                      className="btn-primary px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1 min-h-[36px]"
                       title="مشاركة العرض بالواتساب"
                     >
-                      <Share2 className="w-3.5 h-3.5" />
+                      <MessageCircle className="w-3.5 h-3.5" />
                       <span>مشاركة</span>
                     </a>
                   </div>

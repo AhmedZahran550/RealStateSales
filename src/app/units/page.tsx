@@ -7,7 +7,24 @@ import { useApp } from '@/context/AppContext';
 import { Unit, UnitKind, UnitStatus, UNIT_KIND_LABELS } from '@/lib/types';
 import BuildingCard from '@/components/buildings/BuildingCard';
 import UnitCard from '@/components/units/UnitCard';
-import { Building2, Home, Plus, Edit, ArrowUpDown } from 'lucide-react';
+import {
+  Building2,
+  Home,
+  Plus,
+  Edit,
+  ArrowUpDown,
+  Download,
+  Clock,
+  CheckCircle2,
+  Key,
+  LayoutGrid,
+  Table as TableIcon,
+  Search,
+  ChevronDown,
+  Eye,
+  Copy,
+  MessageCircle,
+} from 'lucide-react';
 import { exportUnitsToExcel } from '@/lib/excel';
 import { formatUnitFullDetails, createUnitWhatsAppUrl } from '@/lib/shareUtils';
 import { zoneDisplayName } from '@/lib/zone-utils';
@@ -224,7 +241,7 @@ export default function UnitsPage() {
       {/* Toast Notification Feedback */}
       {toastMessage && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-space-md py-space-sm bg-inverse-surface text-inverse-on-surface rounded-xl shadow-xl flex items-center gap-space-xs animate-in fade-in">
-          <span className="material-symbols-outlined text-primary-fixed text-[20px]">check_circle</span>
+          <CheckCircle2 className="w-5 h-5 text-primary-fixed shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -251,7 +268,7 @@ export default function UnitsPage() {
             className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-on-surface transition-all shadow-sm font-bold text-xs border border-surface-container-high cursor-pointer min-h-[40px]"
             type="button"
           >
-            <span className="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span>
+            <Download className="w-4 h-4 text-on-surface-variant" />
             تصدير Excel
           </button>
           {(isCompanyAdmin || isSuperAdmin) && (
@@ -278,71 +295,71 @@ export default function UnitsPage() {
 
       {/* 2. Quick KPI Counters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-        <div className="bg-surface-container-lowest p-3.5 sm:p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
+        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant/60 flex items-center justify-between transition-shadow hover:shadow-sm">
           <div className="flex flex-col">
             <span className="text-on-surface-variant font-bold text-xs">
               إجمالي المعروض المتاح
             </span>
-            <span className="text-primary font-extrabold mt-0.5 text-xl sm:text-2xl">
-              {totalAvailable} وحدة
+            <span className="text-on-surface font-black mt-1 text-2xl sm:text-3xl tabular-nums tracking-tight">
+              {totalAvailable} <span className="text-sm font-bold text-on-surface-variant">وحدة</span>
             </span>
-            <span className="text-outline mt-0.5 text-[11px]">
+            <span className="text-outline mt-1 text-xs tabular-nums font-semibold">
               بقيمة {(totalValue / 1000000).toFixed(1)}M ج.م
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined text-[26px]">apartment</span>
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <Building2 className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-3.5 sm:p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
+        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant/60 flex items-center justify-between transition-shadow hover:shadow-sm">
           <div className="flex flex-col">
             <span className="text-on-surface-variant font-bold text-xs">
               حجز مؤقت (مفاوضات)
             </span>
-            <span className="text-tertiary font-extrabold mt-0.5 text-xl sm:text-2xl">
-              {totalReserved} وحدات
+            <span className="text-on-surface font-black mt-1 text-2xl sm:text-3xl tabular-nums tracking-tight">
+              {totalReserved} <span className="text-sm font-bold text-on-surface-variant">وحدات</span>
             </span>
-            <span className="text-tertiary mt-0.5 text-[11px]">
+            <span className="text-warning mt-1 text-xs font-semibold">
               متوقع إغلاقها قريباً
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-tertiary">
-            <span className="material-symbols-outlined text-[26px]">hourglass_top</span>
+          <div className="w-12 h-12 rounded-xl bg-warning-container text-on-warning-container flex items-center justify-center shrink-0">
+            <Clock className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-3.5 sm:p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
+        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant/60 flex items-center justify-between transition-shadow hover:shadow-sm">
           <div className="flex flex-col">
             <span className="text-on-surface-variant font-bold text-xs">
               تم التعاقد والبيع
             </span>
-            <span className="text-secondary font-extrabold mt-0.5 text-xl sm:text-2xl">
-              {totalSold} وحدات
+            <span className="text-on-surface font-black mt-1 text-2xl sm:text-3xl tabular-nums tracking-tight">
+              {totalSold} <span className="text-sm font-bold text-on-surface-variant">وحدات</span>
             </span>
-            <span className="text-outline mt-0.5 text-[11px]">
+            <span className="text-success mt-1 text-xs font-semibold">
               صفقات ناجحة
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary">
-            <span className="material-symbols-outlined text-[26px]">verified</span>
+          <div className="w-12 h-12 rounded-xl bg-success-container text-on-success-container flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-3.5 sm:p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
+        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant/60 flex items-center justify-between transition-shadow hover:shadow-sm">
           <div className="flex flex-col">
             <span className="text-on-surface-variant font-bold text-xs">
               استلام فوري
             </span>
-            <span className="text-on-surface font-extrabold mt-0.5 text-xl sm:text-2xl">
-              {myUnits.filter((u) => u.deliveryNote?.includes('فوري')).length} وحدة
+            <span className="text-on-surface font-black mt-1 text-2xl sm:text-3xl tabular-nums tracking-tight">
+              {myUnits.filter((u) => u.deliveryNote?.includes('فوري')).length} <span className="text-sm font-bold text-on-surface-variant">وحدة</span>
             </span>
-            <span className="text-primary font-bold mt-0.5 text-[11px]">
+            <span className="text-primary mt-1 text-xs font-bold">
               أعلى طلب للمستثمرين
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined text-[26px]">key</span>
+          <div className="w-12 h-12 rounded-xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0">
+            <Key className="w-6 h-6" />
           </div>
         </div>
       </div>
@@ -432,27 +449,27 @@ export default function UnitsPage() {
               <div className="flex items-center gap-space-xs bg-surface-container-low p-1 rounded-xl">
                 <button
                   onClick={() => handleToggleViewMode('table')}
-                  className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-bold transition-all text-xs cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs cursor-pointer ${
                     viewMode === 'table'
-                      ? 'bg-surface-container-lowest text-primary shadow-sm'
+                      ? 'bg-surface-container-lowest text-primary shadow-xs'
                       : 'text-on-surface-variant hover:text-on-surface'
                   }`}
                   type="button"
                 >
-                  <span className="material-symbols-outlined text-[18px]">table_rows</span>
-                  جدول
+                  <TableIcon className="w-3.5 h-3.5" />
+                  <span>جدول</span>
                 </button>
                 <button
                   onClick={() => handleToggleViewMode('grid')}
-                  className={`flex items-center gap-1 px-space-sm py-1 rounded-lg font-bold transition-all text-xs cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs cursor-pointer ${
                     viewMode === 'grid'
-                      ? 'bg-surface-container-lowest text-primary shadow-sm'
+                      ? 'bg-surface-container-lowest text-primary shadow-xs'
                       : 'text-on-surface-variant hover:text-on-surface'
                   }`}
                   type="button"
                 >
-                  <span className="material-symbols-outlined text-[18px]">grid_view</span>
-                  شبكة
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span>شبكة</span>
                 </button>
               </div>
             )}
@@ -463,15 +480,13 @@ export default function UnitsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm">
           {/* Search */}
           <div className="relative">
-            <span className="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">
-              search
-            </span>
+            <Search className="w-4 h-4 text-outline absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="كود الوحدة، رقم القطعة، الوصف..."
-              className="w-full border border-outline-variant bg-white rounded-xl py-2.5 pr-10 pl-space-sm text-on-surface placeholder:text-outline font-semibold focus:outline-none focus:ring-2 focus:ring-primary text-xs shadow-xs"
+              className="w-full border border-outline-variant bg-surface-container-lowest rounded-xl py-2.5 pr-9 pl-space-sm text-on-surface placeholder:text-outline font-semibold focus:outline-none focus:ring-2 focus:ring-primary text-xs shadow-xs"
             />
           </div>
 
@@ -480,25 +495,25 @@ export default function UnitsPage() {
             <select
               value={zoneFilter}
               onChange={(e) => setZoneFilter(e.target.value)}
-              className="w-full border border-outline-variant bg-white rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
+              className="w-full border border-outline-variant bg-surface-container-lowest rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
             >
-              <option value="all" className="bg-white text-on-surface">كافة المناطق</option>
+              <option value="all" className="bg-surface-container-lowest text-on-surface">كافة المناطق</option>
               {mainZones.map((mz) => {
                 const subs = subZonesOf(mz.id);
                 if (subs.length === 0) {
                   return (
-                    <option key={mz.id} value={mz.id.toString()} className="bg-white text-on-surface">
+                    <option key={mz.id} value={mz.id.toString()} className="bg-surface-container-lowest text-on-surface">
                       {mz.name}
                     </option>
                   );
                 }
                 return (
-                  <optgroup key={mz.id} label={mz.name} className="bg-white text-on-surface font-bold">
-                    <option value={mz.id.toString()} className="bg-white text-on-surface font-semibold">
+                  <optgroup key={mz.id} label={mz.name} className="bg-surface-container-lowest text-on-surface font-bold">
+                    <option value={mz.id.toString()} className="bg-surface-container-lowest text-on-surface font-semibold">
                       كل {mz.name}
                     </option>
                     {subs.map((sz) => (
-                      <option key={sz.id} value={sz.id.toString()} className="bg-white text-on-surface font-normal">
+                      <option key={sz.id} value={sz.id.toString()} className="bg-surface-container-lowest text-on-surface font-normal">
                         {sz.name}
                       </option>
                     ))}
@@ -506,9 +521,7 @@ export default function UnitsPage() {
                 );
               })}
             </select>
-            <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">
-              expand_more
-            </span>
+            <ChevronDown className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
           {/* Unit Type Dropdown */}
@@ -516,20 +529,18 @@ export default function UnitsPage() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full border border-outline-variant bg-white rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
+              className="w-full border border-outline-variant bg-surface-container-lowest rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
             >
-              <option value="all" className="bg-white text-on-surface">نوع الوحدة (الكل)</option>
-              <option value="duplex" className="bg-white text-on-surface">دوبلكس</option>
-              <option value="ground_garden" className="bg-white text-on-surface">أرضي بحديقة</option>
-              <option value="floor_1" className="bg-white text-on-surface">دور أول متكرر</option>
-              <option value="floor_2" className="bg-white text-on-surface">دور ثاني</option>
-              <option value="floor_3" className="bg-white text-on-surface">دور ثالث</option>
-              <option value="roof" className="bg-white text-on-surface">رووف</option>
-              <option value="other" className="bg-white text-on-surface">أخرى</option>
+              <option value="all" className="bg-surface-container-lowest text-on-surface">نوع الوحدة (الكل)</option>
+              <option value="duplex" className="bg-surface-container-lowest text-on-surface">دوبلكس</option>
+              <option value="ground_garden" className="bg-surface-container-lowest text-on-surface">أرضي بحديقة</option>
+              <option value="floor_1" className="bg-surface-container-lowest text-on-surface">دور أول متكرر</option>
+              <option value="floor_2" className="bg-surface-container-lowest text-on-surface">دور ثاني</option>
+              <option value="floor_3" className="bg-surface-container-lowest text-on-surface">دور ثالث</option>
+              <option value="roof" className="bg-surface-container-lowest text-on-surface">رووف</option>
+              <option value="other" className="bg-surface-container-lowest text-on-surface">أخرى</option>
             </select>
-            <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">
-              expand_more
-            </span>
+            <ChevronDown className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
           {/* Sort Selector */}
@@ -537,19 +548,17 @@ export default function UnitsPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full border border-outline-variant bg-white rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
+              className="w-full border border-outline-variant bg-surface-container-lowest rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
             >
-              <option value="zone_asc" className="bg-white text-on-surface">أرقام المناطق (منطقة 1، 2...) — الافتراضي</option>
-              <option value="plot_asc" className="bg-white text-on-surface">رقم القطعة (تصاعدي)</option>
-              <option value="price_asc" className="bg-white text-on-surface">السعر (من الأقل للأعلى)</option>
-              <option value="price_desc" className="bg-white text-on-surface">السعر (من الأعلى للأقل)</option>
-              <option value="area_desc" className="bg-white text-on-surface">المساحة (من الأكبر للأصغر)</option>
-              <option value="area_asc" className="bg-white text-on-surface">المساحة (من الأصغر للأكبر)</option>
-              <option value="newest" className="bg-white text-on-surface">الأحدث تسجيلاً</option>
+              <option value="zone_asc" className="bg-surface-container-lowest text-on-surface">أرقام المناطق (منطقة 1، 2...) — الافتراضي</option>
+              <option value="plot_asc" className="bg-surface-container-lowest text-on-surface">رقم القطعة (تصاعدي)</option>
+              <option value="price_asc" className="bg-surface-container-lowest text-on-surface">السعر (من الأقل للأعلى)</option>
+              <option value="price_desc" className="bg-surface-container-lowest text-on-surface">السعر (من الأعلى للأقل)</option>
+              <option value="area_desc" className="bg-surface-container-lowest text-on-surface">المساحة (من الأكبر للأصغر)</option>
+              <option value="area_asc" className="bg-surface-container-lowest text-on-surface">المساحة (من الأصغر للأكبر)</option>
+              <option value="newest" className="bg-surface-container-lowest text-on-surface">الأحدث تسجيلاً</option>
             </select>
-            <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">
-              sort
-            </span>
+            <ChevronDown className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
 
@@ -645,7 +654,7 @@ export default function UnitsPage() {
             ))
           ) : (
             <div className="col-span-full p-12 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high">
-              <span className="material-symbols-outlined text-4xl text-outline mb-2">apartment</span>
+              <Building2 className="w-12 h-12 text-outline/40 mx-auto mb-2" />
               <p className="text-on-surface font-bold text-base">لا توجد وحدات تطابق هذه المحددات.</p>
               <p className="text-xs text-on-surface-variant mt-1">جرّب تغيير فلاتر البحث أو اختيار وسيط آخر.</p>
             </div>
@@ -656,7 +665,7 @@ export default function UnitsPage() {
         <div className="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden border border-surface-container-high/40">
           {filteredUnits.length === 0 ? (
             <div className="p-12 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high space-y-2">
-              <span className="material-symbols-outlined text-4xl text-outline mb-1">apartment</span>
+              <Building2 className="w-12 h-12 text-outline/40 mx-auto mb-1" />
               <p className="text-on-surface font-bold text-base">لا توجد وحدات تطابق هذه المحددات.</p>
               <p className="text-xs text-on-surface-variant">جرّب تغيير فلاتر البحث أو اختيار منطقة أخرى.</p>
             </div>
@@ -826,7 +835,7 @@ export default function UnitsPage() {
                               className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition"
                               title="عرض التفاصيل الكاملة"
                             >
-                              <span className="material-symbols-outlined text-[18px]">visibility</span>
+                              <Eye className="w-4 h-4" />
                             </Link>
                             {(isCompanyAdmin || isSuperAdmin) && (
                               <Link
@@ -843,7 +852,7 @@ export default function UnitsPage() {
                               className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant transition cursor-pointer"
                               title="نسخ التفاصيل"
                             >
-                              <span className="material-symbols-outlined text-[18px]">content_copy</span>
+                              <Copy className="w-4 h-4" />
                             </button>
                             <a
                               href={createUnitWhatsAppUrl(u, currentUser, undefined, zones)}
@@ -852,7 +861,7 @@ export default function UnitsPage() {
                               className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition cursor-pointer"
                               title="مشاركة عبر واتساب"
                             >
-                              <span className="material-symbols-outlined text-[18px]">chat</span>
+                              <MessageCircle className="w-4 h-4" />
                             </a>
                           </div>
                         </td>
