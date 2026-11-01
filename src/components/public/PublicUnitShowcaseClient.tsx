@@ -38,6 +38,7 @@ export interface PublicUnitShowcaseClientProps {
     id: string;
     name: string;
     commercialName?: string;
+    slug?: string;
     logoUrl?: string;
     phone?: string;
     email?: string;
@@ -57,6 +58,9 @@ export default function PublicUnitShowcaseClient({
 
   const mediaList = unit.media || [];
   const currentMedia = mediaList[activeMediaIndex];
+
+  const companyIdentifier = company.slug || company.id;
+  const companyHref = `/c/${companyIdentifier}`;
 
   // التنقل بين الوسائط
   const nextMedia = useCallback(() => {
@@ -83,7 +87,8 @@ export default function PublicUnitShowcaseClient({
   const handleCopyLink = async () => {
     if (typeof window === 'undefined') return;
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      const shareUrl = `${window.location.origin}/c/${companyIdentifier}/u/${unit.id}`;
+      await navigator.clipboard.writeText(shareUrl);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
     } catch {
@@ -100,10 +105,11 @@ export default function PublicUnitShowcaseClient({
     const zoneStr = unit.zoneName ? ` في ${unit.zoneName}` : '';
     const plotStr = unit.plotNo ? ` قطعة ${unit.plotNo}` : '';
     const priceStr = settings.showPrice ? ` بسعر ${unit.price.toLocaleString('ar-EG')} ج.م` : '';
-    const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const pageUrl = origin ? `${origin}/c/${companyIdentifier}/u/${unit.id}` : '';
     const msg = `مرحباً ${company.name}، أود الاستفسار وحجز موعد معاينة لـ ${unitTitle}${zoneStr}${plotStr}${priceStr}.\nرابط الوحدة: ${pageUrl}`;
     return `https://wa.me/${clean}?text=${encodeURIComponent(msg)}`;
-  }, [company.phone, company.name, unit, settings.showPrice]);
+  }, [company.phone, company.name, companyIdentifier, unit, settings.showPrice]);
 
   const unitKindTitle = UNIT_KIND_LABELS[unit.unitKind] || 'وحدة سكنية';
 
@@ -114,7 +120,7 @@ export default function PublicUnitShowcaseClient({
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
           {/* هوية الشركة */}
           <Link
-            href={`/p/${company.id}`}
+            href={companyHref}
             className="flex items-center gap-2.5 min-w-0 group hover:opacity-90 transition"
             title="زيارة صفحة الشركة وكافة الوحدات"
           >

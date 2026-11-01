@@ -5,6 +5,7 @@ export interface Company {
   id: string;
   name: string; // اسم الشركة العقارية
   commercialName?: string; // السجل التجاري أو الاسم التجاري
+  slug?: string; // المعرف الفريد للرابط العام (e.g. 'elwaha')
   logoUrl?: string | null; // رابط الشعار (null = تم إزالة الشعار)
   phone?: string; // هاتف التواصل
   email?: string; // البريد الإلكتروني
@@ -126,6 +127,7 @@ export interface Unit {
   id: string;
   companyId?: string; // معرف الشركة العقارية المسؤولة (الوحدة تتبع للشركة ككل وليس لوسيط)
   companyName?: string; // اسم الشركة
+  companySlug?: string; // الاسم المخصص للرابط العام
   buildingId: number;
   zoneId: number;
   plotNo: number;

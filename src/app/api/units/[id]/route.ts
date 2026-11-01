@@ -14,7 +14,7 @@ export async function GET(
       .from('units')
       .select(`
         *,
-        companies (name),
+        companies (name, slug),
         buildings (zone_id, plot_no, features),
         unit_media (*)
       `)
@@ -34,6 +34,7 @@ export async function GET(
       id: dbUnit.id,
       companyId: dbUnit.company_id || undefined,
       companyName: dbUnit.companies?.name || undefined,
+      companySlug: dbUnit.companies?.slug || undefined,
       buildingId: Number(dbUnit.building_id),
       zoneId: dbUnit.buildings?.zone_id || 1,
       plotNo: dbUnit.buildings?.plot_no || 1,

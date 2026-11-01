@@ -33,6 +33,41 @@ export async function PUT(
     if (updates.address !== undefined) dbUpdates.address = updates.address;
     if (updates.isActive !== undefined && isSuper) dbUpdates.is_active = updates.isActive;
 
+    // تحديث المعرف الفريد للرابط العام (Slug) مع التحقق من الفرادة
+    if (updates.slug !== undefined) {
+      const rawSlug = String(updates.slug || '').trim().toLowerCase();
+      const cleanSlug = rawSlug
+        .replace(/[\s_]+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      if (cleanSlug) {
+        if (cleanSlug.length < 2) {
+          return NextResponse.json(
+            { success: false, error: 'الاسم المخصص للرابط يجب أن يكون حرفين على الأقل' },
+            { status: 400 }
+          );
+        }
+        const { data: existingSlug } = await serverSupabase
+          .from('companies')
+          .select('id')
+          .eq('slug', cleanSlug)
+          .neq('id', id)
+          .maybeSingle();
+
+        if (existingSlug) {
+          return NextResponse.json(
+            { success: false, error: 'هذا الاسم المخصص مستخدم بالفعل لشركة أخرى، يرجى اختيار اسم فريد' },
+            { status: 400 }
+          );
+        }
+        dbUpdates.slug = cleanSlug;
+      } else {
+        dbUpdates.slug = null;
+      }
+    }
+
     if (updates.logoUrl !== undefined) {
       dbUpdates.logo_url = updates.logoUrl || null;
 

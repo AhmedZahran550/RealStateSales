@@ -454,10 +454,10 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                       key={unit.id}
                       unit={unit}
                       settings={settings}
-                      onView={setSelectedUnit}
                       companyPhone={company.phone}
                       companyName={company.name}
                       companyId={company.id}
+                      companySlug={(company as any).slug}
                     />
                   ))}
                 </div>
@@ -559,6 +559,7 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
         companyPhone={company.phone}
         companyName={company.name}
         companyId={company.id}
+        companySlug={(company as any).slug}
       />
 
       {/* مودال حجز موعد المعاينة */}

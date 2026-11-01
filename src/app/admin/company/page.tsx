@@ -23,6 +23,7 @@ import {
   FileText,
   Loader2,
   Layers,
+  Globe,
 } from 'lucide-react';
 
 export default function CompanyProfilePage() {
@@ -34,6 +35,7 @@ export default function CompanyProfilePage() {
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
+  const [slug, setSlug] = useState('');
 
   // إعدادات تشغيلية ومستقبلية
   const [leadDistribution, setLeadDistribution] = useState<'open_claim' | 'admin_assign'>('open_claim');
@@ -54,6 +56,7 @@ export default function CompanyProfilePage() {
       setEmail(currentCompany.email || '');
       setAddress(currentCompany.address || '');
       setLogoUrl(currentCompany.logoUrl ?? undefined);
+      setSlug(currentCompany.slug || '');
     }
   }, [currentCompany]);
 
@@ -87,6 +90,14 @@ export default function CompanyProfilePage() {
     setFeedback(null);
 
     try {
+      const cleanSlug = slug
+        .trim()
+        .toLowerCase()
+        .replace(/[\s_]+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+
       const res = await updateCompany(currentCompany.id, {
         name: name.trim(),
         commercialName: commercialName.trim() || undefined,
@@ -94,6 +105,7 @@ export default function CompanyProfilePage() {
         email: email.trim() || undefined,
         address: address.trim() || undefined,
         logoUrl: logoUrl || null,
+        slug: cleanSlug || undefined,
       });
 
       // حفظ الإعدادات المستقبلية
@@ -129,7 +141,9 @@ export default function CompanyProfilePage() {
     }
   };
 
-  const publicPortfolioUrl = currentCompany ? `/p/${currentCompany.id}` : '#';
+  const publicPortfolioUrl = currentCompany
+    ? `/c/${currentCompany.slug || currentCompany.id}`
+    : '#';
 
   return (
     <CompanyAdminGuard>
@@ -288,7 +302,67 @@ export default function CompanyProfilePage() {
                   </div>
                 </div>
 
-                {/* 3. بيانات التواصل والمقر */}
+                {/* 3. معرف ورابط الصفحة العامة */}
+                <div className="card p-5 space-y-4">
+                  <div className="flex items-center gap-2 pb-3 border-b border-surface-container-high/40">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                      <Globe className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-black text-on-surface">معرف ورابط الصفحة العامة (Company Public Slug)</h2>
+                      <p className="text-[11px] text-on-surface-variant">
+                        اسم فريد ومختصر يحل محل المعرفات الطويلة في روابط المشاركة على واتساب ومع العملاء
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-bold text-on-surface block mb-1.5">
+                        اسم المعرف بالإنجليزية (Slug)
+                      </label>
+                      <div className="flex items-center rounded-xl border border-outline-variant bg-surface-container-lowest focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 overflow-hidden transition">
+                        <span className="px-3 py-2.5 bg-surface-container-high text-on-surface-variant text-xs font-mono font-bold select-none border-l border-outline-variant/60">
+                          /c/
+                        </span>
+                        <input
+                          type="text"
+                          dir="ltr"
+                          value={slug}
+                          onChange={(e) => {
+                            const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+                            setSlug(val);
+                          }}
+                          placeholder="elwaha"
+                          className="flex-1 bg-transparent px-3 py-2.5 text-xs font-mono text-on-surface outline-none"
+                        />
+                      </div>
+                      <p className="text-[11px] text-on-surface-variant mt-1.5">
+                        أحرف إنجليزية صغيرة وأرقام وعلامة (-) فقط. مثال:{' '}
+                        <span className="font-mono font-bold text-on-surface">elwaha</span> أو{' '}
+                        <span className="font-mono font-bold text-on-surface">al-rehab</span>.
+                      </p>
+                    </div>
+
+                    {/* Live preview */}
+                    <div className="p-3 rounded-xl bg-surface-container-low border border-surface-container-high/40 space-y-1.5 text-xs">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <span className="text-[11px] font-bold text-on-surface-variant">رابط صفحة الشركة:</span>
+                        <span className="font-mono text-primary font-bold text-[11px] break-all" dir="ltr">
+                          {typeof window !== 'undefined' ? window.location.origin : ''}/c/{slug || currentCompany?.slug || currentCompany?.id?.slice(0, 8)}
+                        </span>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <span className="text-[11px] font-bold text-on-surface-variant">رابط تفاصيل أي وحدة (واتساب):</span>
+                        <span className="font-mono text-on-surface font-semibold text-[11px] break-all" dir="ltr">
+                          {typeof window !== 'undefined' ? window.location.origin : ''}/c/{slug || currentCompany?.slug || 'company'}/u/[رقم_الوحدة]
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. بيانات التواصل والمقر */}
                 <div className="card p-5 space-y-4">
                   <div className="flex items-center gap-2 pb-3 border-b border-surface-container-high/40">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">

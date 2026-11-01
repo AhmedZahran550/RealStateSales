@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PublicUnit, UNIT_KIND_LABELS, CompanyPublicSettings } from '@/lib/types';
 import { firstImageUrl } from '@/lib/public-utils';
 import {
@@ -19,23 +21,31 @@ import {
 export interface PublicUnitCardProps {
   unit: PublicUnit;
   settings: CompanyPublicSettings;
-  onView: (unit: PublicUnit) => void;
   companyPhone?: string;
   companyName?: string;
   companyId?: string;
+  companySlug?: string;
+  onView?: (unit: PublicUnit) => void;
 }
 
 export default function PublicUnitCard({
   unit,
   settings,
-  onView,
   companyPhone,
   companyName,
   companyId,
+  companySlug,
+  onView,
 }: PublicUnitCardProps) {
+  const router = useRouter();
   const primaryImage = firstImageUrl(unit.media);
   const imagesCount = unit.media.filter((m) => m.kind === 'image').length;
   const hasVideo = unit.media.some((m) => m.kind === 'video');
+
+  const companyIdentifier = companySlug || companyId;
+  const unitHref = companyIdentifier
+    ? `/c/${companyIdentifier}/u/${unit.id}`
+    : `/u/${unit.id}`;
 
   // تجهيز رابط واتساب المخصص لهذه الوحدة
   const waUrl = React.useMemo(() => {
@@ -51,16 +61,28 @@ export default function PublicUnitCard({
     return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
   }, [companyPhone, companyName, unit]);
 
+  const handleCardClick = () => {
+    if (onView) {
+      onView(unit);
+    } else {
+      router.push(unitHref);
+    }
+  };
+
   return (
     <div
-      onClick={() => onView(unit)}
+      onClick={handleCardClick}
       className="card card-bordered rounded-3xl overflow-hidden shadow-xs hover:shadow-xl hover:border-primary transition-all duration-300 flex flex-col cursor-pointer group bg-surface-container-lowest"
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && onView(unit)}
+      onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
     >
       {/* قسم الوسائط والحالات */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-black">
+      <Link
+        href={unitHref}
+        className="relative aspect-[16/10] w-full overflow-hidden bg-black block"
+        onClick={(e) => e.stopPropagation()}
+      >
         {primaryImage ? (
           <img
             src={primaryImage}
@@ -125,15 +147,21 @@ export default function PublicUnitCard({
             )}
           </div>
         )}
-      </div>
+      </Link>
 
       {/* المحتوى والتفاصيل المعمارية */}
       <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4 min-w-0">
         <div className="min-w-0">
           <div className="flex items-start justify-between gap-2 min-w-0">
-            <h4 className="font-black text-sm sm:text-base text-on-surface line-clamp-1 group-hover:text-primary transition-colors min-w-0 flex-1 break-words">
-              {UNIT_KIND_LABELS[unit.unitKind]}
-            </h4>
+            <Link
+              href={unitHref}
+              onClick={(e) => e.stopPropagation()}
+              className="hover:underline min-w-0 flex-1"
+            >
+              <h4 className="font-black text-sm sm:text-base text-on-surface line-clamp-1 group-hover:text-primary transition-colors min-w-0 break-words">
+                {UNIT_KIND_LABELS[unit.unitKind]}
+              </h4>
+            </Link>
             <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary-container text-on-primary-container">
               متاح للتعاقد
             </span>
@@ -167,14 +195,7 @@ export default function PublicUnitCard({
             )}
           </div>
 
-          {/* الوصف المختصر */}
-          {settings.showDescription && unit.description && (
-            <p className="text-xs text-on-surface-variant mt-2.5 line-clamp-2 leading-relaxed">
-              {unit.description}
-            </p>
-          )}
-
-          {/* المميزات */}
+          {/* المميزات المعمارية */}
           {settings.showFeatures && unit.features && unit.features.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
               {unit.features.slice(0, 3).map((f, i) => (
@@ -193,17 +214,14 @@ export default function PublicUnitCard({
 
         {/* أزرار الإجراء السريع بمقاسات لمس مريحة لا تقل عن 44px */}
         <div className="flex items-center gap-2 pt-2">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onView(unit);
-            }}
-            className="btn-primary flex-1 min-h-[44px] py-2.5 text-xs sm:text-sm font-bold shadow-xs hover:shadow-md transition-all"
+          <Link
+            href={unitHref}
+            onClick={(e) => e.stopPropagation()}
+            className="btn-primary flex-1 min-h-[44px] py-2.5 text-xs sm:text-sm font-bold shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-1.5"
           >
-            <span>عرض التفاصيل والحجز</span>
+            <span>عرض التفاصيل الكاملة والحجز</span>
             <ArrowUpLeft className="w-4 h-4 shrink-0" />
-          </button>
+          </Link>
 
           {waUrl && (
             <a

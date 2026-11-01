@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { CompanyPublicSettings, GalleryItem } from '@/lib/types';
 import { publicPageService } from '@/services/publicPageService';
@@ -34,7 +35,7 @@ const FIELD_TOGGLES: Array<{
 ];
 
 export default function PublicPageAdminPage() {
-  const { currentUser, buildings, zones } = useApp();
+  const { currentUser, buildings, zones, currentCompany } = useApp();
   const [settings, setSettings] = useState<CompanyPublicSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -81,9 +82,10 @@ export default function PublicPageAdminPage() {
     setRefreshKey((k) => k + 1);
   }, []);
 
+  const companyIdentifier = currentCompany?.slug || settings?.companyId;
   const shareUrl =
-    settings && typeof window !== 'undefined'
-      ? `${window.location.origin}/p/${settings.companyId}`
+    companyIdentifier && typeof window !== 'undefined'
+      ? `${window.location.origin}/c/${companyIdentifier}`
       : '';
 
   const copyLink = async () => {
@@ -269,6 +271,26 @@ export default function PublicPageAdminPage() {
               <Globe className="w-4 h-4" />
               فتح الصفحة
             </a>
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-on-surface-variant mt-2 px-1">
+            <span>
+              {currentCompany?.slug ? (
+                <>
+                  معرف الرابط الفريد:{' '}
+                  <span className="font-mono font-bold text-primary" dir="ltr">
+                    /c/{currentCompany.slug}
+                  </span>
+                </>
+              ) : (
+                <>يمكنك تخصيص اسم فريد ومختصر لرابط صفحتك بدلاً من المعرف الرقمي</>
+              )}
+            </span>
+            <Link
+              href="/admin/company"
+              className="text-primary hover:underline font-bold inline-flex items-center gap-1"
+            >
+              {currentCompany?.slug ? 'تعديل المعرف' : 'تخصيص اسم الرابط'}
+            </Link>
           </div>
         </div>
       </div>

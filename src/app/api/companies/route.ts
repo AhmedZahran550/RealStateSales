@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
       id: c.id,
       name: c.name,
       commercialName: c.commercial_name || undefined,
+      slug: c.slug || undefined,
       logoUrl: c.logo_url || undefined,
       phone: c.phone || undefined,
       email: c.email || undefined,

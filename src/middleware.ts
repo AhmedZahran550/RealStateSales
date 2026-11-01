@@ -11,6 +11,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/upload') ||
     // الصفحة العامة للشركات والوحدات وحجوزاتها العامة (بدون تسجيل دخول)
     pathname.startsWith('/p/') ||
+    pathname.startsWith('/c/') ||
     pathname.startsWith('/u/') ||
     pathname.startsWith('/api/public') ||
     pathname === '/favicon.ico' ||

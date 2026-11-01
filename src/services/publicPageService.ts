@@ -10,6 +10,7 @@ export interface PublicPageData {
     id: string;
     name: string;
     commercialName?: string;
+    slug?: string;
     logoUrl?: string;
     phone?: string;
     email?: string;

@@ -16,14 +16,22 @@ export type PublicPageFailure = {
 };
 
 export async function getPublicPageData(
-  companyId: string
+  companyIdOrSlug: string
 ): Promise<{ data?: PublicPageData } & PublicPageFailure> {
-  // 1. جلب الشركة والتحقق من تفعيلها
-  const { data: company, error: companyErr } = await serverSupabase
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(companyIdOrSlug);
+
+  // 1. جلب الشركة والتحقق من تفعيلها (سواء عبر الـ id أو عبر الـ slug)
+  let compQuery = serverSupabase
     .from('companies')
-    .select('id, name, commercial_name, logo_url, phone, email, address, is_active')
-    .eq('id', companyId)
-    .maybeSingle();
+    .select('id, name, commercial_name, slug, logo_url, phone, email, address, is_active');
+
+  if (isUuid) {
+    compQuery = compQuery.eq('id', companyIdOrSlug);
+  } else {
+    compQuery = compQuery.eq('slug', companyIdOrSlug.toLowerCase().trim());
+  }
+
+  const { data: company, error: companyErr } = await compQuery.maybeSingle();
 
   if (companyErr || !company || !company.is_active) {
     return {
@@ -32,6 +40,8 @@ export async function getPublicPageData(
       reason: 'not_found',
     };
   }
+
+  const companyId = company.id;
 
   // 2. جلب الإعدادات والتحقق من تفعيل الصفحة العامة
   const { data: dbSettings } = await serverSupabase
@@ -152,6 +162,7 @@ export async function getPublicPageData(
         id: company.id,
         name: company.name,
         commercialName: company.commercial_name || undefined,
+        slug: company.slug || undefined,
         logoUrl: company.logo_url || undefined,
         phone: company.phone || undefined,
         email: company.email || undefined,
@@ -173,6 +184,7 @@ export type PublicUnitDetail = PublicUnit & {
   lng?: number;
   companyId: string;
   companyName?: string;
+  companySlug?: string;
   features?: string[];
 };
 
@@ -185,6 +197,7 @@ export async function getPublicUnitData(unitId: string): Promise<{
     id: string;
     name: string;
     commercialName?: string;
+    slug?: string;
     logoUrl?: string;
     phone?: string;
     email?: string;
@@ -282,6 +295,7 @@ export async function getPublicUnitData(unitId: string): Promise<{
     lng: dbUnit.lng ? Number(dbUnit.lng) : undefined,
     companyId: company.id,
     companyName: company.name,
+    companySlug: company.slug || undefined,
     media: sortedMedia,
   };
 
@@ -292,6 +306,7 @@ export async function getPublicUnitData(unitId: string): Promise<{
       id: company.id,
       name: company.name,
       commercialName: company.commercial_name || undefined,
+      slug: company.slug || undefined,
       logoUrl: company.logo_url || undefined,
       phone: company.phone || undefined,
       email: company.email || undefined,

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
     let query = serverSupabase.from('units').select(`
       *,
-      companies (name),
+      companies (name, slug),
       buildings (zone_id, plot_no, features),
       unit_media (*)
     `);
@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
       id: u.id,
       companyId: u.company_id || undefined,
       companyName: u.companies?.name || undefined,
+      companySlug: u.companies?.slug || undefined,
       buildingId: Number(u.building_id),
       zoneId: u.buildings?.zone_id || 1,
       plotNo: u.buildings?.plot_no || 1,

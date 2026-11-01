@@ -11,16 +11,16 @@ export type ZoneList = Parameters<typeof zoneDisplayName>[1];
 
 /**
  * إنشاء الرابط العام المباشر لصفحة معاينة الوحدة الديناميكية
- * يدعم كلاً من المسار المباشر (/u/[id]) والمسار الفرعي من صفحة الشركة (/p/[companyId]/u/[id])
+ * يدعم كلاً من المسار المخصص بالاسم الفريد (/c/[slug]/u/[id]) والمسارات البديلة
  */
-export function getUnitPublicUrl(unitId: string, origin?: string, companyId?: string): string {
+export function getUnitPublicUrl(unitId: string, origin?: string, companyIdentifier?: string): string {
   const base =
     origin ||
     (typeof window !== 'undefined' && window.location.origin ? window.location.origin : '') ||
     process.env.NEXT_PUBLIC_APP_URL ||
     '';
-  if (companyId) {
-    return `${base}/p/${companyId}/u/${unitId}`;
+  if (companyIdentifier) {
+    return `${base}/c/${companyIdentifier}/u/${unitId}`;
   }
   return `${base}/u/${unitId}`;
 }
@@ -32,7 +32,8 @@ export function getUnitPublicUrl(unitId: string, origin?: string, companyId?: st
 export function formatMediaLinksSection(unit: Unit, origin?: string): string {
   const mediaCount = (unit.media || []).length;
   const countHint = mediaCount > 0 ? ` (${mediaCount} صور وفيديو)` : '';
-  const publicUrl = getUnitPublicUrl(unit.id, origin, unit.companyId);
+  const identifier = unit.companySlug || unit.companyId;
+  const publicUrl = getUnitPublicUrl(unit.id, origin, identifier);
   return `\n\n📸 *معاينة صور وفيديوهات ومواصفات الوحدة كاملة${countHint}:*\n${publicUrl}`;
 }
 

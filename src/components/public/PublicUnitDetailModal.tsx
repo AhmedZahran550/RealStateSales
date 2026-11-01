@@ -40,6 +40,7 @@ export interface PublicUnitDetailModalProps {
   companyPhone?: string;
   companyName?: string;
   companyId?: string;
+  companySlug?: string;
 }
 
 export default function PublicUnitDetailModal({
@@ -51,6 +52,7 @@ export default function PublicUnitDetailModal({
   companyPhone,
   companyName,
   companyId,
+  companySlug,
 }: PublicUnitDetailModalProps) {
   const images = useMemo(() => (unit ? allImageUrls(unit.media) : []), [unit]);
   const videos = useMemo(
@@ -114,10 +116,11 @@ export default function PublicUnitDetailModal({
     return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
   }, [companyPhone, companyName, unit, settings.showPrice]);
 
+  const companyIdentifier = companySlug || companyId;
   const unitFullUrl = useMemo(() => {
     if (!unit) return '';
-    return companyId ? `/p/${companyId}/u/${unit.id}` : `/u/${unit.id}`;
-  }, [unit, companyId]);
+    return companyIdentifier ? `/c/${companyIdentifier}/u/${unit.id}` : `/u/${unit.id}`;
+  }, [unit, companyIdentifier]);
 
   const handleCopyShare = async () => {
     if (typeof window === 'undefined' || !unit) return;
