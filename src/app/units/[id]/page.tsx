@@ -12,6 +12,7 @@ import {
 import { useApp } from '@/context/AppContext';
 import {
   Building2,
+  Briefcase,
   Calendar,
   CreditCard,
   Layers,
@@ -206,9 +207,19 @@ export default function UnitDetailPage({
               <h1 className="text-xl sm:text-2xl font-black text-on-surface">
                 {zoneDisplayName(unit.zoneId, zones)} - قطعة {unit.plotNo}
               </h1>
-              {unit.companyName && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-semibold border border-outline-variant">
-                  {unit.companyName}
+              {(unit.belongTo || unit.companyName) && (
+                <span
+                  className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border inline-flex items-center gap-1 ${unit.belongTo && unit.belongTo !== unit.companyName
+                    ? 'bg-secondary-container/80 text-on-secondary-container border-secondary/20'
+                    : 'bg-surface-container text-on-surface-variant border-outline-variant'
+                    }`}
+                >
+                  <Briefcase className="w-3 h-3 shrink-0" />
+                  <span>
+                    {unit.belongTo && unit.belongTo !== unit.companyName
+                      ? `خاص بـ: ${unit.belongTo}`
+                      : unit.companyName || 'محفظة الشركة'}
+                  </span>
                 </span>
               )}
             </div>
@@ -222,11 +233,10 @@ export default function UnitDetailPage({
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setShowHistory((prev) => !prev)}
-            className={`px-3 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-xs font-bold border ${
-              showHistory
-                ? 'bg-primary text-on-primary border-primary'
-                : 'border-outline-variant text-on-surface-variant hover:bg-surface-container'
-            }`}
+            className={`px-3 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-xs font-bold border ${showHistory
+              ? 'bg-primary text-on-primary border-primary'
+              : 'border-outline-variant text-on-surface-variant hover:bg-surface-container'
+              }`}
           >
             <History className="w-4 h-4" />
             <span>سجل التعديلات</span>
@@ -269,33 +279,30 @@ export default function UnitDetailPage({
           <button
             type="button"
             onClick={() => handleStatusChange('available')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-              unit.status === 'available'
-                ? 'bg-success text-on-success shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${unit.status === 'available'
+              ? 'bg-success text-on-success shadow-sm'
+              : 'text-on-surface-variant hover:text-on-surface'
+              }`}
           >
             متاح للبيع
           </button>
           <button
             type="button"
             onClick={() => handleStatusChange('reserved')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-              unit.status === 'reserved'
-                ? 'bg-warning text-on-warning shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${unit.status === 'reserved'
+              ? 'bg-warning text-on-warning shadow-sm'
+              : 'text-on-surface-variant hover:text-on-surface'
+              }`}
           >
             حجز مؤقت
           </button>
           <button
             type="button"
             onClick={() => handleStatusChange('sold')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-              unit.status === 'sold'
-                ? 'bg-error text-on-error shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${unit.status === 'sold'
+              ? 'bg-error text-on-error shadow-sm'
+              : 'text-on-surface-variant hover:text-on-surface'
+              }`}
           >
             تم البيع
           </button>
@@ -414,9 +421,8 @@ export default function UnitDetailPage({
                 <button
                   key={m.id || idx}
                   onClick={() => setActiveMediaIndex(idx)}
-                  className={`w-16 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition ${
-                    activeMediaIndex === idx ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant opacity-70'
-                  }`}
+                  className={`w-16 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition ${activeMediaIndex === idx ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant opacity-70'
+                    }`}
                 >
                   {m.kind === 'video' ? (
                     <div className="w-full h-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
@@ -572,6 +578,21 @@ export default function UnitDetailPage({
               <div className="p-3 rounded-xl bg-surface-container">
                 <span className="text-[11px] text-on-surface-variant">رقم القطعة</span>
                 <p className="text-base font-black text-on-surface font-mono mt-0.5">{unit.plotNo}</p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-surface-container sm:col-span-3">
+                <span className="text-[11px] text-on-surface-variant">الجهة التابعة / خاص بـ</span>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <Briefcase className="w-4 h-4 text-primary shrink-0" />
+                  <p className="text-sm font-black text-on-surface truncate">
+                    {unit.belongTo || unit.companyName || 'محفظة الشركة'}
+                  </p>
+                  {unit.belongTo && unit.belongTo !== unit.companyName && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-bold mr-1">
+                      مطور / جهة خارجية
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

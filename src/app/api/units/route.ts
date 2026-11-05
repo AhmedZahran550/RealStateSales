@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
       companyId: u.company_id || undefined,
       companyName: u.companies?.name || undefined,
       companySlug: u.companies?.slug || undefined,
+      belongTo: u.belong_to || u.companies?.name || undefined,
       buildingId: Number(u.building_id),
       zoneId: u.buildings?.zone_id || 1,
       plotNo: u.buildings?.plot_no || 1,
@@ -85,6 +86,9 @@ export async function POST(request: NextRequest) {
 
     const insertData: any = {
       company_id: targetCompanyId,
+      belong_to: (body.belongTo && typeof body.belongTo === 'string' && body.belongTo.trim())
+        ? body.belongTo.trim()
+        : null,
       building_id: body.buildingId,
       unit_kind: body.unitKind,
       floor: body.floor !== undefined ? body.floor : null,

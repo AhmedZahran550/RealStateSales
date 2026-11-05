@@ -56,6 +56,11 @@ export function formatUnitFullDetails(
       ? `\nالمميزات والمواصفات: ${unit.features.join('، ')}`
       : '';
 
+  const developerText =
+    unit.belongTo && unit.belongTo !== unit.companyName
+      ? `\nالمطور / الجهة التابعة: ${unit.belongTo}`
+      : '';
+
   const googleMapsUrl =
     unit.lat && unit.lng ? `\n📍 الموقع على الخريطة: https://www.google.com/maps?q=${unit.lat},${unit.lng}` : '';
 
@@ -72,7 +77,7 @@ export function formatUnitFullDetails(
 المساحة: ${unit.area} م² ${unit.gardenArea ? `+ حديقة خاصة ${unit.gardenArea} م²` : ''}
 السعر: ${unit.price.toLocaleString('ar-EG')} جنيه مصري${unit.negotiable ? ' (قابل للتفاوض)' : ''}
 الاستلام: ${unit.deliveryNote || 'استلام فوري'}
-نظام السداد: ${unit.paymentTerms || 'كاش أو تقسيط بتسهيلات'}${servicesText}${googleMapsUrl}${mediaSection}
+نظام السداد: ${unit.paymentTerms || 'كاش أو تقسيط بتسهيلات'}${servicesText}${developerText}${googleMapsUrl}${mediaSection}
 
 المستشار العقاري: ${consultantName}${consultantPhone}`;
 }

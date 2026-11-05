@@ -112,6 +112,7 @@ export async function getPublicPageData(
 
   const units: PublicUnit[] = (unitsRes.data || []).map((u: any) => ({
     id: u.id,
+    belongTo: u.belong_to || undefined,
     unitKind: u.unit_kind as UnitKind,
     // plot_no يأتي من المبنى المرتبط عبر building_id (الوحدة لا تحمل رقم قطعة بنفسها)
     plotNo: Number(u.buildings?.plot_no ?? 1),
@@ -278,6 +279,7 @@ export async function getPublicUnitData(unitId: string): Promise<{
 
   const unit: PublicUnitDetail = {
     id: dbUnit.id,
+    belongTo: dbUnit.belong_to || undefined,
     unitKind: dbUnit.unit_kind as UnitKind,
     plotNo: Number(dbUnit.buildings?.plot_no ?? 1),
     zoneName,

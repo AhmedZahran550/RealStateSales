@@ -15,6 +15,7 @@ import {
   Search,
   Eye,
   Building2,
+  Briefcase,
   MessageCircle,
 } from 'lucide-react';
 
@@ -148,6 +149,19 @@ export default function BrokerQuickShareTab({
                     <span className="font-bold text-primary">{zoneDisplayName(unit.zoneId, zones)}</span>
                     <span className="font-mono font-bold text-on-surface-variant">#BD-{unit.zoneId}-{unit.plotNo}</span>
                   </div>
+
+                  {(unit.belongTo || unit.companyName) && (
+                    <div className="mb-1.5">
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold inline-flex items-center gap-1 max-w-full truncate ${
+                        unit.belongTo && unit.belongTo !== unit.companyName
+                          ? 'bg-secondary-container/80 text-on-secondary-container border border-secondary/20'
+                          : 'bg-surface-container text-on-surface-variant'
+                      }`}>
+                        <Briefcase className="w-2.5 h-2.5 shrink-0" />
+                        <span className="truncate">{unit.belongTo || unit.companyName}</span>
+                      </span>
+                    </div>
+                  )}
 
                   <h3 className="text-xs font-black text-on-surface line-clamp-1 break-words">
                     {unit.description || `وحدة سكنية فاخرة قطعة ${unit.plotNo}`}

@@ -17,6 +17,7 @@ export const exportUnitsToExcel = (units: Unit[], filename = 'وحدات_الح�
     'موعد التسليم': u.deliveryNote,
     'نظام السداد': u.paymentTerms,
     'الحالة': UNIT_STATUS_CONFIG[u.status]?.label || u.status,
+    'خاص بـ / الجهة التابعة': u.belongTo || u.companyName || 'محفظة الشركة',
     'الشركة المسؤولة': u.companyName || '-',
     'المميزات والمواصفات': (u.features || []).join('، '),
     'تاريخ الإضافة': new Date(u.createdAt).toLocaleDateString('ar-EG'),
@@ -43,6 +44,7 @@ export const exportUnitsToExcel = (units: Unit[], filename = 'وحدات_الح�
     { wch: 25 }, // delivery
     { wch: 30 }, // terms
     { wch: 16 }, // status
+    { wch: 24 }, // belongTo
     { wch: 22 }, // broker
     { wch: 35 }, // services
     { wch: 16 }, // date

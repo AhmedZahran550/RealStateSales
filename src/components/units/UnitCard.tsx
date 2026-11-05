@@ -13,6 +13,7 @@ import {
   MessageCircle,
   ArrowLeft,
   Building2,
+  Briefcase,
 } from 'lucide-react';
 
 interface UnitCardProps {
@@ -103,114 +104,120 @@ export default function UnitCard({
               {unit.floor === 0 ? 'أرضي' : unit.floor ? `دور ${unit.floor}` : 'متكرر'}
               {unit.side ? ` (${unit.side})` : ''}
             </span>
-            {unit.companyName && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-semibold truncate max-w-[110px]">
-                {unit.companyName}
-              </span>
-            )}
-          </div>
+                {(unit.belongTo || unit.companyName) && (
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded font-semibold truncate max-w-[130px] inline-flex items-center gap-1 ${unit.belongTo && unit.belongTo !== unit.companyName
+                        ? 'bg-secondary-container/80 text-on-secondary-container border border-secondary/20'
+                        : 'bg-surface-container-high text-on-surface-variant'
+                      }`}
+                    title={`الجهة التابعة: ${unit.belongTo || unit.companyName}`}
+                  >
+                    <Briefcase className="w-2.5 h-2.5 shrink-0" />
+                    <span className="truncate">{unit.belongTo || unit.companyName}</span>
+                  </span>
+                )}
+              </div>
 
           {/* Primary Price & Price/m² Display */}
-          <div className="mt-1.5 sm:mt-2 flex items-baseline gap-1.5 sm:gap-2 flex-wrap min-w-0">
-            <span className="text-sm sm:text-lg font-black text-primary font-mono">
-              {unit.price.toLocaleString('ar-EG')}{' '}
-              <span className="text-[10px] sm:text-[11px] font-bold text-on-surface-variant">ج.م</span>
-            </span>
-            {pricePerMeter && (
-              <span className="text-[10px] sm:text-[11px] text-on-surface-variant font-medium font-mono">
-                ({pricePerMeter.toLocaleString('ar-EG')} ج/م²)
+            <div className="mt-1.5 sm:mt-2 flex items-baseline gap-1.5 sm:gap-2 flex-wrap min-w-0">
+              <span className="text-sm sm:text-lg font-black text-primary font-mono">
+                {unit.price.toLocaleString('ar-EG')}{' '}
+                <span className="text-[10px] sm:text-[11px] font-bold text-on-surface-variant">ج.م</span>
               </span>
-            )}
+              {pricePerMeter && (
+                <span className="text-[10px] sm:text-[11px] text-on-surface-variant font-medium font-mono">
+                  ({pricePerMeter.toLocaleString('ar-EG')} ج/م²)
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Specifications Row: Area, Down Payment, Delivery */}
-      <div className="grid grid-cols-3 gap-1.5 bg-surface-container rounded-xl p-2.5 text-center text-[11px] min-w-0">
-        <div className="min-w-0">
-          <span className="text-on-surface-variant block text-[10px] truncate">المساحة</span>
-          <strong className="text-on-surface font-black font-mono truncate block">{unit.area} م²</strong>
-        </div>
-        <div className="min-w-0">
-          <span className="text-on-surface-variant block text-[10px] truncate">المقدم (10%)</span>
-          <strong className="text-on-surface font-black font-mono truncate block">
-            {(unit.price * 0.1).toLocaleString('ar-EG')}
-          </strong>
-        </div>
-        <div className="min-w-0">
-          <span className="text-on-surface-variant block text-[10px] truncate">الاستلام</span>
-          <strong className="text-on-surface font-bold truncate block">{unit.deliveryNote || 'استلام فوري'}</strong>
-        </div>
-      </div>
-
-      {/* Payment note if present */}
-      {unit.paymentTerms && (
-        <div className="text-[11px] text-on-surface-variant flex items-center gap-1.5 px-1 truncate">
-          <CreditCard className="w-3.5 h-3.5 text-primary shrink-0" />
-          <span className="truncate">{unit.paymentTerms}</span>
-        </div>
-      )}
-
-      {/* Quick Status Buttons */}
-      {onStatusChange && (
-        <div className="flex items-center justify-between gap-1 p-1 rounded-xl bg-surface-container text-[11px] border border-outline-variant/60">
-          <span className="text-[10px] font-bold text-on-surface-variant px-1.5">الحالة:</span>
-          <div className="flex items-center gap-1">
-            {(['available', 'reserved', 'sold'] as const).map((st) => (
-              <button
-                key={st}
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onStatusChange(unit.id, st);
-                }}
-                className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition cursor-pointer ${
-                  unit.status === st
-                    ? st === 'available'
-                      ? 'bg-success text-on-success shadow-xs'
-                      : st === 'reserved'
-                      ? 'bg-warning text-on-warning shadow-xs'
-                      : 'bg-error text-on-error shadow-xs'
-                    : 'text-on-surface-variant hover:bg-surface-container-high'
-                }`}
-              >
-                {st === 'available' ? 'متاح' : st === 'reserved' ? 'حجز' : 'مباع'}
-              </button>
-            ))}
+        {/* Specifications Row: Area, Down Payment, Delivery */}
+        <div className="grid grid-cols-3 gap-1.5 bg-surface-container rounded-xl p-2.5 text-center text-[11px] min-w-0">
+          <div className="min-w-0">
+            <span className="text-on-surface-variant block text-[10px] truncate">المساحة</span>
+            <strong className="text-on-surface font-black font-mono truncate block">{unit.area} م²</strong>
+          </div>
+          <div className="min-w-0">
+            <span className="text-on-surface-variant block text-[10px] truncate">المقدم (10%)</span>
+            <strong className="text-on-surface font-black font-mono truncate block">
+              {(unit.price * 0.1).toLocaleString('ar-EG')}
+            </strong>
+          </div>
+          <div className="min-w-0">
+            <span className="text-on-surface-variant block text-[10px] truncate">الاستلام</span>
+            <strong className="text-on-surface font-bold truncate block">{unit.deliveryNote || 'استلام فوري'}</strong>
           </div>
         </div>
-      )}
 
-      {/* Action Links */}
-      <div className="flex items-center gap-1.5 pt-1.5 border-t border-outline-variant/40 min-w-0">
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="btn-tonal flex-1 py-2 text-xs flex items-center justify-center gap-1 font-bold min-h-[40px]"
-          title="نسخ تفاصيل الوحدة"
-        >
-          {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
-          <span>{copied ? 'تم النسخ' : 'نسخ'}</span>
-        </button>
+        {/* Payment note if present */}
+        {unit.paymentTerms && (
+          <div className="text-[11px] text-on-surface-variant flex items-center gap-1.5 px-1 truncate">
+            <CreditCard className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span className="truncate">{unit.paymentTerms}</span>
+          </div>
+        )}
 
-        <a
-          href={createUnitWhatsAppUrl(unit, currentUser, undefined, zones)}
-          target="_blank"
-          rel="noreferrer"
-          className="btn-primary flex-1 py-2 text-xs flex items-center justify-center gap-1 font-bold min-h-[40px]"
-        >
-          <MessageCircle className="w-3.5 h-3.5" />
-          <span>واتساب</span>
-        </a>
+        {/* Quick Status Buttons */}
+        {onStatusChange && (
+          <div className="flex items-center justify-between gap-1 p-1 rounded-xl bg-surface-container text-[11px] border border-outline-variant/60">
+            <span className="text-[10px] font-bold text-on-surface-variant px-1.5">الحالة:</span>
+            <div className="flex items-center gap-1">
+              {(['available', 'reserved', 'sold'] as const).map((st) => (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStatusChange(unit.id, st);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition cursor-pointer ${unit.status === st
+                      ? st === 'available'
+                        ? 'bg-success text-on-success shadow-xs'
+                        : st === 'reserved'
+                          ? 'bg-warning text-on-warning shadow-xs'
+                          : 'bg-error text-on-error shadow-xs'
+                      : 'text-on-surface-variant hover:bg-surface-container-high'
+                    }`}
+                >
+                  {st === 'available' ? 'متاح' : st === 'reserved' ? 'حجز' : 'مباع'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
-        <Link
-          href={`/units/${unit.id}`}
-          className="btn-tonal p-2.5 min-h-[40px] min-w-[40px] flex items-center justify-center"
-          title="عرض صفحة التفاصيل الكاملة"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Link>
+        {/* Action Links */}
+        <div className="flex items-center gap-1.5 pt-1.5 border-t border-outline-variant/40 min-w-0">
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="btn-tonal flex-1 py-2 text-xs flex items-center justify-center gap-1 font-bold min-h-[40px]"
+            title="نسخ تفاصيل الوحدة"
+          >
+            {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{copied ? 'تم النسخ' : 'نسخ'}</span>
+          </button>
+
+          <a
+            href={createUnitWhatsAppUrl(unit, currentUser, undefined, zones)}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-primary flex-1 py-2 text-xs flex items-center justify-center gap-1 font-bold min-h-[40px]"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span>واتساب</span>
+          </a>
+
+          <Link
+            href={`/units/${unit.id}`}
+            className="btn-tonal p-2.5 min-h-[40px] min-w-[40px] flex items-center justify-center"
+            title="عرض صفحة التفاصيل الكاملة"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
-    </div>
-  );
+      );
 }

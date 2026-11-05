@@ -9,6 +9,7 @@ import BuildingCard from '@/components/buildings/BuildingCard';
 import UnitCard from '@/components/units/UnitCard';
 import {
   Building2,
+  Briefcase,
   Home,
   Plus,
   Edit,
@@ -63,6 +64,7 @@ export default function UnitsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [zoneFilter, setZoneFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [belongToFilter, setBelongToFilter] = useState<string>('all');
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -78,21 +80,21 @@ export default function UnitsPage() {
       } else if (typeof window !== 'undefined' && window.innerWidth < 768) {
         setViewMode('grid');
       }
-    } catch {}
+    } catch { }
   }, []);
 
   const handleToggleInventoryView = (mode: 'units' | 'buildings') => {
     setInventoryView(mode);
     try {
       localStorage.setItem('brokers_inventory_view_mode', mode);
-    } catch {}
+    } catch { }
   };
 
   const handleToggleViewMode = (mode: 'grid' | 'table') => {
     setViewMode(mode);
     try {
       localStorage.setItem('brokers_units_view_mode', mode);
-    } catch {}
+    } catch { }
   };
 
   const showToast = (msg: string) => {
@@ -112,6 +114,16 @@ export default function UnitsPage() {
   const mainZones = useMemo(() => zones.filter((z) => z.parentId == null), [zones]);
   const subZonesOf = (parentId: number) => zones.filter((z) => z.parentId === parentId);
 
+  // استخراج قائمة الجهات والمطورين المميزة
+  const uniqueBelongToEntities = useMemo(() => {
+    const set = new Set<string>();
+    myUnits.forEach((u) => {
+      const entity = u.belongTo?.trim() || u.companyName?.trim();
+      if (entity) set.add(entity);
+    });
+    return Array.from(set);
+  }, [myUnits]);
+
   // Filtered & sorted units (default order: per areas numbers, then plotNo, then floor)
   const filteredUnits = useMemo(() => {
     const list = myUnits.filter((unit) => {
@@ -130,6 +142,12 @@ export default function UnitsPage() {
       // Type
       if (typeFilter !== 'all' && unit.unitKind !== typeFilter) return false;
 
+      // BelongTo / Developer Filter
+      if (belongToFilter !== 'all') {
+        const entity = unit.belongTo || unit.companyName;
+        if (entity !== belongToFilter) return false;
+      }
+
       // Search term
       if (searchTerm) {
         const q = searchTerm.toLowerCase();
@@ -138,7 +156,8 @@ export default function UnitsPage() {
         const matchDesc = unit.description?.toLowerCase().includes(q);
         const matchCode = `bd-${unit.zoneId}-${unit.plotNo}`.toLowerCase().includes(q);
         const matchCompany = unit.companyName?.toLowerCase().includes(q);
-        if (!matchPlot && !matchZone && !matchDesc && !matchCode && !matchCompany) return false;
+        const matchBelongTo = unit.belongTo?.toLowerCase().includes(q);
+        if (!matchPlot && !matchZone && !matchDesc && !matchCode && !matchCompany && !matchBelongTo) return false;
       }
 
       return true;
@@ -165,319 +184,311 @@ export default function UnitsPage() {
       }
       return 0;
     });
-  }, [myUnits, zones, statusFilter, zoneFilter, typeFilter, searchTerm, sortBy]);
+}, [myUnits, zones, statusFilter, zoneFilter, typeFilter, belongToFilter, searchTerm, sortBy]);
 
-  // حساب بيانات المباني وإحصائيات وحداتها
-  const buildingsWithStats = useMemo(() => {
-    const userBuildings = isSuperAdmin
-      ? buildings
-      : buildings.filter((b) => !b.companyId || b.companyId === currentUser?.companyId);
+// حساب بيانات المباني وإحصائيات وحداتها
+const buildingsWithStats = useMemo(() => {
+  const userBuildings = isSuperAdmin
+    ? buildings
+    : buildings.filter((b) => !b.companyId || b.companyId === currentUser?.companyId);
 
-    return userBuildings.map((b) => {
-      const bUnits = myUnits.filter(
-        (u) => u.buildingId === b.id || (u.zoneId === b.zoneId && u.plotNo === b.plotNo)
-      );
-      const availableCount = bUnits.filter((u) => u.status === 'available').length;
-      const reservedCount = bUnits.filter((u) => u.status === 'reserved').length;
-      const soldCount = bUnits.filter((u) => u.status === 'sold').length;
-      const totalValue = bUnits
-        .filter((u) => u.status === 'available')
-        .reduce((acc, u) => acc + (u.price || 0), 0);
+  return userBuildings.map((b) => {
+    const bUnits = myUnits.filter(
+      (u) => u.buildingId === b.id || (u.zoneId === b.zoneId && u.plotNo === b.plotNo)
+    );
+    const availableCount = bUnits.filter((u) => u.status === 'available').length;
+    const reservedCount = bUnits.filter((u) => u.status === 'reserved').length;
+    const soldCount = bUnits.filter((u) => u.status === 'sold').length;
+    const totalValue = bUnits
+      .filter((u) => u.status === 'available')
+      .reduce((acc, u) => acc + (u.price || 0), 0);
 
-      return {
-        ...b,
-        units: bUnits,
-        unitsCount: bUnits.length,
-        availableCount,
-        reservedCount,
-        soldCount,
-        totalValue,
-      };
-    });
-  }, [buildings, myUnits, isSuperAdmin, currentUser?.companyId]);
+    return {
+      ...b,
+      units: bUnits,
+      unitsCount: bUnits.length,
+      availableCount,
+      reservedCount,
+      soldCount,
+      totalValue,
+    };
+  });
+}, [buildings, myUnits, isSuperAdmin, currentUser?.companyId]);
 
-  // تصفية المباني بناءً على معايير البحث والمنطقة والحالة مع ترتيب افتراضي حسب أرقام المناطق
-  const filteredBuildings = useMemo(() => {
-    const list = buildingsWithStats.filter((b) => {
-      if (zoneFilter !== 'all') {
-        const filterId = Number(zoneFilter);
-        const isMatching =
-          b.zoneId === filterId ||
-          zones.some((z) => z.id === b.zoneId && z.parentId === filterId);
-        if (!isMatching) return false;
-      }
-      if (statusFilter === 'available' && b.availableCount === 0) return false;
-      if (statusFilter === 'reserved' && b.reservedCount === 0) return false;
-      if (statusFilter === 'sold' && b.soldCount === 0) return false;
+// تصفية المباني بناءً على معايير البحث والمنطقة والحالة مع ترتيب افتراضي حسب أرقام المناطق
+const filteredBuildings = useMemo(() => {
+  const list = buildingsWithStats.filter((b) => {
+    if (zoneFilter !== 'all') {
+      const filterId = Number(zoneFilter);
+      const isMatching =
+        b.zoneId === filterId ||
+        zones.some((z) => z.id === b.zoneId && z.parentId === filterId);
+      if (!isMatching) return false;
+    }
+    if (statusFilter === 'available' && b.availableCount === 0) return false;
+    if (statusFilter === 'reserved' && b.reservedCount === 0) return false;
+    if (statusFilter === 'sold' && b.soldCount === 0) return false;
 
-      if (searchTerm) {
-        const q = searchTerm.toLowerCase();
-        const matchPlot = b.plotNo.toString().includes(q);
-        const matchZone = zoneDisplayName(b.zoneId, zones).toLowerCase().includes(q);
-        const matchNotes = b.notes?.toLowerCase().includes(q);
-        const matchCompany = b.companyName?.toLowerCase().includes(q);
-        const matchFeat = b.features?.some((f) => f.toLowerCase().includes(q));
-        if (!matchPlot && !matchZone && !matchNotes && !matchCompany && !matchFeat) return false;
-      }
-      return true;
-    });
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      const matchPlot = b.plotNo.toString().includes(q);
+      const matchZone = zoneDisplayName(b.zoneId, zones).toLowerCase().includes(q);
+      const matchNotes = b.notes?.toLowerCase().includes(q);
+      const matchCompany = b.companyName?.toLowerCase().includes(q);
+      const matchFeat = b.features?.some((f) => f.toLowerCase().includes(q));
+      if (!matchPlot && !matchZone && !matchNotes && !matchCompany && !matchFeat) return false;
+    }
+    return true;
+  });
 
-    return list.sort((a, b) => {
-      const zoneA = getZoneSortKey(a.zoneId, zones);
-      const zoneB = getZoneSortKey(b.zoneId, zones);
-      if (zoneA !== zoneB) return zoneA - zoneB;
-      return a.plotNo - b.plotNo;
-    });
-  }, [buildingsWithStats, zones, zoneFilter, statusFilter, searchTerm]);
+  return list.sort((a, b) => {
+    const zoneA = getZoneSortKey(a.zoneId, zones);
+    const zoneB = getZoneSortKey(b.zoneId, zones);
+    if (zoneA !== zoneB) return zoneA - zoneB;
+    return a.plotNo - b.plotNo;
+  });
+}, [buildingsWithStats, zones, zoneFilter, statusFilter, searchTerm]);
 
-  const copyUnitDetails = (unit: Unit) => {
-    const text = formatUnitFullDetails(unit, currentUser, zones);
-    navigator.clipboard.writeText(text);
-    showToast(`تم نسخ تفاصيل الوحدة #BD-${unit.zoneId}-${unit.plotNo} وروابط الوسائط بنجاح!`);
-  };
+const copyUnitDetails = (unit: Unit) => {
+  const text = formatUnitFullDetails(unit, currentUser, zones);
+  navigator.clipboard.writeText(text);
+  showToast(`تم نسخ تفاصيل الوحدة #BD-${unit.zoneId}-${unit.plotNo} وروابط الوسائط بنجاح!`);
+};
 
-  return (
-    <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
-      {/* Toast Notification Feedback */}
-      {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-space-md py-space-sm bg-inverse-surface text-inverse-on-surface rounded-xl shadow-xl flex items-center gap-space-xs animate-in fade-in">
-          <CheckCircle2 className="w-5 h-5 text-primary-fixed shrink-0" />
-          <span>{toastMessage}</span>
+return (
+  <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
+    {/* Toast Notification Feedback */}
+    {toastMessage && (
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-space-md py-space-sm bg-inverse-surface text-inverse-on-surface rounded-xl shadow-xl flex items-center gap-space-xs animate-in fade-in">
+        <CheckCircle2 className="w-5 h-5 text-primary-fixed shrink-0" />
+        <span>{toastMessage}</span>
+      </div>
+    )}
+
+    {/* 1. Top Header & Action Row */}
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+      <div className="flex flex-col">
+        <div className="flex items-center gap-space-sm">
+          <h1 className="text-on-surface font-extrabold tracking-tight text-2xl lg:text-3xl">
+            سجل الوحدات والمخزون
+          </h1>
+          <span className="px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-bold text-xs">
+            {myUnits.length} وحدة مسجلة
+          </span>
         </div>
-      )}
+        <p className="text-on-surface-variant mt-1 text-sm">
+          تصفح وإدارة المحفظة العقارية الحالية، إرسال العروض الفورية، وتحديث حالات التعاقد.
+        </p>
+      </div>
 
-      {/* 1. Top Header & Action Row */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-space-sm w-full md:w-auto">
+        <button
+          onClick={() => exportUnitsToExcel(filteredUnits)}
+          className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-on-surface transition-all shadow-sm font-bold text-xs border border-surface-container-high cursor-pointer min-h-[40px]"
+          type="button"
+        >
+          <Download className="w-4 h-4 text-on-surface-variant" />
+          تصدير Excel
+        </button>
+        {(isCompanyAdmin || isSuperAdmin) && (
+          <>
+            <Link
+              href="/admin/buildings/new"
+              className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface transition-all shadow-xs font-bold text-xs border border-surface-container-high cursor-pointer min-h-[42px]"
+            >
+              <Building2 className="w-4 h-4 text-primary" />
+              <span>+ إضافة عمارة وقطع</span>
+            </Link>
+
+            <Link
+              href="/units/new"
+              className="flex items-center justify-center gap-space-xs px-space-md sm:px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all shadow-md font-bold text-xs sm:text-sm cursor-pointer min-h-[42px]"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ إضافة وحدة عقارية</span>
+            </Link>
+          </>
+        )}
+      </div>
+    </div>
+
+    {/* 2. Quick KPI Counters */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+      <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant/60 flex items-center justify-between transition-shadow hover:shadow-sm">
         <div className="flex flex-col">
-          <div className="flex items-center gap-space-sm">
-            <h1 className="text-on-surface font-extrabold tracking-tight text-2xl lg:text-3xl">
-              سجل الوحدات والمخزون
-            </h1>
-            <span className="px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-bold text-xs">
-              {myUnits.length} وحدة مسجلة
-            </span>
-          </div>
-          <p className="text-on-surface-variant mt-1 text-sm">
-            تصفح وإدارة المحفظة العقارية الحالية، إرسال العروض الفورية، وتحديث حالات التعاقد.
-          </p>
+          <span className="text-on-surface-variant font-bold text-xs">
+            إجمالي المعروض المتاح
+          </span>
+          <span className="text-on-surface font-black mt-1 text-2xl sm:text-3xl tabular-nums tracking-tight">
+            {totalAvailable} <span className="text-sm font-bold text-on-surface-variant">وحدة</span>
+          </span>
+          <span className="text-outline mt-1 text-xs tabular-nums font-semibold">
+            بقيمة {(totalValue / 1000000).toFixed(1)}M ج.م
+          </span>
         </div>
+        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <Building2 className="w-6 h-6" />
+        </div>
+      </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-space-sm w-full md:w-auto">
+      <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant/60 flex items-center justify-between transition-shadow hover:shadow-sm">
+        <div className="flex flex-col">
+          <span className="text-on-surface-variant font-bold text-xs">
+            حجز مؤقت (مفاوضات)
+          </span>
+          <span className="text-on-surface font-black mt-1 text-2xl sm:text-3xl tabular-nums tracking-tight">
+            {totalReserved} <span className="text-sm font-bold text-on-surface-variant">وحدات</span>
+          </span>
+          <span className="text-warning mt-1 text-xs font-semibold">
+            متوقع إغلاقها قريباً
+          </span>
+        </div>
+        <div className="w-12 h-12 rounded-xl bg-warning-container text-on-warning-container flex items-center justify-center shrink-0">
+          <Clock className="w-6 h-6" />
+        </div>
+      </div>
+
+      <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant/60 flex items-center justify-between transition-shadow hover:shadow-sm">
+        <div className="flex flex-col">
+          <span className="text-on-surface-variant font-bold text-xs">
+            تم التعاقد والبيع
+          </span>
+          <span className="text-on-surface font-black mt-1 text-2xl sm:text-3xl tabular-nums tracking-tight">
+            {totalSold} <span className="text-sm font-bold text-on-surface-variant">وحدات</span>
+          </span>
+          <span className="text-success mt-1 text-xs font-semibold">
+            صفقات ناجحة
+          </span>
+        </div>
+        <div className="w-12 h-12 rounded-xl bg-success-container text-on-success-container flex items-center justify-center shrink-0">
+          <CheckCircle2 className="w-6 h-6" />
+        </div>
+      </div>
+
+      <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant/60 flex items-center justify-between transition-shadow hover:shadow-sm">
+        <div className="flex flex-col">
+          <span className="text-on-surface-variant font-bold text-xs">
+            استلام فوري
+          </span>
+          <span className="text-on-surface font-black mt-1 text-2xl sm:text-3xl tabular-nums tracking-tight">
+            {myUnits.filter((u) => u.deliveryNote?.includes('فوري')).length} <span className="text-sm font-bold text-on-surface-variant">وحدة</span>
+          </span>
+          <span className="text-primary mt-1 text-xs font-bold">
+            أعلى طلب للمستثمرين
+          </span>
+        </div>
+        <div className="w-12 h-12 rounded-xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0">
+          <Key className="w-6 h-6" />
+        </div>
+      </div>
+    </div>
+
+    {/* 3. Search, Filter & Tabs Card */}
+    <div className="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col gap-space-md border border-surface-container-high/40">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+        <div className="flex items-center gap-space-xs overflow-x-auto pb-1 md:pb-0">
           <button
-            onClick={() => exportUnitsToExcel(filteredUnits)}
-            className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-on-surface transition-all shadow-sm font-bold text-xs border border-surface-container-high cursor-pointer min-h-[40px]"
+            onClick={() => setStatusFilter('all')}
+            className={`px-space-md py-space-xs rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${statusFilter === 'all'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
+              }`}
             type="button"
           >
-            <Download className="w-4 h-4 text-on-surface-variant" />
-            تصدير Excel
+            الكل ({myUnits.length})
           </button>
-          {(isCompanyAdmin || isSuperAdmin) && (
-            <>
-              <Link
-                href="/admin/buildings/new"
-                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface transition-all shadow-xs font-bold text-xs border border-surface-container-high cursor-pointer min-h-[42px]"
-              >
-                <Building2 className="w-4 h-4 text-primary" />
-                <span>+ إضافة عمارة وقطع</span>
-              </Link>
+          <button
+            onClick={() => setStatusFilter('available')}
+            className={`px-space-md py-space-xs rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${statusFilter === 'available'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
+              }`}
+            type="button"
+          >
+            متاحة للبيع ({totalAvailable})
+          </button>
+          <button
+            onClick={() => setStatusFilter('reserved')}
+            className={`px-space-md py-space-xs rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${statusFilter === 'reserved'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
+              }`}
+            type="button"
+          >
+            حجز مؤقت ({totalReserved})
+          </button>
+          <button
+            onClick={() => setStatusFilter('sold')}
+            className={`px-space-md py-space-xs rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${statusFilter === 'sold'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
+              }`}
+            type="button"
+          >
+            تم البيع ({totalSold})
+          </button>
+        </div>
 
-              <Link
-                href="/units/new"
-                className="flex items-center justify-center gap-space-xs px-space-md sm:px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all shadow-md font-bold text-xs sm:text-sm cursor-pointer min-h-[42px]"
+        <div className="flex items-center flex-wrap gap-2 self-end md:self-auto">
+          {/* التبديل بين عرض الوحدات وعرض المباني */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-container border border-surface-container-high">
+            <button
+              type="button"
+              onClick={() => handleToggleInventoryView('units')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${inventoryView === 'units'
+                  ? 'bg-surface-container-lowest text-primary shadow-xs'
+                  : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+            >
+              <Home className="w-3.5 h-3.5" />
+              <span>عرض الوحدات ({filteredUnits.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleToggleInventoryView('buildings')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${inventoryView === 'buildings'
+                  ? 'bg-surface-container-lowest text-primary shadow-xs'
+                  : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>عرض المباني ({filteredBuildings.length})</span>
+            </button>
+          </div>
+
+          {/* عرض جدول / شبكة (خاص بنمط الوحدات فقط — الجدول هو العرض الافتراضي) */}
+          {inventoryView === 'units' && (
+            <div className="flex items-center gap-space-xs bg-surface-container-low p-1 rounded-xl">
+              <button
+                onClick={() => handleToggleViewMode('table')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs cursor-pointer ${viewMode === 'table'
+                    ? 'bg-surface-container-lowest text-primary shadow-xs'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                type="button"
               >
-                <Plus className="w-4 h-4" />
-                <span>+ إضافة وحدة عقارية</span>
-              </Link>
-            </>
+                <TableIcon className="w-3.5 h-3.5" />
+                <span>جدول</span>
+              </button>
+              <button
+                onClick={() => handleToggleViewMode('grid')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs cursor-pointer ${viewMode === 'grid'
+                    ? 'bg-surface-container-lowest text-primary shadow-xs'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                type="button"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>شبكة</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
 
-      {/* 2. Quick KPI Counters */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant/60 flex items-center justify-between transition-shadow hover:shadow-sm">
-          <div className="flex flex-col">
-            <span className="text-on-surface-variant font-bold text-xs">
-              إجمالي المعروض المتاح
-            </span>
-            <span className="text-on-surface font-black mt-1 text-2xl sm:text-3xl tabular-nums tracking-tight">
-              {totalAvailable} <span className="text-sm font-bold text-on-surface-variant">وحدة</span>
-            </span>
-            <span className="text-outline mt-1 text-xs tabular-nums font-semibold">
-              بقيمة {(totalValue / 1000000).toFixed(1)}M ج.م
-            </span>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-            <Building2 className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant/60 flex items-center justify-between transition-shadow hover:shadow-sm">
-          <div className="flex flex-col">
-            <span className="text-on-surface-variant font-bold text-xs">
-              حجز مؤقت (مفاوضات)
-            </span>
-            <span className="text-on-surface font-black mt-1 text-2xl sm:text-3xl tabular-nums tracking-tight">
-              {totalReserved} <span className="text-sm font-bold text-on-surface-variant">وحدات</span>
-            </span>
-            <span className="text-warning mt-1 text-xs font-semibold">
-              متوقع إغلاقها قريباً
-            </span>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-warning-container text-on-warning-container flex items-center justify-center shrink-0">
-            <Clock className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant/60 flex items-center justify-between transition-shadow hover:shadow-sm">
-          <div className="flex flex-col">
-            <span className="text-on-surface-variant font-bold text-xs">
-              تم التعاقد والبيع
-            </span>
-            <span className="text-on-surface font-black mt-1 text-2xl sm:text-3xl tabular-nums tracking-tight">
-              {totalSold} <span className="text-sm font-bold text-on-surface-variant">وحدات</span>
-            </span>
-            <span className="text-success mt-1 text-xs font-semibold">
-              صفقات ناجحة
-            </span>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-success-container text-on-success-container flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant/60 flex items-center justify-between transition-shadow hover:shadow-sm">
-          <div className="flex flex-col">
-            <span className="text-on-surface-variant font-bold text-xs">
-              استلام فوري
-            </span>
-            <span className="text-on-surface font-black mt-1 text-2xl sm:text-3xl tabular-nums tracking-tight">
-              {myUnits.filter((u) => u.deliveryNote?.includes('فوري')).length} <span className="text-sm font-bold text-on-surface-variant">وحدة</span>
-            </span>
-            <span className="text-primary mt-1 text-xs font-bold">
-              أعلى طلب للمستثمرين
-            </span>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0">
-            <Key className="w-6 h-6" />
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Search, Filter & Tabs Card */}
-      <div className="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col gap-space-md border border-surface-container-high/40">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
-          <div className="flex items-center gap-space-xs overflow-x-auto pb-1 md:pb-0">
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={`px-space-md py-space-xs rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${
-                statusFilter === 'all'
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
-              }`}
-              type="button"
-            >
-              الكل ({myUnits.length})
-            </button>
-            <button
-              onClick={() => setStatusFilter('available')}
-              className={`px-space-md py-space-xs rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${
-                statusFilter === 'available'
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
-              }`}
-              type="button"
-            >
-              متاحة للبيع ({totalAvailable})
-            </button>
-            <button
-              onClick={() => setStatusFilter('reserved')}
-              className={`px-space-md py-space-xs rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${
-                statusFilter === 'reserved'
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
-              }`}
-              type="button"
-            >
-              حجز مؤقت ({totalReserved})
-            </button>
-            <button
-              onClick={() => setStatusFilter('sold')}
-              className={`px-space-md py-space-xs rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-xs ${
-                statusFilter === 'sold'
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
-              }`}
-              type="button"
-            >
-              تم البيع ({totalSold})
-            </button>
-          </div>
-
-          <div className="flex items-center flex-wrap gap-2 self-end md:self-auto">
-            {/* التبديل بين عرض الوحدات وعرض المباني */}
-            <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-container border border-surface-container-high">
-              <button
-                type="button"
-                onClick={() => handleToggleInventoryView('units')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  inventoryView === 'units'
-                    ? 'bg-surface-container-lowest text-primary shadow-xs'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                <Home className="w-3.5 h-3.5" />
-                <span>عرض الوحدات ({filteredUnits.length})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleToggleInventoryView('buildings')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  inventoryView === 'buildings'
-                    ? 'bg-surface-container-lowest text-primary shadow-xs'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>عرض المباني ({filteredBuildings.length})</span>
-              </button>
-            </div>
-
-            {/* عرض جدول / شبكة (خاص بنمط الوحدات فقط — الجدول هو العرض الافتراضي) */}
-            {inventoryView === 'units' && (
-              <div className="flex items-center gap-space-xs bg-surface-container-low p-1 rounded-xl">
-                <button
-                  onClick={() => handleToggleViewMode('table')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs cursor-pointer ${
-                    viewMode === 'table'
-                      ? 'bg-surface-container-lowest text-primary shadow-xs'
-                      : 'text-on-surface-variant hover:text-on-surface'
-                  }`}
-                  type="button"
-                >
-                  <TableIcon className="w-3.5 h-3.5" />
-                  <span>جدول</span>
-                </button>
-                <button
-                  onClick={() => handleToggleViewMode('grid')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs cursor-pointer ${
-                    viewMode === 'grid'
-                      ? 'bg-surface-container-lowest text-primary shadow-xs'
-                      : 'text-on-surface-variant hover:text-on-surface'
-                  }`}
-                  type="button"
-                >
-                  <LayoutGrid className="w-3.5 h-3.5" />
-                  <span>شبكة</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Filter Inputs Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm">
+      {/* Filter Inputs Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-sm">
           {/* Search */}
           <div className="relative">
             <Search className="w-4 h-4 text-outline absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -485,7 +496,7 @@ export default function UnitsPage() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="كود الوحدة، رقم القطعة، الوصف..."
+              placeholder="كود الوحدة، المطور، رقم القطعة..."
               className="w-full border border-outline-variant bg-surface-container-lowest rounded-xl py-2.5 pr-9 pl-space-sm text-on-surface placeholder:text-outline font-semibold focus:outline-none focus:ring-2 focus:ring-primary text-xs shadow-xs"
             />
           </div>
@@ -543,6 +554,23 @@ export default function UnitsPage() {
             <ChevronDown className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
+          {/* BelongTo / Developer Dropdown */}
+          <div className="relative">
+            <select
+              value={belongToFilter}
+              onChange={(e) => setBelongToFilter(e.target.value)}
+              className="w-full border border-outline-variant bg-surface-container-lowest rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
+            >
+              <option value="all" className="bg-surface-container-lowest text-on-surface">الجهة / المطور (الكل)</option>
+              {uniqueBelongToEntities.map((entity) => (
+                <option key={entity} value={entity} className="bg-surface-container-lowest text-on-surface">
+                  {entity}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+
           {/* Sort Selector */}
           <div className="relative">
             <select
@@ -563,38 +591,47 @@ export default function UnitsPage() {
         </div>
 
         {/* Active Filter Chips */}
-        {(zoneFilter !== 'all' || typeFilter !== 'all' || searchTerm) && (
-          <div className="flex items-center flex-wrap gap-space-xs pt-1 border-t border-surface-container-low pt-2">
-            <span className="text-outline text-xs">الفلاتر المطبقة:</span>
-            {zoneFilter !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface text-xs">
-                المنطقة: {zoneDisplayName(Number(zoneFilter), zones)}
-                <button onClick={() => setZoneFilter('all')} className="hover:text-error cursor-pointer">
-                  ✕
-                </button>
-              </span>
-            )}
-            {typeFilter !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface text-xs">
-                النوع: {UNIT_KIND_LABELS[typeFilter as UnitKind] || typeFilter}
-                <button onClick={() => setTypeFilter('all')} className="hover:text-error cursor-pointer">
-                  ✕
-                </button>
-              </span>
-            )}
-            <button
-              onClick={() => {
-                setZoneFilter('all');
-                setTypeFilter('all');
-                setSearchTerm('');
-              }}
-              className="text-secondary hover:underline mr-space-xs font-bold text-xs cursor-pointer"
-              type="button"
-            >
-              إعادة تعيين الكل
-            </button>
-          </div>
-        )}
+          {(zoneFilter !== 'all' || typeFilter !== 'all' || belongToFilter !== 'all' || searchTerm) && (
+            <div className="flex items-center flex-wrap gap-space-xs pt-1 border-t border-surface-container-low pt-2">
+              <span className="text-outline text-xs">الفلاتر المطبقة:</span>
+              {zoneFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface text-xs">
+                  المنطقة: {zoneDisplayName(Number(zoneFilter), zones)}
+                  <button onClick={() => setZoneFilter('all')} className="hover:text-error cursor-pointer">
+                    ✕
+                  </button>
+                </span>
+              )}
+              {typeFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface text-xs">
+                  النوع: {UNIT_KIND_LABELS[typeFilter as UnitKind] || typeFilter}
+                  <button onClick={() => setTypeFilter('all')} className="hover:text-error cursor-pointer">
+                    ✕
+                  </button>
+                </span>
+              )}
+              {belongToFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface text-xs">
+                  الجهة: {belongToFilter}
+                  <button onClick={() => setBelongToFilter('all')} className="hover:text-error cursor-pointer">
+                    ✕
+                  </button>
+                </span>
+              )}
+              <button
+                onClick={() => {
+                  setZoneFilter('all');
+                  setTypeFilter('all');
+                  setBelongToFilter('all');
+                  setSearchTerm('');
+                }}
+                className="text-secondary hover:underline mr-space-xs font-bold text-xs cursor-pointer"
+                type="button"
+              >
+                إعادة تعيين الكل
+              </button>
+            </div>
+          )}
       </div>
 
       {/* 4. Inventory Showcase (Buildings View OR Units View) */}
@@ -683,198 +720,210 @@ export default function UnitsPage() {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[760px] text-right text-xs">
-                <thead className="bg-surface-container-low text-on-surface-variant font-bold border-b border-surface-container-high">
-                  <tr>
-                    <th className="p-3.5">الوحدة</th>
-                    <th
-                      onClick={() => setSortBy(sortBy === 'zone_asc' ? 'plot_asc' : 'zone_asc')}
-                      className="p-3.5 cursor-pointer hover:text-primary transition select-none"
-                      title="اضغط للترتيب حسب المنطقة أو القطعة"
-                    >
-                      <div className="flex items-center gap-1">
-                        <span>المنطقة والقطعة</span>
-                        {sortBy === 'zone_asc' ? (
-                          <span className="text-[10px] text-primary font-bold">↑ منطقة</span>
-                        ) : sortBy === 'plot_asc' ? (
-                          <span className="text-[10px] text-primary font-bold">↑ قطعة</span>
-                        ) : (
-                          <ArrowUpDown className="w-3 h-3 text-outline" />
-                        )}
-                      </div>
-                    </th>
-                    <th className="p-3.5">نوع الوحدة والدور</th>
-                    <th
-                      onClick={() => setSortBy(sortBy === 'area_desc' ? 'area_asc' : 'area_desc')}
-                      className="p-3.5 cursor-pointer hover:text-primary transition select-none"
-                      title="اضغط للترتيب حسب المساحة"
-                    >
-                      <div className="flex items-center gap-1">
-                        <span>المساحة</span>
-                        {sortBy === 'area_desc' ? (
-                          <span className="text-[10px] text-primary font-bold">↓</span>
-                        ) : sortBy === 'area_asc' ? (
-                          <span className="text-[10px] text-primary font-bold">↑</span>
-                        ) : (
-                          <ArrowUpDown className="w-3 h-3 text-outline" />
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      onClick={() => setSortBy(sortBy === 'price_asc' ? 'price_desc' : 'price_asc')}
-                      className="p-3.5 cursor-pointer hover:text-primary transition select-none"
-                      title="اضغط للترتيب حسب السعر"
-                    >
-                      <div className="flex items-center gap-1">
-                        <span>السعر الإجمالي</span>
-                        {sortBy === 'price_asc' ? (
-                          <span className="text-[10px] text-primary font-bold">↑</span>
-                        ) : sortBy === 'price_desc' ? (
-                          <span className="text-[10px] text-primary font-bold">↓</span>
-                        ) : (
-                          <ArrowUpDown className="w-3 h-3 text-outline" />
-                        )}
-                      </div>
-                    </th>
-                    <th className="p-3.5">الشركة</th>
-                    <th className="p-3.5">الحالة</th>
-                    <th className="p-3.5 text-center">الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-container-low">
-                  {filteredUnits.map((u) => {
-                    const firstMedia = u.media && u.media[0];
-                    return (
-                      <tr key={u.id} className="hover:bg-surface-container-low/50 transition-colors">
-                        <td className="p-3.5">
-                          <div className="flex items-center gap-2.5">
-                            {firstMedia ? (
-                              <img
-                                src={firstMedia.externalUrl || firstMedia.storagePath}
-                                alt=""
-                                className="w-10 h-10 rounded-lg object-cover border border-outline-variant shrink-0"
-                              />
-                            ) : (
-                              <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0 border border-outline-variant">
-                                <Home className="w-4 h-4 text-primary" />
-                              </div>
-                            )}
-                            <div>
-                              <Link
-                                href={`/units/${u.id}`}
-                                className="font-bold text-primary hover:underline block font-mono"
-                              >
-                                #BD-{u.zoneId}-{u.plotNo}
-                              </Link>
-                              <span className="text-[10px] text-on-surface-variant">
-                                {u.deliveryNote || 'استلام فوري'}
-                              </span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-3.5">
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1.5">
-                              <span className="w-5 h-5 rounded-md bg-primary text-on-primary text-[10px] font-black flex items-center justify-center shrink-0">
-                                {u.zoneId}
-                              </span>
-                              <span className="font-bold text-on-surface">{zoneDisplayName(u.zoneId, zones)}</span>
-                            </div>
-                            <span className="text-[11px] text-on-surface-variant mt-0.5">قطعة {u.plotNo}</span>
-                          </div>
-                        </td>
-                        <td className="p-3.5">
-                          <span className="font-bold text-on-surface block">
-                            {UNIT_KIND_LABELS[u.unitKind] || 'شقة'}
-                          </span>
-                          <span className="text-[11px] text-on-surface-variant">
-                            {u.floor === 0 ? 'الأرضي' : u.floor ? `الدور ${u.floor}` : 'متكرر'} {u.side ? `• ${u.side}` : ''}
-                          </span>
-                        </td>
-                        <td className="p-3.5">
-                          <span className="font-bold text-on-surface block font-mono">{u.area} م²</span>
-                          {u.gardenArea ? (
-                            <span className="text-[10px] text-success font-semibold block">+ {u.gardenArea} م² حديقة</span>
-                          ) : null}
-                        </td>
-                        <td className="p-3.5">
-                          <span className="font-black text-on-surface block font-mono">{u.price.toLocaleString('ar-EG')} ج</span>
-                          {u.area > 0 && (
-                            <span className="text-[10px] text-on-surface-variant font-semibold block">
-                              {Math.round(u.price / u.area).toLocaleString('ar-EG')} ج/م²
-                            </span>
+                  <thead className="bg-surface-container-low text-on-surface-variant font-bold border-b border-surface-container-high">
+                    <tr>
+                      <th className="p-3.5">الوحدة</th>
+                      <th
+                        onClick={() => setSortBy(sortBy === 'zone_asc' ? 'plot_asc' : 'zone_asc')}
+                        className="p-3.5 cursor-pointer hover:text-primary transition select-none"
+                        title="اضغط للترتيب حسب المنطقة أو القطعة"
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>المنطقة والقطعة</span>
+                          {sortBy === 'zone_asc' ? (
+                            <span className="text-[10px] text-primary font-bold">↑ منطقة</span>
+                          ) : sortBy === 'plot_asc' ? (
+                            <span className="text-[10px] text-primary font-bold">↑ قطعة</span>
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 text-outline" />
                           )}
-                        </td>
-                        <td className="p-3.5 font-bold text-on-surface">
-                          {u.companyName || 'محفظة الشركة'}
-                        </td>
-                        <td className="p-3.5">
-                          <select
-                            value={u.status}
-                            onChange={(e) => {
-                              const newSt = e.target.value as UnitStatus;
-                              updateUnitStatus(u.id, newSt);
-                              showToast(`تم تغيير حالة الوحدة #BD-${u.zoneId}-${u.plotNo} إلى ${newSt === 'available' ? 'متاح للبيع' : newSt === 'reserved' ? 'حجز مؤقت' : 'تم البيع'}`);
-                            }}
-                            className={`px-2 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer ${
-                              u.status === 'available'
-                                ? 'bg-success-container text-success border-success'
-                                : u.status === 'reserved'
-                                ? 'bg-warning-container text-warning border-warning'
-                                : 'bg-error-container text-on-error-container border-error'
-                            }`}
-                          >
-                            <option value="available">متاحة للبيع</option>
-                            <option value="reserved">حجز مؤقت</option>
-                            <option value="sold">تم البيع</option>
-                          </select>
-                        </td>
-                        <td className="p-3.5 text-center">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <Link
-                              href={`/units/${u.id}`}
-                              className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition"
-                              title="عرض التفاصيل الكاملة"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Link>
-                            {(isCompanyAdmin || isSuperAdmin) && (
-                              <Link
-                                href={`/units/${u.id}/edit`}
-                                className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant transition"
-                                title="تعديل بيانات الوحدة"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Link>
+                        </div>
+                      </th>
+                      <th className="p-3.5">نوع الوحدة والدور</th>
+                      <th
+                        onClick={() => setSortBy(sortBy === 'area_desc' ? 'area_asc' : 'area_desc')}
+                        className="p-3.5 cursor-pointer hover:text-primary transition select-none"
+                        title="اضغط للترتيب حسب المساحة"
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>المساحة</span>
+                          {sortBy === 'area_desc' ? (
+                            <span className="text-[10px] text-primary font-bold">↓</span>
+                          ) : sortBy === 'area_asc' ? (
+                            <span className="text-[10px] text-primary font-bold">↑</span>
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 text-outline" />
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        onClick={() => setSortBy(sortBy === 'price_asc' ? 'price_desc' : 'price_asc')}
+                        className="p-3.5 cursor-pointer hover:text-primary transition select-none"
+                        title="اضغط للترتيب حسب السعر"
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>السعر الإجمالي</span>
+                          {sortBy === 'price_asc' ? (
+                            <span className="text-[10px] text-primary font-bold">↑</span>
+                          ) : sortBy === 'price_desc' ? (
+                            <span className="text-[10px] text-primary font-bold">↓</span>
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 text-outline" />
+                          )}
+                        </div>
+                      </th>
+                      <th className="p-3.5">خاص بـ / الجهة</th>
+                      <th className="p-3.5">الحالة</th>
+                      <th className="p-3.5 text-center">الإجراءات</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-surface-container-low">
+                    {filteredUnits.map((u) => {
+                      const firstMedia = u.media && u.media[0];
+                      return (
+                        <tr key={u.id} className="hover:bg-surface-container-low/50 transition-colors">
+                          <td className="p-3.5">
+                            <div className="flex items-center gap-2.5">
+                              {firstMedia ? (
+                                <img
+                                  src={firstMedia.externalUrl || firstMedia.storagePath}
+                                  alt=""
+                                  className="w-10 h-10 rounded-lg object-cover border border-outline-variant shrink-0"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0 border border-outline-variant">
+                                  <Home className="w-4 h-4 text-primary" />
+                                </div>
+                              )}
+                              <div>
+                                <Link
+                                  href={`/units/${u.id}`}
+                                  className="font-bold text-primary hover:underline block font-mono"
+                                >
+                                  #BD-{u.zoneId}-{u.plotNo}
+                                </Link>
+                                <span className="text-[10px] text-on-surface-variant">
+                                  {u.deliveryNote || 'استلام فوري'}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-3.5">
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-1.5">
+                                <span className="w-5 h-5 rounded-md bg-primary text-on-primary text-[10px] font-black flex items-center justify-center shrink-0">
+                                  {u.zoneId}
+                                </span>
+                                <span className="font-bold text-on-surface">{zoneDisplayName(u.zoneId, zones)}</span>
+                              </div>
+                              <span className="text-[11px] text-on-surface-variant mt-0.5">قطعة {u.plotNo}</span>
+                            </div>
+                          </td>
+                          <td className="p-3.5">
+                            <span className="font-bold text-on-surface block">
+                              {UNIT_KIND_LABELS[u.unitKind] || 'شقة'}
+                            </span>
+                            <span className="text-[11px] text-on-surface-variant">
+                              {u.floor === 0 ? 'الأرضي' : u.floor ? `الدور ${u.floor}` : 'متكرر'} {u.side ? `• ${u.side}` : ''}
+                            </span>
+                          </td>
+                          <td className="p-3.5">
+                            <span className="font-bold text-on-surface block font-mono">{u.area} م²</span>
+                            {u.gardenArea ? (
+                              <span className="text-[10px] text-success font-semibold block">+ {u.gardenArea} م² حديقة</span>
+                            ) : null}
+                          </td>
+                          <td className="p-3.5">
+                            <span className="font-black text-on-surface block font-mono">{u.price.toLocaleString('ar-EG')} ج</span>
+                            {u.area > 0 && (
+                              <span className="text-[10px] text-on-surface-variant font-semibold block">
+                                {Math.round(u.price / u.area).toLocaleString('ar-EG')} ج/م²
+                              </span>
                             )}
-                            <button
-                              type="button"
-                              onClick={() => copyUnitDetails(u)}
-                              className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant transition cursor-pointer"
-                              title="نسخ التفاصيل"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </button>
-                            <a
-                              href={createUnitWhatsAppUrl(u, currentUser, undefined, zones)}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition cursor-pointer"
-                              title="مشاركة عبر واتساب"
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                            </a>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                            <td className="p-3.5">
+                              <div className="flex flex-col min-w-0 max-w-[150px]">
+                                <span
+                                  className="font-bold text-on-surface text-xs truncate"
+                                  title={u.belongTo || u.companyName || 'محفظة الشركة'}
+                                >
+                                  {u.belongTo || u.companyName || 'محفظة الشركة'}
+                                </span>
+                                {u.belongTo && u.belongTo !== u.companyName && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] text-secondary font-bold mt-0.5">
+                                    <Briefcase className="w-2.5 h-2.5 shrink-0" />
+                                    <span>مطور خارجي</span>
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="p-3.5">
+                              <select
+                                value={u.status}
+                                onChange={(e) => {
+                                  const newSt = e.target.value as UnitStatus;
+                                  updateUnitStatus(u.id, newSt);
+                                  showToast(`تم تغيير حالة الوحدة #BD-${u.zoneId}-${u.plotNo} إلى ${newSt === 'available' ? 'متاح للبيع' : newSt === 'reserved' ? 'حجز مؤقت' : 'تم البيع'}`);
+                                }}
+                                className={`px-2 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer ${u.status === 'available'
+                                    ? 'bg-success-container text-success border-success'
+                                    : u.status === 'reserved'
+                                      ? 'bg-warning-container text-warning border-warning'
+                                      : 'bg-error-container text-on-error-container border-error'
+                                  }`}
+                              >
+                                <option value="available">متاحة للبيع</option>
+                                <option value="reserved">حجز مؤقت</option>
+                                <option value="sold">تم البيع</option>
+                              </select>
+                            </td>
+                            <td className="p-3.5 text-center">
+                              <div className="flex items-center justify-center gap-1.5">
+                                <Link
+                                  href={`/units/${u.id}`}
+                                  className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition"
+                                  title="عرض التفاصيل الكاملة"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Link>
+                                {(isCompanyAdmin || isSuperAdmin) && (
+                                  <Link
+                                    href={`/units/${u.id}/edit`}
+                                    className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant transition"
+                                    title="تعديل بيانات الوحدة"
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Link>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => copyUnitDetails(u)}
+                                  className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant transition cursor-pointer"
+                                  title="نسخ التفاصيل"
+                                >
+                                  <Copy className="w-4 h-4" />
+                                </button>
+                                <a
+                                  href={createUnitWhatsAppUrl(u, currentUser, undefined, zones)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition cursor-pointer"
+                                  title="مشاركة عبر واتساب"
+                                >
+                                  <MessageCircle className="w-4 h-4" />
+                                </a>
+                              </div>
+                            </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
         </div>
       )}
     </div>
-  );
+    );
 }

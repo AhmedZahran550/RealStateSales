@@ -35,6 +35,7 @@ export async function GET(
       companyId: dbUnit.company_id || undefined,
       companyName: dbUnit.companies?.name || undefined,
       companySlug: dbUnit.companies?.slug || undefined,
+      belongTo: dbUnit.belong_to || dbUnit.companies?.name || undefined,
       buildingId: Number(dbUnit.building_id),
       zoneId: dbUnit.buildings?.zone_id || 1,
       plotNo: dbUnit.buildings?.plot_no || 1,
@@ -105,6 +106,9 @@ export async function PUT(
     }
 
     const dbUpdates: any = { updated_at: new Date().toISOString() };
+    if (body.belongTo !== undefined) {
+      dbUpdates.belong_to = (typeof body.belongTo === 'string' && body.belongTo.trim()) ? body.belongTo.trim() : null;
+    }
     if (body.unitKind !== undefined) dbUpdates.unit_kind = body.unitKind;
     if (body.floor !== undefined) dbUpdates.floor = body.floor;
     if (body.side !== undefined) dbUpdates.side = body.side;

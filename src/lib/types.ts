@@ -128,6 +128,7 @@ export interface Unit {
   companyId?: string; // معرف الشركة العقارية المسؤولة (الوحدة تتبع للشركة ككل وليس لوسيط)
   companyName?: string; // اسم الشركة
   companySlug?: string; // الاسم المخصص للرابط العام
+  belongTo?: string; // الجهة التابعة أو المطور الخارجي (الافتراضي: اسم الشركة)
   buildingId: number;
   zoneId: number;
   plotNo: number;
@@ -288,6 +289,7 @@ export interface GalleryItem {
 
 export interface PublicUnit {
   id: string;
+  belongTo?: string; // المطور أو الجهة التابعة (إن وجد)
   unitKind: UnitKind;
   plotNo: number;
   zoneName?: string;

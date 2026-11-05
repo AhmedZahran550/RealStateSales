@@ -5,6 +5,7 @@ import { Building, Unit, UnitStatus, UNIT_KIND_LABELS, Zone } from '@/lib/types'
 import { zoneDisplayName } from '@/lib/zone-utils';
 import {
   Building2,
+  Briefcase,
   ChevronDown,
   ChevronUp,
   Plus,
@@ -250,6 +251,16 @@ export default function BuildingCard({
                         <span>الدور: {unit.floor ?? 'أرضي'}</span>
                         {unit.side && <span>• {unit.side}</span>}
                       </div>
+
+                      {/* BelongTo Developer Badge (if external) */}
+                      {unit.belongTo && unit.belongTo !== building.companyName && (
+                        <div className="mb-2">
+                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-secondary-container/80 text-on-secondary-container font-semibold inline-flex items-center gap-1 max-w-full truncate">
+                            <Briefcase className="w-2.5 h-2.5 shrink-0" />
+                            <span className="truncate">خاص بـ: {unit.belongTo}</span>
+                          </span>
+                        </div>
+                      )}
 
                       {/* Area & Price */}
                       <div className="flex items-center justify-between text-xs py-1.5 px-2 rounded-lg bg-surface-container-low/50">
