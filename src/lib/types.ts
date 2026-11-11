@@ -1,6 +1,17 @@
 export type AppRole = 'super_admin' | 'company_admin' | 'user' | 'admin';
 export type UserRole = AppRole;
 
+export interface CompanySocialLinks {
+  facebook?: string;
+  instagram?: string;
+  whatsapp?: string;
+  tiktok?: string;
+  youtube?: string;
+  linkedin?: string;
+  x?: string;
+  website?: string;
+}
+
 export interface Company {
   id: string;
   name: string; // اسم الشركة العقارية
@@ -10,6 +21,7 @@ export interface Company {
   phone?: string; // هاتف التواصل
   email?: string; // البريد الإلكتروني
   address?: string; // العنوان أو المقر
+  socialLinks?: CompanySocialLinks; // روابط التواصل الاجتماعي
   isActive: boolean; // حالة تفعيل الشركة
   createdAt: string;
 }
@@ -264,6 +276,7 @@ export type GalleryItemSource = 'manual' | 'auto_sold';
 export interface CompanyPublicSettings {
   companyId: string;
   isEnabled: boolean; // تفعيل / إيقاف الصفحة العامة
+  showPreviousWork?: boolean; // إظهار / إخفاء تبويب ومعرض سابقة الأعمال
   showPrice: boolean;
   showArea: boolean;
   showFloor: boolean;

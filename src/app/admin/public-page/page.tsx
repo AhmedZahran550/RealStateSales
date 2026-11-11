@@ -24,6 +24,7 @@ const FIELD_TOGGLES: Array<{
   label: string;
   hint: string;
 }> = [
+  { key: 'showPreviousWork', label: 'تبويب سابقة الأعمال', hint: 'إظهار أو إخفاء تبويب ومعرض سابقة الأعمال في الصفحة العامة' },
   { key: 'showPrice', label: 'السعر', hint: 'إظهار سعر الوحدة وقابلية التفاوض' },
   { key: 'showArea', label: 'المساحة', hint: 'المساحة بالمتر المربع' },
   { key: 'showFloor', label: 'الدور', hint: 'رقم دور الوحدة' },

@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
       phone: c.phone || undefined,
       email: c.email || undefined,
       address: c.address || undefined,
+      socialLinks: c.social_links || undefined,
       isActive: c.is_active ?? true,
       createdAt: c.created_at,
     }));

@@ -3,8 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
+import { CompanySocialLinks } from '@/lib/types';
 import CompanyAdminGuard from '@/guards/CompanyAdminGuard';
 import LogoUploader from '@/components/common/LogoUploader';
+import {
+  FacebookIcon,
+  InstagramIcon,
+  WhatsAppIcon,
+  TikTokIcon,
+  YouTubeIcon,
+  LinkedInIcon,
+  XIcon,
+} from '@/components/common/SocialIcons';
 import {
   Building2,
   Store,
@@ -24,6 +34,7 @@ import {
   Loader2,
   Layers,
   Globe,
+  Share2,
 } from 'lucide-react';
 
 export default function CompanyProfilePage() {
@@ -36,6 +47,16 @@ export default function CompanyProfilePage() {
   const [address, setAddress] = useState('');
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
   const [slug, setSlug] = useState('');
+  const [socialLinks, setSocialLinks] = useState<CompanySocialLinks>({
+    facebook: '',
+    instagram: '',
+    whatsapp: '',
+    tiktok: '',
+    youtube: '',
+    linkedin: '',
+    x: '',
+    website: '',
+  });
 
   // إعدادات تشغيلية ومستقبلية
   const [leadDistribution, setLeadDistribution] = useState<'open_claim' | 'admin_assign'>('open_claim');
@@ -57,6 +78,16 @@ export default function CompanyProfilePage() {
       setAddress(currentCompany.address || '');
       setLogoUrl(currentCompany.logoUrl ?? undefined);
       setSlug(currentCompany.slug || '');
+      setSocialLinks({
+        facebook: currentCompany.socialLinks?.facebook || '',
+        instagram: currentCompany.socialLinks?.instagram || '',
+        whatsapp: currentCompany.socialLinks?.whatsapp || '',
+        tiktok: currentCompany.socialLinks?.tiktok || '',
+        youtube: currentCompany.socialLinks?.youtube || '',
+        linkedin: currentCompany.socialLinks?.linkedin || '',
+        x: currentCompany.socialLinks?.x || '',
+        website: currentCompany.socialLinks?.website || '',
+      });
     }
   }, [currentCompany]);
 
@@ -98,6 +129,17 @@ export default function CompanyProfilePage() {
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
 
+      const cleanedSocialLinks: CompanySocialLinks = {
+        facebook: socialLinks.facebook?.trim() || undefined,
+        instagram: socialLinks.instagram?.trim() || undefined,
+        whatsapp: socialLinks.whatsapp?.trim() || undefined,
+        tiktok: socialLinks.tiktok?.trim() || undefined,
+        youtube: socialLinks.youtube?.trim() || undefined,
+        linkedin: socialLinks.linkedin?.trim() || undefined,
+        x: socialLinks.x?.trim() || undefined,
+        website: socialLinks.website?.trim() || undefined,
+      };
+
       const res = await updateCompany(currentCompany.id, {
         name: name.trim(),
         commercialName: commercialName.trim() || undefined,
@@ -106,6 +148,7 @@ export default function CompanyProfilePage() {
         address: address.trim() || undefined,
         logoUrl: logoUrl || null,
         slug: cleanSlug || undefined,
+        socialLinks: cleanedSocialLinks,
       });
 
       // حفظ الإعدادات المستقبلية
@@ -420,6 +463,143 @@ export default function CompanyProfilePage() {
                     </div>
                   </div>
                 </div>
+
+                {/* 5. روابط التواصل الاجتماعي */}
+                <div className="card p-5 space-y-4">
+                  <div className="flex items-center gap-2 pb-3 border-b border-surface-container-high/40">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                      <Share2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-black text-on-surface">روابط التواصل الاجتماعي للشركة</h2>
+                      <p className="text-[11px] text-on-surface-variant">
+                        تظهر هذه الروابط كأيقونات تفاعلية في أسفل (Footer) صفحة العروض العامة لشركتك
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-on-surface block mb-1.5 flex items-center gap-1.5">
+                        <FacebookIcon className="w-3.5 h-3.5 text-primary" />
+                        <span>فيسبوك (Facebook)</span>
+                      </label>
+                      <input
+                        type="url"
+                        dir="ltr"
+                        value={socialLinks.facebook || ''}
+                        onChange={(e) => setSocialLinks((prev) => ({ ...prev, facebook: e.target.value }))}
+                        placeholder="https://facebook.com/your-company"
+                        className="input-base w-full text-xs text-left"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-on-surface block mb-1.5 flex items-center gap-1.5">
+                        <InstagramIcon className="w-3.5 h-3.5 text-primary" />
+                        <span>انستغرام (Instagram)</span>
+                      </label>
+                      <input
+                        type="url"
+                        dir="ltr"
+                        value={socialLinks.instagram || ''}
+                        onChange={(e) => setSocialLinks((prev) => ({ ...prev, instagram: e.target.value }))}
+                        placeholder="https://instagram.com/your-company"
+                        className="input-base w-full text-xs text-left"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-on-surface block mb-1.5 flex items-center gap-1.5">
+                        <WhatsAppIcon className="w-3.5 h-3.5 text-primary" />
+                        <span>واتساب (رابط مباشر أو رقم)</span>
+                      </label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={socialLinks.whatsapp || ''}
+                        onChange={(e) => setSocialLinks((prev) => ({ ...prev, whatsapp: e.target.value }))}
+                        placeholder="https://wa.me/201012345678 أو 01012345678"
+                        className="input-base w-full text-xs text-left"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-on-surface block mb-1.5 flex items-center gap-1.5">
+                        <TikTokIcon className="w-3.5 h-3.5 text-primary" />
+                        <span>تيك توك (TikTok)</span>
+                      </label>
+                      <input
+                        type="url"
+                        dir="ltr"
+                        value={socialLinks.tiktok || ''}
+                        onChange={(e) => setSocialLinks((prev) => ({ ...prev, tiktok: e.target.value }))}
+                        placeholder="https://tiktok.com/@your-company"
+                        className="input-base w-full text-xs text-left"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-on-surface block mb-1.5 flex items-center gap-1.5">
+                        <YouTubeIcon className="w-3.5 h-3.5 text-primary" />
+                        <span>يوتيوب (YouTube)</span>
+                      </label>
+                      <input
+                        type="url"
+                        dir="ltr"
+                        value={socialLinks.youtube || ''}
+                        onChange={(e) => setSocialLinks((prev) => ({ ...prev, youtube: e.target.value }))}
+                        placeholder="https://youtube.com/@your-company"
+                        className="input-base w-full text-xs text-left"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-on-surface block mb-1.5 flex items-center gap-1.5">
+                        <LinkedInIcon className="w-3.5 h-3.5 text-primary" />
+                        <span>لينكد إن (LinkedIn)</span>
+                      </label>
+                      <input
+                        type="url"
+                        dir="ltr"
+                        value={socialLinks.linkedin || ''}
+                        onChange={(e) => setSocialLinks((prev) => ({ ...prev, linkedin: e.target.value }))}
+                        placeholder="https://linkedin.com/company/your-company"
+                        className="input-base w-full text-xs text-left"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-on-surface block mb-1.5 flex items-center gap-1.5">
+                        <XIcon className="w-3.5 h-3.5 text-primary" />
+                        <span>منصة إكس (X / Twitter)</span>
+                      </label>
+                      <input
+                        type="url"
+                        dir="ltr"
+                        value={socialLinks.x || ''}
+                        onChange={(e) => setSocialLinks((prev) => ({ ...prev, x: e.target.value }))}
+                        placeholder="https://x.com/your-company"
+                        className="input-base w-full text-xs text-left"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-on-surface block mb-1.5 flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5 text-primary" />
+                        <span>الموقع الإلكتروني (Website)</span>
+                      </label>
+                      <input
+                        type="url"
+                        dir="ltr"
+                        value={socialLinks.website || ''}
+                        onChange={(e) => setSocialLinks((prev) => ({ ...prev, website: e.target.value }))}
+                        placeholder="https://www.your-company.com"
+                        className="input-base w-full text-xs text-left"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Sidebar Preview & Quick Links (1 col) */}
@@ -460,6 +640,20 @@ export default function CompanyProfilePage() {
                         </div>
                       )}
                     </div>
+
+                    {/* معاينة أيقونات التواصل الاجتماعي */}
+                    {Object.values(socialLinks).some((v) => Boolean(v?.trim())) && (
+                      <div className="w-full mt-2 pt-2 border-t border-surface-container-high/40 flex items-center justify-center gap-2 text-primary">
+                        {socialLinks.facebook?.trim() && <FacebookIcon className="w-3.5 h-3.5" />}
+                        {socialLinks.instagram?.trim() && <InstagramIcon className="w-3.5 h-3.5" />}
+                        {socialLinks.whatsapp?.trim() && <WhatsAppIcon className="w-3.5 h-3.5" />}
+                        {socialLinks.tiktok?.trim() && <TikTokIcon className="w-3.5 h-3.5" />}
+                        {socialLinks.youtube?.trim() && <YouTubeIcon className="w-3.5 h-3.5" />}
+                        {socialLinks.linkedin?.trim() && <LinkedInIcon className="w-3.5 h-3.5" />}
+                        {socialLinks.x?.trim() && <XIcon className="w-3.5 h-3.5" />}
+                        {socialLinks.website?.trim() && <Globe className="w-3.5 h-3.5" />}
+                      </div>
+                    )}
                   </div>
                 </div>
 

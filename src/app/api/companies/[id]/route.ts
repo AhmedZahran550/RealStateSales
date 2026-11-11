@@ -31,6 +31,7 @@ export async function PUT(
     if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
     if (updates.email !== undefined) dbUpdates.email = updates.email;
     if (updates.address !== undefined) dbUpdates.address = updates.address;
+    if (updates.socialLinks !== undefined) dbUpdates.social_links = updates.socialLinks || {};
     if (updates.isActive !== undefined && isSuper) dbUpdates.is_active = updates.isActive;
 
     // تحديث المعرف الفريد للرابط العام (Slug) مع التحقق من الفرادة

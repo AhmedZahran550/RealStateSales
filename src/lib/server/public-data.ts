@@ -23,7 +23,7 @@ export async function getPublicPageData(
   // 1. جلب الشركة والتحقق من تفعيلها (سواء عبر الـ id أو عبر الـ slug)
   let compQuery = serverSupabase
     .from('companies')
-    .select('id, name, commercial_name, slug, logo_url, phone, email, address, is_active');
+    .select('id, name, commercial_name, slug, logo_url, phone, email, address, social_links, is_active');
 
   if (isUuid) {
     compQuery = compQuery.eq('id', companyIdOrSlug);
@@ -66,6 +66,7 @@ export async function getPublicPageData(
   const settings: CompanyPublicSettings = {
     companyId,
     isEnabled: dbSettings.is_enabled,
+    showPreviousWork: dbSettings.show_previous_work ?? true,
     showPrice: dbSettings.show_price,
     showArea: dbSettings.show_area,
     showFloor: dbSettings.show_floor,
@@ -168,6 +169,7 @@ export async function getPublicPageData(
         phone: company.phone || undefined,
         email: company.email || undefined,
         address: company.address || undefined,
+        socialLinks: company.social_links || undefined,
       },
       settings,
       units,
@@ -203,6 +205,7 @@ export async function getPublicUnitData(unitId: string): Promise<{
     phone?: string;
     email?: string;
     address?: string;
+    socialLinks?: import('@/lib/types').CompanySocialLinks;
   };
   settings?: CompanyPublicSettings;
   status: number;
@@ -239,6 +242,7 @@ export async function getPublicUnitData(unitId: string): Promise<{
   const settings: CompanyPublicSettings = {
     companyId: company.id,
     isEnabled: dbSettings?.is_enabled ?? true,
+    showPreviousWork: dbSettings?.show_previous_work ?? true,
     showPrice: dbSettings?.show_price ?? true,
     showArea: dbSettings?.show_area ?? true,
     showFloor: dbSettings?.show_floor ?? true,
@@ -313,6 +317,7 @@ export async function getPublicUnitData(unitId: string): Promise<{
       phone: company.phone || undefined,
       email: company.email || undefined,
       address: company.address || undefined,
+      socialLinks: company.social_links || undefined,
     },
     settings,
   };

@@ -8,6 +8,15 @@ import PublicUnitDetailModal from './PublicUnitDetailModal';
 import ReservationModal from './ReservationModal';
 import GalleryGrid from './GalleryGrid';
 import {
+  FacebookIcon,
+  InstagramIcon,
+  WhatsAppIcon,
+  TikTokIcon,
+  YouTubeIcon,
+  LinkedInIcon,
+  XIcon,
+} from '@/components/common/SocialIcons';
+import {
   Building2,
   History,
   Phone,
@@ -22,6 +31,7 @@ import {
   ArrowUp,
   ShieldCheck,
   Sparkles,
+  Globe,
 } from 'lucide-react';
 
 type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'area-desc';
@@ -70,6 +80,42 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
     const msg = `مرحباً ${company.name}، زرت صفحتكم العقارية وأود الاستفسار عن الوحدات المتاحة لديكم.`;
     return `https://wa.me/${clean}?text=${encodeURIComponent(msg)}`;
   }, [company.phone, company.name]);
+
+  // روابط التواصل الاجتماعي المجهزة للعرض
+  const socialItems = useMemo(() => {
+    const sl = company.socialLinks;
+    if (!sl) return [];
+
+    const items: Array<{
+      key: string;
+      label: string;
+      href: string;
+      icon: React.ComponentType<{ className?: string }>;
+    }> = [];
+
+    const cleanHref = (raw: string, isWa = false) => {
+      const trimmed = raw.trim();
+      if (!trimmed) return '';
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+      if (isWa) {
+        let clean = trimmed.replace(/[^0-9]/g, '');
+        if (clean.startsWith('01')) clean = '2' + clean;
+        return `https://wa.me/${clean}`;
+      }
+      return `https://${trimmed}`;
+    };
+
+    if (sl.facebook?.trim()) items.push({ key: 'facebook', label: 'فيسبوك', href: cleanHref(sl.facebook), icon: FacebookIcon });
+    if (sl.instagram?.trim()) items.push({ key: 'instagram', label: 'انستغرام', href: cleanHref(sl.instagram), icon: InstagramIcon });
+    if (sl.whatsapp?.trim()) items.push({ key: 'whatsapp', label: 'واتساب', href: cleanHref(sl.whatsapp, true), icon: WhatsAppIcon });
+    if (sl.tiktok?.trim()) items.push({ key: 'tiktok', label: 'تيك توك', href: cleanHref(sl.tiktok), icon: TikTokIcon });
+    if (sl.youtube?.trim()) items.push({ key: 'youtube', label: 'يوتيوب', href: cleanHref(sl.youtube), icon: YouTubeIcon });
+    if (sl.linkedin?.trim()) items.push({ key: 'linkedin', label: 'لينكد إن', href: cleanHref(sl.linkedin), icon: LinkedInIcon });
+    if (sl.x?.trim()) items.push({ key: 'x', label: 'منصة إكس', href: cleanHref(sl.x), icon: XIcon });
+    if (sl.website?.trim()) items.push({ key: 'website', label: 'الموقع الإلكتروني', href: cleanHref(sl.website), icon: Globe });
+
+    return items;
+  }, [company.socialLinks]);
 
   // نسخ رابط الصفحة
   const handleCopyLink = async () => {
@@ -229,13 +275,15 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                   <p className="text-[10px] font-bold text-white/80 mt-0.5">وحدة متاحة</p>
                 </div>
 
-                <div className="rounded-2xl bg-white/10 backdrop-blur-md px-3.5 py-2.5 sm:px-4 sm:py-3 text-center ring-1 ring-white/15 flex-1 sm:flex-none min-w-[80px]">
-                  <div className="flex items-center justify-center gap-1">
-                    <History className="w-3.5 h-3.5 text-primary-fixed" />
-                    <span className="text-lg sm:text-xl font-black text-white">{gallery.length}</span>
+                {settings.showPreviousWork !== false && (
+                  <div className="rounded-2xl bg-white/10 backdrop-blur-md px-3.5 py-2.5 sm:px-4 sm:py-3 text-center ring-1 ring-white/15 flex-1 sm:flex-none min-w-[80px]">
+                    <div className="flex items-center justify-center gap-1">
+                      <History className="w-3.5 h-3.5 text-primary-fixed" />
+                      <span className="text-lg sm:text-xl font-black text-white">{gallery.length}</span>
+                    </div>
+                    <p className="text-[10px] font-bold text-white/80 mt-0.5">مشروع منجز</p>
                   </div>
-                  <p className="text-[10px] font-bold text-white/80 mt-0.5">مشروع منجز</p>
-                </div>
+                )}
               </div>
 
               {/* أزرار التواصل المباشر في الترويسة */}
@@ -287,23 +335,25 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
               </span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('gallery')}
-              className={`flex-1 sm:flex-none px-4 sm:px-7 py-2.5 rounded-xl sm:rounded-t-2xl text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 min-h-[40px] ${
-                activeTab === 'gallery'
-                  ? 'bg-surface text-primary shadow-xs'
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <History className="w-4 h-4 shrink-0" />
-              <span>أعمال ومشاريع سابقة</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
-                activeTab === 'gallery' ? 'bg-primary-container text-on-primary-container' : 'bg-white/20 text-white'
-              }`}>
-                {gallery.length}
-              </span>
-            </button>
+            {settings.showPreviousWork !== false && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('gallery')}
+                className={`flex-1 sm:flex-none px-4 sm:px-7 py-2.5 rounded-xl sm:rounded-t-2xl text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 min-h-[40px] ${
+                  activeTab === 'gallery'
+                    ? 'bg-surface text-primary shadow-xs'
+                    : 'text-white/80 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <History className="w-4 h-4 shrink-0" />
+                <span>أعمال ومشاريع سابقة</span>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
+                  activeTab === 'gallery' ? 'bg-primary-container text-on-primary-container' : 'bg-white/20 text-white'
+                }`}>
+                  {gallery.length}
+                </span>
+              </button>
+            )}
           </nav>
         </div>
       </header>
@@ -463,6 +513,25 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                 </div>
               )}
             </>
+          ) : settings.showPreviousWork === false ? (
+            /* رسالة لطيفة إذا كان معرض سابقة الأعمال غير مفعل */
+            <div className="card card-bordered bg-surface-container-lowest p-8 sm:p-12 text-center max-w-lg mx-auto space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                <History className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-black text-on-surface">سابقة الأعمال قيد التحديث</h3>
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                يتم حالياً مراجعة وتحديث معرض سابقة الأعمال ومشاريع الشركة، يرجى تصفح الوحدات المتاحة حالياً.
+              </p>
+              <button
+                type="button"
+                onClick={() => setActiveTab('units')}
+                className="btn-primary mt-2 px-5 py-2.5 text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer mx-auto"
+              >
+                <Building2 className="w-4 h-4" />
+                <span>تصفح الوحدات المعروضة</span>
+              </button>
+            </div>
           ) : (
             /* معرض الأعمال السابقة */
             <div className="space-y-4">
@@ -487,7 +556,7 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
 
       {/* التذييل العصري المطور */}
       <footer className="border-t border-outline-variant bg-surface-container-lowest py-6 sm:py-8 mt-auto">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-center sm:text-right">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-right">
           <div>
             <p className="text-xs sm:text-sm font-black text-on-surface">
               {company.name} {company.commercialName ? `(${company.commercialName})` : ''}
@@ -496,6 +565,28 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
               جميع الحقوق محفوظة © {new Date().getFullYear()} — منصة الواحة العقارية
             </p>
           </div>
+
+          {/* روابط التواصل الاجتماعي للشركة */}
+          {socialItems.length > 0 && (
+            <div className="flex items-center justify-center gap-2 flex-wrap" aria-label="روابط التواصل الاجتماعي للشركة">
+              {socialItems.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <a
+                    key={item.key}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="min-h-[38px] min-w-[38px] p-2 rounded-xl bg-surface-container hover:bg-primary hover:text-on-primary text-on-surface-variant transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+                    title={item.label}
+                    aria-label={item.label}
+                  >
+                    <IconComponent className="w-4 h-4" />
+                  </a>
+                );
+              })}
+            </div>
+          )}
 
           <div className="flex items-center gap-3">
             {company.phone && (

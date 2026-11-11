@@ -15,6 +15,7 @@ export interface PublicPageData {
     phone?: string;
     email?: string;
     address?: string;
+    socialLinks?: import('@/lib/types').CompanySocialLinks;
   };
   settings: CompanyPublicSettings;
   units: import('@/lib/types').PublicUnit[];

@@ -7,6 +7,7 @@ function mapSettings(companyId: string, s: any): CompanyPublicSettings {
   return {
     companyId,
     isEnabled: s.is_enabled,
+    showPreviousWork: s.show_previous_work ?? true,
     showPrice: s.show_price,
     showArea: s.show_area,
     showFloor: s.show_floor,
@@ -79,6 +80,7 @@ export async function PUT(request: NextRequest) {
 
     const updateData: any = { updated_at: new Date().toISOString() };
     if (typeof body.isEnabled === 'boolean') updateData.is_enabled = body.isEnabled;
+    if (typeof body.showPreviousWork === 'boolean') updateData.show_previous_work = body.showPreviousWork;
     if (typeof body.showPrice === 'boolean') updateData.show_price = body.showPrice;
     if (typeof body.showArea === 'boolean') updateData.show_area = body.showArea;
     if (typeof body.showFloor === 'boolean') updateData.show_floor = body.showFloor;
