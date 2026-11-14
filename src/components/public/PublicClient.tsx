@@ -260,6 +260,31 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
                     </a>
                   )}
                 </div>
+
+                {/* روابط التواصل الاجتماعي للشركة في ترويسة الصفحة بجوار الشعار والاسم */}
+                {socialItems.length > 0 && (
+                  <div
+                    className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 flex-wrap mt-2.5 pt-2 border-t border-white/15"
+                    aria-label="روابط التواصل الاجتماعي للشركة"
+                  >
+                    {socialItems.map((item) => {
+                      const IconComponent = item.icon;
+                      return (
+                        <a
+                          key={item.key}
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="min-h-[36px] min-w-[36px] p-2 rounded-xl bg-white/15 hover:bg-white text-white hover:text-primary ring-1 ring-white/20 transition-all flex items-center justify-center cursor-pointer shadow-xs hover:scale-105 active:scale-95"
+                          title={item.label}
+                          aria-label={item.label}
+                        >
+                          <IconComponent className="w-3.5 h-3.5" />
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -565,28 +590,6 @@ export default function PublicClient({ data }: { data: PublicPageData }) {
               جميع الحقوق محفوظة © {new Date().getFullYear()} — منصة الواحة العقارية
             </p>
           </div>
-
-          {/* روابط التواصل الاجتماعي للشركة */}
-          {socialItems.length > 0 && (
-            <div className="flex items-center justify-center gap-2 flex-wrap" aria-label="روابط التواصل الاجتماعي للشركة">
-              {socialItems.map((item) => {
-                const IconComponent = item.icon;
-                return (
-                  <a
-                    key={item.key}
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="min-h-[38px] min-w-[38px] p-2 rounded-xl bg-surface-container hover:bg-primary hover:text-on-primary text-on-surface-variant transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-                    title={item.label}
-                    aria-label={item.label}
-                  >
-                    <IconComponent className="w-4 h-4" />
-                  </a>
-                );
-              })}
-            </div>
-          )}
 
           <div className="flex items-center gap-3">
             {company.phone && (
