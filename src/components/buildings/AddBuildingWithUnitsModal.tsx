@@ -1,8 +1,17 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Building, Zone, UnitKind, UnitStatus, UNIT_KIND_LABELS } from '@/lib/types';
+import {
+  Building,
+  Zone,
+  UnitKind,
+  UnitStatus,
+  UNIT_KIND_LABELS,
+  PaymentType,
+  generatePaymentTermsText,
+} from '@/lib/types';
 import { zoneDisplayName } from '@/lib/zone-utils';
+import PaymentSection from '@/components/units/PaymentSection';
 import {
   Building2,
   X,
@@ -27,6 +36,9 @@ export interface DraftUnit {
   negotiable: boolean;
   deliveryNote: string;
   paymentTerms: string;
+  paymentType?: PaymentType;
+  downPayment?: number;
+  installmentMonths?: number;
   description: string;
   status: UnitStatus;
   features: string[];
@@ -83,7 +95,10 @@ export default function AddBuildingWithUnitsModal({
       price: 1600000,
       negotiable: false,
       deliveryNote: 'استلام فوري',
-      paymentTerms: 'كاش أو بتسهيلات',
+      paymentTerms: 'كاش',
+      paymentType: 'cash',
+      downPayment: 0,
+      installmentMonths: 0,
       description: '',
       status: 'available',
       features: [],
@@ -101,7 +116,10 @@ export default function AddBuildingWithUnitsModal({
     price: 1600000,
     negotiable: false,
     deliveryNote: 'استلام فوري',
-    paymentTerms: 'كاش أو بتسهيلات',
+    paymentTerms: 'كاش',
+    paymentType: 'cash',
+    downPayment: 0,
+    installmentMonths: 0,
     description: '',
     status: 'available',
     features: [],
@@ -148,7 +166,10 @@ export default function AddBuildingWithUnitsModal({
       price: 1600000,
       negotiable: false,
       deliveryNote: 'استلام فوري',
-      paymentTerms: 'كاش أو بتسهيلات',
+      paymentTerms: 'كاش',
+      paymentType: 'cash',
+      downPayment: 0,
+      installmentMonths: 0,
       description: '',
       status: 'available',
       features: [],
@@ -199,6 +220,9 @@ export default function AddBuildingWithUnitsModal({
           negotiable: u.negotiable,
           deliveryNote: u.deliveryNote,
           paymentTerms: u.paymentTerms,
+          paymentType: u.paymentType || 'cash',
+          downPayment: u.downPayment || 0,
+          installmentMonths: u.installmentMonths || 0,
           description: u.description || null,
           status: u.status,
           features: buildingFeatures,
@@ -239,6 +263,9 @@ export default function AddBuildingWithUnitsModal({
           negotiable: existingUnitData.negotiable,
           deliveryNote: existingUnitData.deliveryNote,
           paymentTerms: existingUnitData.paymentTerms,
+          paymentType: existingUnitData.paymentType || 'cash',
+          downPayment: existingUnitData.downPayment || 0,
+          installmentMonths: existingUnitData.installmentMonths || 0,
           description: existingUnitData.description || null,
           status: existingUnitData.status,
           features: b.features || [],
@@ -614,18 +641,45 @@ export default function AddBuildingWithUnitsModal({
                           />
                         </div>
 
-                        <div>
-                          <label className="block text-[11px] font-bold text-on-surface-variant mb-1">
-                            نظام السداد
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="كاش، تسهيلات، مقدم 50%"
-                            value={unit.paymentTerms}
-                            onChange={(e) =>
-                              handleUpdateDraftUnit(unit.id, { paymentTerms: e.target.value })
+                        <div className="sm:col-span-2">
+                          <PaymentSection
+                            totalPrice={unit.price}
+                            paymentType={unit.paymentType || 'cash'}
+                            onPaymentTypeChange={(pt) =>
+                              handleUpdateDraftUnit(unit.id, {
+                                paymentType: pt,
+                                paymentTerms: generatePaymentTermsText(
+                                  pt,
+                                  unit.price,
+                                  unit.downPayment || 0,
+                                  unit.installmentMonths || 0
+                                ),
+                              })
                             }
-                            className="w-full p-2 rounded-xl border border-surface-container-high bg-surface-container-lowest text-on-surface text-xs"
+                            downPayment={unit.downPayment || 0}
+                            onDownPaymentChange={(dp) =>
+                              handleUpdateDraftUnit(unit.id, {
+                                downPayment: dp,
+                                paymentTerms: generatePaymentTermsText(
+                                  unit.paymentType || 'cash',
+                                  unit.price,
+                                  dp,
+                                  unit.installmentMonths || 0
+                                ),
+                              })
+                            }
+                            installmentMonths={unit.installmentMonths || 0}
+                            onInstallmentMonthsChange={(im) =>
+                              handleUpdateDraftUnit(unit.id, {
+                                installmentMonths: im,
+                                paymentTerms: generatePaymentTermsText(
+                                  unit.paymentType || 'cash',
+                                  unit.price,
+                                  unit.downPayment || 0,
+                                  im
+                                ),
+                              })
+                            }
                           />
                         </div>
                       </div>
@@ -843,21 +897,48 @@ export default function AddBuildingWithUnitsModal({
                     />
                   </div>
 
-                  <div>
-                    <label className="block font-bold text-on-surface-variant mb-1">
-                      نظام وطريقة الدفع
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="مثال: كاش أو مقدم 50% وتسهيلات سنة"
-                      value={existingUnitData.paymentTerms}
-                      onChange={(e) =>
+                  <div className="sm:col-span-2">
+                    <PaymentSection
+                      totalPrice={existingUnitData.price}
+                      paymentType={existingUnitData.paymentType || 'cash'}
+                      onPaymentTypeChange={(pt) =>
                         setExistingUnitData({
                           ...existingUnitData,
-                          paymentTerms: e.target.value,
+                          paymentType: pt,
+                          paymentTerms: generatePaymentTermsText(
+                            pt,
+                            existingUnitData.price,
+                            existingUnitData.downPayment || 0,
+                            existingUnitData.installmentMonths || 0
+                          ),
                         })
                       }
-                      className="w-full p-2.5 rounded-xl border border-surface-container-high bg-surface-container-lowest text-on-surface text-xs"
+                      downPayment={existingUnitData.downPayment || 0}
+                      onDownPaymentChange={(dp) =>
+                        setExistingUnitData({
+                          ...existingUnitData,
+                          downPayment: dp,
+                          paymentTerms: generatePaymentTermsText(
+                            existingUnitData.paymentType || 'cash',
+                            existingUnitData.price,
+                            dp,
+                            existingUnitData.installmentMonths || 0
+                          ),
+                        })
+                      }
+                      installmentMonths={existingUnitData.installmentMonths || 0}
+                      onInstallmentMonthsChange={(im) =>
+                        setExistingUnitData({
+                          ...existingUnitData,
+                          installmentMonths: im,
+                          paymentTerms: generatePaymentTermsText(
+                            existingUnitData.paymentType || 'cash',
+                            existingUnitData.price,
+                            existingUnitData.downPayment || 0,
+                            im
+                          ),
+                        })
+                      }
                     />
                   </div>
                 </div>

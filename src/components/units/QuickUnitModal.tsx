@@ -1,11 +1,22 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Unit, UnitKind, UnitStatus, UNIT_KIND_LABELS, UnitMedia, Zone, Building } from '@/lib/types';
+import {
+  Unit,
+  UnitKind,
+  UnitStatus,
+  UNIT_KIND_LABELS,
+  UnitMedia,
+  Zone,
+  Building,
+  PaymentType,
+  generatePaymentTermsText,
+} from '@/lib/types';
 import { zoneDisplayName } from '@/lib/zone-utils';
 import { useApp } from '@/context/AppContext';
 import MediaUploader from '@/components/MediaUploader';
 import LiveMapPicker from '@/components/LiveMapPicker';
+import PaymentSection from '@/components/units/PaymentSection';
 import {
   X,
   Building2,
@@ -90,7 +101,9 @@ export default function QuickUnitModal({
   const [belongTo, setBelongTo] = useState<string>('');
   const [negotiable, setNegotiable] = useState<boolean>(false);
   const [deliveryNote, setDeliveryNote] = useState<string>('استلام فوري');
-  const [paymentTerms, setPaymentTerms] = useState<string>('');
+  const [paymentType, setPaymentType] = useState<PaymentType>('cash');
+  const [downPayment, setDownPayment] = useState<number>(0);
+  const [installmentMonths, setInstallmentMonths] = useState<number>(0);
   const [description, setDescription] = useState<string>('');
   const [lat, setLat] = useState<number | undefined>(30.1382);
   const [lng, setLng] = useState<number | undefined>(31.7415);
@@ -124,7 +137,16 @@ export default function QuickUnitModal({
         setBelongTo(initialUnit.belongTo || initialUnit.companyName || defaultCompanyName);
         setNegotiable(Boolean(initialUnit.negotiable));
         setDeliveryNote(initialUnit.deliveryNote || 'استلام فوري');
-        setPaymentTerms(initialUnit.paymentTerms || '');
+        // استعادة نظام السداد
+        const inferredType: PaymentType = initialUnit.paymentType ||
+          (initialUnit.paymentTerms?.includes('تسهيلات')
+            ? 'cash_with_facilities'
+            : initialUnit.paymentTerms?.includes('قسط')
+            ? 'installment'
+            : 'cash');
+        setPaymentType(inferredType);
+        setDownPayment(initialUnit.downPayment || 0);
+        setInstallmentMonths(initialUnit.installmentMonths || 0);
         setDescription(initialUnit.description || '');
         setLat(initialUnit.lat || 30.1382);
         setLng(initialUnit.lng || 31.7415);
@@ -133,7 +155,7 @@ export default function QuickUnitModal({
         // إذا كانت هناك بيانات متقدمة مدخلة، نفتح القسم تلقائياً
         if (
           initialUnit.gardenArea ||
-          initialUnit.paymentTerms ||
+          inferredType !== 'cash' ||
           initialUnit.description ||
           (initialUnit.features && initialUnit.features.length > 0)
         ) {
@@ -156,7 +178,9 @@ export default function QuickUnitModal({
         setBelongTo(defaultCompanyName);
         setNegotiable(false);
         setDeliveryNote('استلام فوري');
-        setPaymentTerms('كاش أو تقسيط');
+        setPaymentType('cash');
+        setDownPayment(0);
+        setInstallmentMonths(0);
         setDescription('');
         setLat(30.1382);
         setLng(31.7415);
@@ -240,7 +264,15 @@ export default function QuickUnitModal({
         price: Number(price),
         negotiable,
         deliveryNote: deliveryNote.trim() || 'استلام فوري',
-        paymentTerms: paymentTerms.trim() || '',
+        paymentType,
+        downPayment: paymentType === 'installment' ? Number(downPayment) : 0,
+        installmentMonths: paymentType !== 'cash' ? Number(installmentMonths) : 0,
+        paymentTerms: generatePaymentTermsText(
+          paymentType,
+          Number(price) || 0,
+          Number(downPayment) || 0,
+          Number(installmentMonths) || 0
+        ),
         description: description.trim() || '',
         status,
         lat: lat || 30.1382,
@@ -560,33 +592,29 @@ export default function QuickUnitModal({
                   </div>
                 </div>
 
-                {/* السداد والاستلام */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  <div>
-                    <label className="block text-xs font-bold text-on-surface mb-1">
-                      نظام السداد والتقسيط
-                    </label>
-                    <input
-                      type="text"
-                      value={paymentTerms}
-                      onChange={(e) => setPaymentTerms(e.target.value)}
-                      className="input-base w-full text-xs py-2 font-medium"
-                      placeholder="مثال: مقدم 15% والباقي على 4 سنوات"
-                    />
-                  </div>
+                {/* نظام السداد والتقسيط المهيكل */}
+                <PaymentSection
+                  totalPrice={Number(price) || 0}
+                  paymentType={paymentType}
+                  onPaymentTypeChange={setPaymentType}
+                  downPayment={downPayment}
+                  onDownPaymentChange={setDownPayment}
+                  installmentMonths={installmentMonths}
+                  onInstallmentMonthsChange={setInstallmentMonths}
+                />
 
-                  <div>
-                    <label className="block text-xs font-bold text-on-surface mb-1">
-                      موعد الاستلام
-                    </label>
-                    <input
-                      type="text"
-                      value={deliveryNote}
-                      onChange={(e) => setDeliveryNote(e.target.value)}
-                      className="input-base w-full text-xs py-2 font-medium"
-                      placeholder="استلام فوري / بعد 6 أشهر"
-                    />
-                  </div>
+                {/* موعد الاستلام */}
+                <div>
+                  <label className="block text-xs font-bold text-on-surface mb-1">
+                    موعد الاستلام
+                  </label>
+                  <input
+                    type="text"
+                    value={deliveryNote}
+                    onChange={(e) => setDeliveryNote(e.target.value)}
+                    className="input-base w-full text-xs py-2 font-medium"
+                    placeholder="استلام فوري / بعد 6 أشهر"
+                  />
                 </div>
 
                 {/* الوصف */}

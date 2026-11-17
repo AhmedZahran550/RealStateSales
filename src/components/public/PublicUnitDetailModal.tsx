@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
@@ -436,11 +436,22 @@ export default function PublicUnitDetailModal({
               )}
               {settings.showPayment && unit.paymentTerms && (
                 <div className="panel-section p-3.5">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <CreditCard className="w-4 h-4 text-primary" />
-                    <span className="text-xs font-bold text-on-surface-variant">
-                      نظام السداد والتقسيط
-                    </span>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-1.5">
+                      <CreditCard className="w-4 h-4 text-primary" />
+                      <span className="text-xs font-bold text-on-surface-variant">
+                        نظام السداد والتقسيط
+                      </span>
+                    </div>
+                    {unit.paymentType && (
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary">
+                        {unit.paymentType === 'cash'
+                          ? 'كاش'
+                          : unit.paymentType === 'cash_with_facilities'
+                          ? 'تسهيلات'
+                          : 'تقسيط'}
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs sm:text-sm font-bold text-on-surface">
                     {unit.paymentTerms}

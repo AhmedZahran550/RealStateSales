@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
@@ -516,10 +516,21 @@ export default function UnitDetailPage({
               <div className="pt-3 border-t border-outline-variant grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 {unit.paymentTerms && (
                   <div className="p-3 rounded-xl bg-surface-container">
-                    <span className="font-bold text-on-surface flex items-center gap-1.5 mb-1">
-                      <CreditCard className="w-3.5 h-3.5 text-primary" />
-                      شروط وأنظمة السداد
-                    </span>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-on-surface flex items-center gap-1.5">
+                        <CreditCard className="w-3.5 h-3.5 text-primary" />
+                        شروط وأنظمة السداد
+                      </span>
+                      {unit.paymentType && (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary">
+                          {unit.paymentType === 'cash'
+                            ? 'كاش'
+                            : unit.paymentType === 'cash_with_facilities'
+                            ? 'كاش مع تسهيلات'
+                            : 'تقسيط'}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-on-surface-variant leading-relaxed">{unit.paymentTerms}</p>
                   </div>
                 )}

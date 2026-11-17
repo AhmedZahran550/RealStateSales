@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Building, Zone, UnitKind, UnitStatus, UnitMedia } from '@/lib/types';
+import { Building, Zone, UnitKind, UnitStatus, UnitMedia, PaymentType } from '@/lib/types';
 import { useApp } from '@/context/AppContext';
 import {
   Building2,
@@ -48,6 +48,9 @@ interface DraftUnitItem {
   negotiable: boolean;
   deliveryNote: string;
   paymentTerms: string;
+  paymentType?: PaymentType;
+  downPayment?: number;
+  installmentMonths?: number;
   description: string;
   status: UnitStatus;
   features: string[];
@@ -152,7 +155,10 @@ export default function BuildingForm({ initialBuilding, isEdit = false }: Buildi
           price: defaultPrice,
           negotiable: true,
           deliveryNote: 'استلام فوري',
-          paymentTerms: 'كاش أو تقسيط بتسهيلات',
+          paymentTerms: 'كاش',
+          paymentType: 'cash',
+          downPayment: 0,
+          installmentMonths: 0,
           description: `شقة دور ${f === 0 ? 'أرضي' : f} بموقع متميز بالعمارة`,
           status: 'available',
           features: [],

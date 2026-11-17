@@ -71,6 +71,33 @@ export const isCompanyAdmin = (user?: UserProfile | null): boolean =>
 export const isBroker = (user?: UserProfile | null): boolean =>
   user?.role === 'user';
 
+// أنواع نظام السداد والتقسيط
+export type PaymentType = 'cash' | 'installment' | 'cash_with_facilities';
+
+export const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
+  cash: 'كاش',
+  installment: 'قسط',
+  cash_with_facilities: 'كاش مع تسهيلات',
+};
+
+/** توليد نص تلقائي لنظام السداد من البيانات المهيكلة */
+export function generatePaymentTermsText(
+  paymentType: PaymentType,
+  totalPrice: number,
+  downPayment: number,
+  installmentMonths: number
+): string {
+  if (paymentType === 'cash') return 'كاش';
+  if (paymentType === 'cash_with_facilities') {
+    const monthly = installmentMonths > 0 ? Math.ceil(totalPrice / installmentMonths) : 0;
+    return `كاش مع تسهيلات على ${installmentMonths} شهر — القسط الشهري ${monthly.toLocaleString('ar-EG')} ج.م`;
+  }
+  // installment
+  const pct = totalPrice > 0 ? Math.round((downPayment / totalPrice) * 100) : 0;
+  const remaining = totalPrice - downPayment;
+  const monthly = installmentMonths > 0 ? Math.ceil(remaining / installmentMonths) : 0;
+  return `مقدم ${pct}% (${downPayment.toLocaleString('ar-EG')} ج.م) والباقي على ${installmentMonths} شهر — القسط الشهري ${monthly.toLocaleString('ar-EG')} ج.م`;
+}
 
 export interface Zone {
   /** معرف قاعدي لكل شركة (سلسلة تلقائية؛ القيم القديمة 1..16 من البيانات الأولية) */
@@ -152,7 +179,10 @@ export interface Unit {
   price: number; // جنيه مصري
   negotiable: boolean;
   deliveryNote: string; // تسليم فوري، خلال 6 شهور، تحت الإنشاء
-  paymentTerms: string; // كاش، مقدم 50% وتقسيط، إلخ
+  paymentTerms: string; // كاش، مقدم 50% وتقسيط، إلخ — نص تلقائي من البيانات المهيكلة
+  paymentType?: PaymentType;
+  downPayment?: number;         // مبلغ المقدم بالجنيه المصري
+  installmentMonths?: number;   // عدد أشهر التقسيط
   description?: string;
   status: UnitStatus;
   media: UnitMedia[];
@@ -314,6 +344,9 @@ export interface PublicUnit {
   negotiable: boolean;
   deliveryNote?: string;
   paymentTerms?: string;
+  paymentType?: PaymentType;
+  downPayment?: number;
+  installmentMonths?: number;
   description?: string;
   features?: string[];
   media: UnitMedia[];

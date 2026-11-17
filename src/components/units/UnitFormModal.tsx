@@ -1,11 +1,22 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Unit, UnitKind, UnitStatus, Zone, Building, UNIT_KIND_LABELS, UnitMedia } from '@/lib/types';
+import {
+  Unit,
+  UnitKind,
+  UnitStatus,
+  Zone,
+  Building,
+  UNIT_KIND_LABELS,
+  UnitMedia,
+  PaymentType,
+  generatePaymentTermsText,
+} from '@/lib/types';
 import { zoneDisplayName } from '@/lib/zone-utils';
 import { X, Building2, Plus, Check, Sparkles, Tag, Info, Loader2, AlertCircle } from 'lucide-react';
 import LiveMapPicker from '@/components/LiveMapPicker';
 import MediaUploader from '@/components/MediaUploader';
+import PaymentSection from '@/components/units/PaymentSection';
 import { useApp } from '@/context/AppContext';
 
 export interface UnitFormModalProps {
@@ -71,7 +82,16 @@ export default function UnitFormModal({
   const [price, setPrice] = useState<number>(initialUnit?.price || 1500000);
   const [negotiable, setNegotiable] = useState<boolean>(initialUnit?.negotiable ?? false);
   const [deliveryNote, setDeliveryNote] = useState<string>(initialUnit?.deliveryNote || '');
-  const [paymentTerms, setPaymentTerms] = useState<string>(initialUnit?.paymentTerms || '');
+  const [paymentType, setPaymentType] = useState<PaymentType>(
+    initialUnit?.paymentType ||
+      (initialUnit?.paymentTerms?.includes('تسهيلات')
+        ? 'cash_with_facilities'
+        : initialUnit?.paymentTerms?.includes('قسط')
+        ? 'installment'
+        : 'cash')
+  );
+  const [downPayment, setDownPayment] = useState<number>(initialUnit?.downPayment || 0);
+  const [installmentMonths, setInstallmentMonths] = useState<number>(initialUnit?.installmentMonths || 0);
   const [description, setDescription] = useState<string>(initialUnit?.description || '');
   const [status, setStatus] = useState<UnitStatus>(initialUnit?.status || 'available');
   const [lat, setLat] = useState<number | undefined>(initialUnit?.lat || 30.1382);
@@ -105,7 +125,15 @@ export default function UnitFormModal({
       setPrice(initialUnit.price);
       setNegotiable(initialUnit.negotiable);
       setDeliveryNote(initialUnit.deliveryNote);
-      setPaymentTerms(initialUnit.paymentTerms);
+      const inferredType: PaymentType = initialUnit.paymentType ||
+        (initialUnit.paymentTerms?.includes('تسهيلات')
+          ? 'cash_with_facilities'
+          : initialUnit.paymentTerms?.includes('قسط')
+          ? 'installment'
+          : 'cash');
+      setPaymentType(inferredType);
+      setDownPayment(initialUnit.downPayment || 0);
+      setInstallmentMonths(initialUnit.installmentMonths || 0);
       setDescription(initialUnit.description || '');
       setStatus(initialUnit.status);
       setLat(initialUnit.lat || 30.1382);
@@ -138,7 +166,9 @@ export default function UnitFormModal({
       setPrice(1500000);
       setNegotiable(false);
       setDeliveryNote('');
-      setPaymentTerms('');
+      setPaymentType('cash');
+      setDownPayment(0);
+      setInstallmentMonths(0);
       setDescription('');
       setStatus('available');
       setLat(30.1382);
@@ -211,7 +241,15 @@ export default function UnitFormModal({
         price: Number(price),
         negotiable,
         deliveryNote,
-        paymentTerms,
+        paymentType,
+        downPayment: paymentType === 'installment' ? Number(downPayment) : 0,
+        installmentMonths: paymentType !== 'cash' ? Number(installmentMonths) : 0,
+        paymentTerms: generatePaymentTermsText(
+          paymentType,
+          Number(price) || 0,
+          Number(downPayment) || 0,
+          Number(installmentMonths) || 0
+        ),
         description,
         status,
         lat: lat ? Number(lat) : undefined,
@@ -506,16 +544,15 @@ export default function UnitFormModal({
               />
             </div>
 
-            <div>
-              <label className="block font-bold text-on-surface mb-1">
-                طريقة وتسهيلات الدفع
-              </label>
-              <input
-                type="text"
-                value={paymentTerms}
-                onChange={(e) => setPaymentTerms(e.target.value)}
-                placeholder="كاش، مقدم 50% وتسهيلات..."
-                className="w-full p-2.5 rounded-xl border border-outline-variant bg-white text-on-surface font-bold placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/25 focus:outline-none transition-all shadow-xs"
+            <div className="sm:col-span-2">
+              <PaymentSection
+                totalPrice={Number(price) || 0}
+                paymentType={paymentType}
+                onPaymentTypeChange={setPaymentType}
+                downPayment={downPayment}
+                onDownPaymentChange={setDownPayment}
+                installmentMonths={installmentMonths}
+                onInstallmentMonthsChange={setInstallmentMonths}
               />
             </div>
           </div>

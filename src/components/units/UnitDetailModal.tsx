@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Unit, UnitHistory, UNIT_KIND_LABELS, UNIT_STATUS_CONFIG } from '@/lib/types';
@@ -553,14 +553,52 @@ export default function UnitDetailModal({
 
           {/* Payment Terms & Description */}
           <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant ">
-              <h4 className="text-xs font-bold uppercase text-on-surface-variant mb-1 flex items-center gap-1.5">
-                <CreditCard className="w-4 h-4 text-warning" />
-                شروط ونظام السداد
+            <div className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant">
+              <h4 className="text-xs font-bold uppercase text-on-surface-variant mb-2 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <CreditCard className="w-4 h-4 text-primary" />
+                  شروط ونظام السداد
+                </span>
+                {unit.paymentType && (
+                  <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-primary/10 text-primary border border-primary/20">
+                    {unit.paymentType === 'cash'
+                      ? 'كاش'
+                      : unit.paymentType === 'cash_with_facilities'
+                      ? 'كاش مع تسهيلات'
+                      : 'تقسيط'}
+                  </span>
+                )}
               </h4>
-              <p className="text-sm font-medium text-on-surface ">
-                {unit.paymentTerms}
+              <p className="text-sm font-semibold text-on-surface">
+                {unit.paymentTerms || 'كاش'}
               </p>
+              {unit.installmentMonths && unit.installmentMonths > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3 pt-3 border-t border-outline-variant/60 text-xs">
+                  {unit.paymentType === 'installment' && unit.downPayment ? (
+                    <div>
+                      <span className="text-on-surface-variant block text-[10px]">المقدم:</span>
+                      <strong className="font-bold text-on-surface">
+                        {unit.downPayment.toLocaleString('ar-EG')} ج.م
+                      </strong>
+                    </div>
+                  ) : null}
+                  <div>
+                    <span className="text-on-surface-variant block text-[10px]">المدة:</span>
+                    <strong className="font-bold text-on-surface">{unit.installmentMonths} شهر</strong>
+                  </div>
+                  <div>
+                    <span className="text-on-surface-variant block text-[10px]">القسط الشهري:</span>
+                    <strong className="font-bold text-primary">
+                      {Math.ceil(
+                        ((unit.price || 0) -
+                          (unit.paymentType === 'installment' ? unit.downPayment || 0 : 0)) /
+                          unit.installmentMonths
+                      ).toLocaleString('ar-EG')}{' '}
+                      ج.م
+                    </strong>
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             {unit.description && (

@@ -48,6 +48,9 @@ export async function GET(
       negotiable: Boolean(dbUnit.negotiable),
       deliveryNote: dbUnit.delivery_note || '',
       paymentTerms: dbUnit.payment_terms || '',
+      paymentType: dbUnit.payment_type || 'cash',
+      downPayment: dbUnit.down_payment ? Number(dbUnit.down_payment) : 0,
+      installmentMonths: dbUnit.installment_months ? Number(dbUnit.installment_months) : 0,
       description: dbUnit.description || '',
       status: dbUnit.status || 'available',
       lat: dbUnit.lat ? Number(dbUnit.lat) : undefined,
@@ -125,6 +128,9 @@ export async function PUT(
     if (body.negotiable !== undefined) dbUpdates.negotiable = body.negotiable;
     if (body.deliveryNote !== undefined) dbUpdates.delivery_note = body.deliveryNote;
     if (body.paymentTerms !== undefined) dbUpdates.payment_terms = body.paymentTerms;
+    if (body.paymentType !== undefined) dbUpdates.payment_type = body.paymentType;
+    if (body.downPayment !== undefined) dbUpdates.down_payment = body.downPayment;
+    if (body.installmentMonths !== undefined) dbUpdates.installment_months = body.installmentMonths;
     if (body.description !== undefined) dbUpdates.description = body.description;
     if (body.status !== undefined) dbUpdates.status = body.status;
     if (body.features !== undefined) dbUpdates.features = body.features;

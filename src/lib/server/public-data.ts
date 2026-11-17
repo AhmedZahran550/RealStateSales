@@ -1,6 +1,6 @@
-import { serverSupabase } from '@/lib/server/supabase';
+﻿import { serverSupabase } from '@/lib/server/supabase';
 import { PublicPageData } from '@/services/publicPageService';
-import { PublicUnit, UnitMedia, GalleryItem, CompanyPublicSettings, UnitKind } from '@/lib/types';
+import { PublicUnit, UnitMedia, GalleryItem, CompanyPublicSettings, UnitKind, PaymentType } from '@/lib/types';
 
 /**
  * جلب بيانات الصفحة العامة للشركة (مشترك بين الصفحة العامة والـ API العام)
@@ -126,6 +126,9 @@ export async function getPublicPageData(
     negotiable: !!u.negotiable,
     deliveryNote: u.delivery_note || undefined,
     paymentTerms: u.payment_terms || undefined,
+    paymentType: u.payment_type || undefined,
+    downPayment: u.down_payment ? Number(u.down_payment) : undefined,
+    installmentMonths: u.installment_months ? Number(u.installment_months) : undefined,
     description: u.description || undefined,
     features: (u.features || []).length > 0 ? u.features : undefined,
     media: (u.unit_media || [])
@@ -183,6 +186,9 @@ export type PublicUnitDetail = PublicUnit & {
   description?: string;
   deliveryNote?: string;
   paymentTerms?: string;
+  paymentType?: PaymentType;
+  downPayment?: number;
+  installmentMonths?: number;
   lat?: number;
   lng?: number;
   companyId: string;
@@ -295,6 +301,9 @@ export async function getPublicUnitData(unitId: string): Promise<{
     negotiable: Boolean(dbUnit.negotiable),
     deliveryNote: dbUnit.delivery_note || undefined,
     paymentTerms: dbUnit.payment_terms || undefined,
+    paymentType: dbUnit.payment_type || undefined,
+    downPayment: dbUnit.down_payment ? Number(dbUnit.down_payment) : undefined,
+    installmentMonths: dbUnit.installment_months ? Number(dbUnit.installment_months) : undefined,
     description: dbUnit.description || undefined,
     features: dbUnit.features || [],
     lat: dbUnit.lat ? Number(dbUnit.lat) : undefined,
