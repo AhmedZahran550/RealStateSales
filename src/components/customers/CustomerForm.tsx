@@ -291,28 +291,7 @@ export default function CustomerForm({ initialCustomer, isEdit = false }: Custom
             المسار ومصدر العميل
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-on-surface mb-1.5">
-                الموظف المسؤول (Owner)
-              </label>
-              <select
-                value={ownerId}
-                onChange={(e) => setOwnerId(e.target.value)}
-                className="input-base w-full"
-              >
-                {companyUsers && companyUsers.length > 0 ? (
-                  companyUsers.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.fullName} {u.id === currentUser?.id ? '(أنت)' : ''}
-                    </option>
-                  ))
-                ) : (
-                  <option value={currentUser?.id || ''}>{currentUser?.fullName || 'أنا'}</option>
-                )}
-              </select>
-            </div>
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-on-surface mb-1.5">
                 مصدر العميل (Lead Source)

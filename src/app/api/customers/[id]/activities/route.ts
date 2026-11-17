@@ -18,6 +18,22 @@ export async function POST(
       );
     }
 
+    // التحقق من ملكية الموظف للعميل
+    const { data: cust } = await serverSupabase
+      .from('customers')
+      .select('id')
+      .eq('id', id)
+      .eq('owner_id', authUser.sub)
+      .is('deleted_at', null)
+      .maybeSingle();
+
+    if (!cust) {
+      return NextResponse.json(
+        { success: false, error: 'غير مصرح لك بإضافة نشاط لهذا العميل' },
+        { status: 403 }
+      );
+    }
+
     const { data, error } = await serverSupabase
       .from('customer_activities')
       .insert({

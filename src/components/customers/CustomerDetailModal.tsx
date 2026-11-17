@@ -152,7 +152,7 @@ export default function CustomerDetailModal({
                 </span>
               </div>
               <p className="text-xs text-on-surface-variant mt-0.5">
-                المصدر: {customer.source || 'غير محدد'} • البروكر: {customer.ownerName || 'حسام الشريف'}
+                المصدر: {customer.source || 'غير محدد'} • المسؤول: {customer.ownerName || 'أنت'}
               </p>
             </div>
           </div>

@@ -10,34 +10,31 @@ export async function GET(
     const { id } = await params;
     const authUser = await requireAuth(request);
 
+    // العميل مخصص حصرياً للموظف صاحب الحساب
     const { data: c, error } = await serverSupabase
       .from('customers')
       .select(`
         *,
         customer_activities (*),
         customer_units (unit_id),
-        profiles:owner_id (id, full_name, company_id)
+        profiles:owner_id (id, full_name)
       `)
       .eq('id', id)
+      .eq('owner_id', authUser.sub)
       .is('deleted_at', null)
       .maybeSingle();
 
     if (error || !c) {
-      return NextResponse.json({ success: false, error: 'العميل غير موجود' }, { status: 404 });
-    }
-
-    const isSuper = authUser.role === 'super_admin';
-    const isSameCompany = authUser.companyId && (c.profiles as any)?.company_id === authUser.companyId;
-    const isOwner = c.owner_id === authUser.sub;
-
-    if (!isSuper && !isSameCompany && !isOwner) {
-      return NextResponse.json({ success: false, error: 'غير مصرح بالوصول إلى هذا العميل' }, { status: 403 });
+      return NextResponse.json(
+        { success: false, error: 'العميل غير موجود أو غير مصرح لك بالوصول إليه' },
+        { status: 404 }
+      );
     }
 
     const customer = {
       id: c.id,
       ownerId: c.owner_id,
-      ownerName: c.profiles?.full_name || (c.owner_id === authUser.sub ? authUser.fullName : 'فريق العمل'),
+      ownerName: c.profiles?.full_name || authUser.fullName,
       name: c.name,
       phone: c.phone,
       whatsapp: c.whatsapp || undefined,
@@ -76,24 +73,20 @@ export async function PUT(
     const authUser = await requireAuth(request);
     const body = await request.json();
 
-    // التحقق من صلاحية الوصول للعميل ضمن الشركة
+    // التحقق من ملكية الموظف للعميل
     const { data: c, error: fetchErr } = await serverSupabase
       .from('customers')
-      .select('*, profiles:owner_id(id, full_name, company_id)')
+      .select('id, stage')
       .eq('id', id)
+      .eq('owner_id', authUser.sub)
       .is('deleted_at', null)
       .maybeSingle();
 
     if (fetchErr || !c) {
-      return NextResponse.json({ success: false, error: 'العميل غير موجود' }, { status: 404 });
-    }
-
-    const isSuper = authUser.role === 'super_admin';
-    const isSameCompany = authUser.companyId && (c.profiles as any)?.company_id === authUser.companyId;
-    const isOwner = c.owner_id === authUser.sub;
-
-    if (!isSuper && !isSameCompany && !isOwner) {
-      return NextResponse.json({ success: false, error: 'غير مصرح بتعديل بيانات هذا العميل' }, { status: 403 });
+      return NextResponse.json(
+        { success: false, error: 'العميل غير موجود أو غير مصرح لك بتعديله' },
+        { status: 403 }
+      );
     }
 
     const dbUpdate: any = { updated_at: new Date().toISOString() };
@@ -105,14 +98,12 @@ export async function PUT(
     if (body.stage !== undefined) dbUpdate.stage = body.stage;
     if (body.nextFollowupAt !== undefined) dbUpdate.next_followup_at = body.nextFollowupAt || null;
     if (body.notes !== undefined) dbUpdate.notes = body.notes || null;
-    if (body.ownerId !== undefined && (isSuper || isSameCompany)) {
-      dbUpdate.owner_id = body.ownerId;
-    }
 
     const { error } = await serverSupabase
       .from('customers')
       .update(dbUpdate)
-      .eq('id', id);
+      .eq('id', id)
+      .eq('owner_id', authUser.sub);
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -153,28 +144,12 @@ export async function DELETE(
     const { id } = await params;
     const authUser = await requireAuth(request);
 
-    const { data: c, error: fetchErr } = await serverSupabase
-      .from('customers')
-      .select('*, profiles:owner_id(id, full_name, company_id)')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (fetchErr || !c) {
-      return NextResponse.json({ success: false, error: 'العميل غير موجود' }, { status: 404 });
-    }
-
-    const isSuper = authUser.role === 'super_admin';
-    const isSameCompany = authUser.companyId && (c.profiles as any)?.company_id === authUser.companyId;
-    const isOwner = c.owner_id === authUser.sub;
-
-    if (!isSuper && !isSameCompany && !isOwner) {
-      return NextResponse.json({ success: false, error: 'غير مصرح بحذف هذا العميل' }, { status: 403 });
-    }
-
+    // الحذف متاح فقط لصاحب العميل
     const { error } = await serverSupabase
       .from('customers')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('owner_id', authUser.sub);
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });

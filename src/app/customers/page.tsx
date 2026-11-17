@@ -17,7 +17,6 @@ import {
   Search,
   Filter,
   User,
-  UserCheck,
   Edit,
   Trash2,
   Eye,
@@ -33,7 +32,6 @@ function CustomersContent() {
   const router = useRouter();
   const {
     currentUser,
-    companyUsers,
     myCustomers,
     myUnits,
     updateCustomer,
@@ -53,7 +51,6 @@ function CustomersContent() {
   // الفلاتر
   const [selectedStage, setSelectedStage] = useState<CustomerStage | 'all'>('all');
   const [followupFilter, setFollowupFilter] = useState<'all' | 'today' | 'overdue' | 'upcoming' | 'none'>('all');
-  const [ownerFilter, setOwnerFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [budgetFilter, setBudgetFilter] = useState<string>('all');
 
@@ -144,13 +141,6 @@ function CustomersContent() {
       // المرحلة
       if (selectedStage !== 'all' && c.stage !== selectedStage) return false;
 
-      // الموظف المسؤول
-      if (ownerFilter === 'me') {
-        if (c.ownerId !== currentUser?.id) return false;
-      } else if (ownerFilter !== 'all') {
-        if (c.ownerId !== ownerFilter) return false;
-      }
-
       // حالة المتابعة
       if (followupFilter !== 'all') {
         if (followupFilter === 'none') {
@@ -178,13 +168,12 @@ function CustomersContent() {
         const matchName = c.name.toLowerCase().includes(q);
         const matchPhone = c.phone.includes(q);
         const matchNotes = c.notes?.toLowerCase().includes(q);
-        const matchOwner = c.ownerName?.toLowerCase().includes(q);
-        if (!matchName && !matchPhone && !matchNotes && !matchOwner) return false;
+        if (!matchName && !matchPhone && !matchNotes) return false;
       }
 
       return true;
     });
-  }, [myCustomers, selectedStage, ownerFilter, followupFilter, budgetFilter, searchTerm, currentUser?.id, todayStart, todayEnd]);
+  }, [myCustomers, selectedStage, followupFilter, budgetFilter, searchTerm, todayStart, todayEnd]);
 
   return (
     <div className="flex flex-col w-full space-y-5 animate-in fade-in duration-300">
@@ -355,8 +344,8 @@ function CustomersContent() {
           })}
         </div>
 
-        {/* فلاتر البحث والموظف المسؤول والمتابعة */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-outline-variant/60">
+        {/* فلاتر البحث والمتابعة والميزانية */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-3 border-t border-outline-variant/60">
           {/* البحث */}
           <div className="relative">
             <Search className="w-4 h-4 text-on-surface-variant absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -367,25 +356,6 @@ function CustomersContent() {
               placeholder="بحث بالاسم، رقم الموبايل أو الملاحظات..."
               className="input-base w-full text-xs font-semibold py-2.5 pr-10"
             />
-          </div>
-
-          {/* فلتر الموظف المسؤول */}
-          <div className="relative">
-            <User className="w-4 h-4 text-on-surface-variant absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <select
-              value={ownerFilter}
-              onChange={(e) => setOwnerFilter(e.target.value)}
-              className="input-base w-full text-xs font-bold py-2.5 pr-10"
-            >
-              <option value="all">كل فريق العمل (جميع العملاء)</option>
-              <option value="me">عملائي أنا فقط</option>
-              {companyUsers &&
-                companyUsers.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    عملاء: {u.fullName}
-                  </option>
-                ))}
-            </select>
           </div>
 
           {/* فلتر حالة المتابعة */}
@@ -475,31 +445,6 @@ function CustomersContent() {
                             </option>
                           ))}
                         </select>
-
-                        {/* بادج الموظف المسؤول وإمكانية إعادة التعيين */}
-                        <div className="flex items-center gap-1 bg-surface-container px-2 py-0.5 rounded-lg text-[11px] font-bold text-on-surface-variant border border-outline-variant/60">
-                          <UserCheck className="w-3 h-3 text-primary shrink-0" />
-                          <span>المسؤول:</span>
-                          <select
-                            value={lead.ownerId}
-                            onChange={async (e) => {
-                              const newOwner = e.target.value;
-                              await updateCustomer(lead.id, { ownerId: newOwner });
-                              showToast(`تمت إعادة تعيين العميل`);
-                            }}
-                            className="bg-transparent font-black text-on-surface cursor-pointer focus:outline-none"
-                          >
-                            {companyUsers && companyUsers.length > 0 ? (
-                              companyUsers.map((u) => (
-                                <option key={u.id} value={u.id}>
-                                  {u.fullName} {u.id === currentUser?.id ? '(أنت)' : ''}
-                                </option>
-                              ))
-                            ) : (
-                              <option value={lead.ownerId}>{lead.ownerName || 'المسؤول'}</option>
-                            )}
-                          </select>
-                        </div>
                       </div>
 
                       <div className="flex items-center gap-3 flex-wrap text-xs text-on-surface-variant">

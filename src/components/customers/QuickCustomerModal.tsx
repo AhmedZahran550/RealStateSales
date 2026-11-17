@@ -62,7 +62,6 @@ export default function QuickCustomerModal({
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [stage, setStage] = useState<CustomerStage>('lead');
-  const [ownerId, setOwnerId] = useState<string>('');
 
   // الحقول الإضافية
   const [whatsapp, setWhatsapp] = useState('');
@@ -109,7 +108,6 @@ export default function QuickCustomerModal({
         setName(initialCustomer.name || '');
         setPhone(initialCustomer.phone || '');
         setStage(initialCustomer.stage || 'lead');
-        setOwnerId(initialCustomer.ownerId || currentUser?.id || '');
         setWhatsapp(initialCustomer.whatsapp || '');
         setBudget(initialCustomer.budget);
         setSource(initialCustomer.source || COMMON_SOURCES[0]);
@@ -131,7 +129,6 @@ export default function QuickCustomerModal({
         setName('');
         setPhone('');
         setStage('lead');
-        setOwnerId(currentUser?.id || '');
         setWhatsapp('');
         setBudget(undefined);
         setSource(COMMON_SOURCES[0]);
@@ -171,7 +168,6 @@ export default function QuickCustomerModal({
         budget: budget ? Number(budget) : undefined,
         source: source.trim() || undefined,
         stage,
-        ownerId: ownerId || currentUser?.id,
         nextFollowupAt: nextFollowupAt ? new Date(nextFollowupAt).toISOString() : undefined,
         notes: notes.trim() || undefined,
         interestedUnitIds,
@@ -277,7 +273,7 @@ export default function QuickCustomerModal({
             </div>
           </div>
 
-          {/* 2. المرحلة والموظف المسؤول */}
+          {/* 2. المرحلة ومصدر العميل */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-xs font-bold text-on-surface mb-1.5">
@@ -298,22 +294,18 @@ export default function QuickCustomerModal({
 
             <div>
               <label className="block text-xs font-bold text-on-surface mb-1.5">
-                الموظف المسؤول (Owner)
+                مصدر التعرف على العميل
               </label>
               <select
-                value={ownerId}
-                onChange={(e) => setOwnerId(e.target.value)}
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
                 className="input-base w-full text-xs font-bold py-2.5"
               >
-                {companyUsers && companyUsers.length > 0 ? (
-                  companyUsers.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.fullName} {u.id === currentUser?.id ? '(أنت)' : ''}
-                    </option>
-                  ))
-                ) : (
-                  <option value={currentUser?.id || ''}>{currentUser?.fullName || 'أنا'}</option>
-                )}
+                {COMMON_SOURCES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -432,24 +424,6 @@ export default function QuickCustomerModal({
                       </span>
                     </div>
                   </div>
-                </div>
-
-                {/* مصدر العميل */}
-                <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
-                    مصدر التعرف على الشركة
-                  </label>
-                  <select
-                    value={source}
-                    onChange={(e) => setSource(e.target.value)}
-                    className="input-base w-full text-xs py-2"
-                  >
-                    {COMMON_SOURCES.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
                 </div>
 
                 {/* الملاحظات */}

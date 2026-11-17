@@ -11,7 +11,6 @@ import {
   ChevronRight,
   Clock,
   AlertCircle,
-  User,
 } from 'lucide-react';
 import { formatArabicFollowupDate } from '@/lib/date-utils';
 
@@ -112,13 +111,6 @@ export default function CrmKanban({
                         )}
                       </div>
 
-                      {/* Assigned Owner */}
-                      {cust.ownerName && (
-                        <div className="mt-2 flex items-center gap-1 text-[10px] text-on-surface-variant font-bold bg-surface-container-low px-2 py-0.5 rounded-md border border-outline-variant/40">
-                          <User className="w-3 h-3 text-primary" />
-                          <span>المسؤول: {cust.ownerName}</span>
-                        </div>
-                      )}
 
                       {/* Phone & WhatsApp */}
                       <div className="mt-3 flex items-center justify-between text-xs text-on-surface-variant ">

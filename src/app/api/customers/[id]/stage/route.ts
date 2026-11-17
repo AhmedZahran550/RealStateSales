@@ -18,6 +18,22 @@ export async function PATCH(
       return NextResponse.json({ success: false, error: 'المرحلة الجديدة مطلوبة' }, { status: 400 });
     }
 
+    // التحقق من ملكية الموظف للعميل
+    const { data: c, error: fetchErr } = await serverSupabase
+      .from('customers')
+      .select('id')
+      .eq('id', id)
+      .eq('owner_id', authUser.sub)
+      .is('deleted_at', null)
+      .maybeSingle();
+
+    if (fetchErr || !c) {
+      return NextResponse.json(
+        { success: false, error: 'العميل غير موجود أو غير مصرح لك بتعديله' },
+        { status: 403 }
+      );
+    }
+
     const { error: updateErr } = await serverSupabase
       .from('customers')
       .update({ stage, updated_at: new Date().toISOString() })

@@ -7,28 +7,18 @@ export async function GET(request: NextRequest) {
   try {
     const authUser = await requireAuth(request);
 
-    // نظام CRM تشاركي على مستوى الشركة:
-    // موظفو ومديرو الشركة يشاركون عملاء الشركة مع إظهار الموظف المسؤول
-    let query = serverSupabase
+    // عزل تام للعملاء: كل موظف يرى ويدير عملاءه الخاصين به فقط ولا يرى عملاء غيره
+    const { data: dbCustomers, error: custError } = await serverSupabase
       .from('customers')
       .select(`
         *,
         customer_activities (*),
         customer_units (unit_id),
-        profiles:owner_id (id, full_name, company_id)
+        profiles:owner_id (id, full_name)
       `)
+      .eq('owner_id', authUser.sub)
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
-
-    if (authUser.role !== 'super_admin') {
-      if (authUser.companyId) {
-        query = query.eq('profiles.company_id', authUser.companyId);
-      } else {
-        query = query.eq('owner_id', authUser.sub);
-      }
-    }
-
-    const { data: dbCustomers, error: custError } = await query;
 
     if (custError) {
       return NextResponse.json({ success: false, error: custError.message }, { status: 500 });
@@ -37,7 +27,7 @@ export async function GET(request: NextRequest) {
     const customers: Customer[] = (dbCustomers || []).map((c: any) => ({
       id: c.id,
       ownerId: c.owner_id,
-      ownerName: c.profiles?.full_name || (c.owner_id === authUser.sub ? authUser.fullName : 'فريق العمل'),
+      ownerName: c.profiles?.full_name || authUser.fullName,
       name: c.name,
       phone: c.phone,
       whatsapp: c.whatsapp || undefined,
@@ -79,10 +69,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const assignedOwnerId = body.ownerId || authUser.sub;
-
+    // العميل ينتمي حصرياً للموظف الذي قام بإنشائه
     const insertData: any = {
-      owner_id: assignedOwnerId,
+      owner_id: authUser.sub,
       name: body.name.trim(),
       phone: body.phone.trim(),
       whatsapp: body.whatsapp ? body.whatsapp.trim() : null,
