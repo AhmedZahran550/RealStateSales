@@ -60,7 +60,7 @@ export const customerService = {
     stage: CustomerStage,
     note?: string
   ): Promise<ServiceResult> {
-    const res = await apiClient.patch(`/customers/${id}/stage`, { stage, note });
+    const res = await apiClient.put(`/customers/${id}`, { stage, note });
     return {
       success: res.success,
       message: res.message || res.error,

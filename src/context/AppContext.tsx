@@ -44,6 +44,7 @@ interface AppContextType {
   isSuperAdmin: boolean;
   isCompanyAdmin: boolean;
   isBroker: boolean;
+  canManageUnits: boolean;
   // Actions
   addCompany: (company: Omit<Company, 'id' | 'createdAt'>) => Promise<{ success: boolean; message?: string; company?: Company }>;
   updateCompany: (id: string, updates: Partial<Company>) => Promise<{ success: boolean; message?: string }>;
@@ -237,6 +238,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const isSuperAdmin = checkIsSuperAdmin(currentUser);
   const isCompanyAdmin = checkIsCompanyAdmin(currentUser);
   const isBroker = checkIsBroker(currentUser);
+  const canManageUnits = isSuperAdmin || isCompanyAdmin || (currentUser?.role === 'user' && !!currentUser?.companyId);
 
   // الشركة الحالية للمستخدم
   const currentCompany = currentUser?.companyId
@@ -257,12 +259,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       : units.filter((u) => !u.companyId || u.companyId === currentUser.companyId)
     : [];
 
-  // عملاء الوسيط (CRM)
-  const myCustomers = currentUser
-    ? isBroker
-      ? customers.filter((c) => c.ownerId === currentUser.id)
-      : []
-    : [];
+  // عملاء الشركة المتاحون للمستخدم (Shared Team CRM)
+  const myCustomers = currentUser ? customers : [];
 
   // ==========================================
   // العمليات (Actions) عبر خدمات الـ API
@@ -693,6 +691,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isSuperAdmin,
         isCompanyAdmin,
         isBroker,
+        canManageUnits,
         addCompany,
         updateCompany,
         deleteCompany,

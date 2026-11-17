@@ -60,7 +60,18 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const authUser = await requireAuth(request, ['super_admin', 'company_admin', 'admin']);
+    const authUser = await requireAuth(request);
+
+    const isSuper = authUser.role === 'super_admin';
+    const isCompanyAdmin = authUser.role === 'company_admin' || authUser.role === 'admin';
+    const isEmployee = authUser.role === 'user' && !!authUser.companyId;
+
+    if (!isSuper && !isCompanyAdmin && !isEmployee) {
+      return NextResponse.json(
+        { success: false, error: 'غير مصرح لك بتعديل بيانات المبنى' },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
 
     const buildingId = Number(id);
@@ -187,7 +198,18 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const authUser = await requireAuth(request, ['super_admin', 'company_admin', 'admin']);
+    const authUser = await requireAuth(request);
+
+    const isSuper = authUser.role === 'super_admin';
+    const isCompanyAdmin = authUser.role === 'company_admin' || authUser.role === 'admin';
+    const isEmployee = authUser.role === 'user' && !!authUser.companyId;
+
+    if (!isSuper && !isCompanyAdmin && !isEmployee) {
+      return NextResponse.json(
+        { success: false, error: 'غير مصرح لك بحذف المبنى' },
+        { status: 403 }
+      );
+    }
 
     const buildingId = Number(id);
     if (!Number.isFinite(buildingId)) {

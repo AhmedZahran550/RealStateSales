@@ -93,12 +93,12 @@ export default function CrmKanban({
                     <div
                       key={cust.id}
                       onClick={() => onSelectCustomer(cust)}
-                      className="bg-white rounded-2xl p-4 border border-outline-variant shadow-sm hover:shadow-md hover:border-warning transition-all cursor-pointer group"
+                      className="bg-surface-container-lowest rounded-2xl p-4 border border-outline-variant shadow-sm hover:shadow-md hover:border-primary/40 transition-all cursor-pointer group"
                     >
                       {/* Customer Name & Budget */}
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <h5 className="font-bold text-sm text-on-surface group-hover:text-warning transition">
+                          <h5 className="font-bold text-sm text-on-surface group-hover:text-primary transition">
                             {cust.name}
                           </h5>
                           <span className="text-[11px] text-on-surface-variant block mt-0.5">
@@ -106,11 +106,19 @@ export default function CrmKanban({
                           </span>
                         </div>
                         {cust.budget && (
-                          <span className="text-xs font-black text-warning bg-warning-container px-2 py-0.5 rounded-lg border border-warning ">
+                          <span className="text-xs font-black text-on-warning-container bg-warning-container px-2 py-0.5 rounded-lg border border-warning/30">
                             {(cust.budget / 1000000).toFixed(1)} م
                           </span>
                         )}
                       </div>
+
+                      {/* Assigned Owner */}
+                      {cust.ownerName && (
+                        <div className="mt-2 flex items-center gap-1 text-[10px] text-on-surface-variant font-bold bg-surface-container-low px-2 py-0.5 rounded-md border border-outline-variant/40">
+                          <User className="w-3 h-3 text-primary" />
+                          <span>المسؤول: {cust.ownerName}</span>
+                        </div>
+                      )}
 
                       {/* Phone & WhatsApp */}
                       <div className="mt-3 flex items-center justify-between text-xs text-on-surface-variant ">

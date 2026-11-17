@@ -14,22 +14,30 @@ import {
   ArrowLeft,
   Building2,
   Briefcase,
+  Edit,
+  Trash2,
 } from 'lucide-react';
 
 interface UnitCardProps {
   unit: Unit;
   zones?: any[];
   currentUser?: any;
+  canManage?: boolean;
   onStatusChange?: (unitId: string, newStatus: Unit['status']) => void;
   onCopy?: (unit: Unit) => void;
+  onEdit?: (unit: Unit) => void;
+  onDelete?: (unitId: string) => void;
 }
 
 export default function UnitCard({
   unit,
   zones = [],
   currentUser,
+  canManage = false,
   onStatusChange,
   onCopy,
+  onEdit,
+  onDelete,
 }: UnitCardProps) {
   const [copied, setCopied] = useState(false);
   const statusConfig = UNIT_STATUS_CONFIG[unit.status];
@@ -209,6 +217,36 @@ export default function UnitCard({
             <MessageCircle className="w-3.5 h-3.5" />
             <span>واتساب</span>
           </a>
+
+          {canManage && onEdit && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(unit);
+              }}
+              className="btn-tonal p-2.5 min-h-[40px] min-w-[40px] flex items-center justify-center text-primary"
+              title="تعديل سريع للوحدة"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+          )}
+
+          {canManage && onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`هل أنت متأكد من حذف الوحدة قطعة ${unit.plotNo}؟`)) {
+                  onDelete(unit.id);
+                }
+              }}
+              className="btn-tonal p-2.5 min-h-[40px] min-w-[40px] flex items-center justify-center text-error hover:bg-error-container hover:text-on-error-container"
+              title="حذف الوحدة"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
 
           <Link
             href={`/units/${unit.id}`}

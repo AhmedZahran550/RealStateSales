@@ -13,6 +13,7 @@ import {
   Home,
   Plus,
   Edit,
+  Trash2,
   ArrowUpDown,
   Download,
   Clock,
@@ -26,6 +27,7 @@ import {
   Copy,
   MessageCircle,
 } from 'lucide-react';
+import QuickUnitModal from '@/components/units/QuickUnitModal';
 import { exportUnitsToExcel } from '@/lib/excel';
 import { formatUnitFullDetails, createUnitWhatsAppUrl } from '@/lib/shareUtils';
 import { zoneDisplayName } from '@/lib/zone-utils';
@@ -44,6 +46,7 @@ export default function UnitsPage() {
     currentUser,
     isCompanyAdmin,
     isSuperAdmin,
+    canManageUnits,
     myUnits,
     users,
     zones,
@@ -56,6 +59,10 @@ export default function UnitsPage() {
     updateUnitStatus,
     deleteUnit,
   } = useApp();
+
+  const [quickModalOpen, setQuickModalOpen] = useState(false);
+  const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
+  const [targetBuildingIdForNewUnit, setTargetBuildingIdForNewUnit] = useState<number | undefined>(undefined);
 
   const [inventoryView, setInventoryView] = useState<'units' | 'buildings'>('units');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
@@ -290,23 +297,30 @@ return (
           <Download className="w-4 h-4 text-on-surface-variant" />
           تصدير Excel
         </button>
-        {(isCompanyAdmin || isSuperAdmin) && (
+        {canManageUnits && (
           <>
-            <Link
-              href="/admin/buildings/new"
-              className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface transition-all shadow-xs font-bold text-xs border border-surface-container-high cursor-pointer min-h-[42px]"
-            >
-              <Building2 className="w-4 h-4 text-primary" />
-              <span>+ إضافة عمارة وقطع</span>
-            </Link>
+            {(isCompanyAdmin || isSuperAdmin) && (
+              <Link
+                href="/admin/buildings/new"
+                className="flex items-center justify-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface transition-all shadow-xs font-bold text-xs border border-surface-container-high cursor-pointer min-h-[42px]"
+              >
+                <Building2 className="w-4 h-4 text-primary" />
+                <span>+ إضافة عمارة وقطع</span>
+              </Link>
+            )}
 
-            <Link
-              href="/units/new"
+            <button
+              type="button"
+              onClick={() => {
+                setEditingUnit(null);
+                setTargetBuildingIdForNewUnit(undefined);
+                setQuickModalOpen(true);
+              }}
               className="flex items-center justify-center gap-space-xs px-space-md sm:px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all shadow-md font-bold text-xs sm:text-sm cursor-pointer min-h-[42px]"
             >
               <Plus className="w-4 h-4" />
-              <span>+ إضافة وحدة عقارية</span>
-            </Link>
+              <span>+ إضافة وحدة سريعة</span>
+            </button>
           </>
         )}
       </div>
@@ -645,10 +659,17 @@ return (
                   building={building}
                   units={building.units}
                   zones={zones}
-                  canManage={isCompanyAdmin || isSuperAdmin}
-                  onAddUnit={(buildingId) => router.push(`/units/new?buildingId=${buildingId}`)}
+                  canManage={canManageUnits}
+                  onAddUnit={(buildingId) => {
+                    setEditingUnit(null);
+                    setTargetBuildingIdForNewUnit(buildingId);
+                    setQuickModalOpen(true);
+                  }}
                   onSelectUnit={(unit) => router.push(`/units/${unit.id}`)}
-                  onEditUnit={(unit) => router.push(`/units/${unit.id}/edit`)}
+                  onEditUnit={(unit) => {
+                    setEditingUnit(unit);
+                    setQuickModalOpen(true);
+                  }}
                   onStatusChange={(unitId, newStatus) => updateUnitStatus(unitId, newStatus)}
                   onCopyUnit={copyUnitDetails}
                   defaultExpanded={filteredBuildings.length <= 4}
@@ -685,8 +706,24 @@ return (
                 unit={unit}
                 zones={zones}
                 currentUser={currentUser}
-                onStatusChange={(unitId, newStatus) => updateUnitStatus(unitId, newStatus)}
+                canManage={canManageUnits}
+                onStatusChange={(unitId, newStatus) => {
+                  updateUnitStatus(unitId, newStatus);
+                  showToast(`تم تغيير حالة الوحدة قطعة ${unit.plotNo}`);
+                }}
                 onCopy={copyUnitDetails}
+                onEdit={(u) => {
+                  setEditingUnit(u);
+                  setQuickModalOpen(true);
+                }}
+                onDelete={async (uId) => {
+                  const res = await deleteUnit(uId);
+                  if (res.success) {
+                    showToast('تم حذف الوحدة بنجاح');
+                  } else {
+                    showToast(res.message || 'فشل حذف الوحدة');
+                  }
+                }}
               />
             ))
           ) : (
@@ -886,14 +923,37 @@ return (
                                 >
                                   <Eye className="w-4 h-4" />
                                 </Link>
-                                {(isCompanyAdmin || isSuperAdmin) && (
-                                  <Link
-                                    href={`/units/${u.id}/edit`}
-                                    className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant transition"
-                                    title="تعديل بيانات الوحدة"
-                                  >
-                                    <Edit className="w-4 h-4" />
-                                  </Link>
+                                {canManageUnits && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEditingUnit(u);
+                                        setQuickModalOpen(true);
+                                      }}
+                                      className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition cursor-pointer"
+                                      title="تعديل سريع للوحدة"
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={async () => {
+                                        if (window.confirm(`هل أنت متأكد من حذف الوحدة قطعة ${u.plotNo}؟`)) {
+                                          const res = await deleteUnit(u.id);
+                                          if (res.success) {
+                                            showToast('تم حذف الوحدة بنجاح');
+                                          } else {
+                                            showToast(res.message || 'فشل حذف الوحدة');
+                                          }
+                                        }
+                                      }}
+                                      className="p-1.5 rounded-lg hover:bg-error-container text-error transition cursor-pointer"
+                                      title="حذف الوحدة"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </>
                                 )}
                                 <button
                                   type="button"
@@ -924,6 +984,21 @@ return (
           )}
         </div>
       )}
+
+      {/* نموذج الإضافة والتعديل السريع للوحدات */}
+      <QuickUnitModal
+        isOpen={quickModalOpen}
+        onClose={() => {
+          setQuickModalOpen(false);
+          setEditingUnit(null);
+          setTargetBuildingIdForNewUnit(undefined);
+        }}
+        initialUnit={editingUnit}
+        defaultBuildingId={targetBuildingIdForNewUnit}
+        onSaved={() => {
+          showToast(editingUnit ? 'تم تحديث بيانات الوحدة بنجاح' : 'تمت إضافة الوحدة بنجاح');
+        }}
+      />
     </div>
     );
 }

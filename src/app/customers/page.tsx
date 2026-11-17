@@ -1,20 +1,41 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { Customer, CustomerStage, STAGE_CONFIG } from '@/lib/types';
 import CrmKanban from '@/components/CrmKanban';
+import QuickCustomerModal from '@/components/customers/QuickCustomerModal';
 import { formatArabicFollowupDate } from '@/lib/date-utils';
+import {
+  Phone,
+  MessageCircle,
+  Calendar,
+  DollarSign,
+  Plus,
+  Search,
+  Filter,
+  User,
+  UserCheck,
+  Edit,
+  Trash2,
+  Eye,
+  Sparkles,
+  Clock,
+  Layers,
+  ChevronDown,
+  ArrowUpDown,
+  Building2,
+} from 'lucide-react';
 
 function CustomersContent() {
   const router = useRouter();
   const {
     currentUser,
+    companyUsers,
     myCustomers,
     myUnits,
-    addCustomer,
     updateCustomer,
     updateCustomerStage,
     addCustomerActivity,
@@ -24,9 +45,15 @@ function CustomersContent() {
   const searchParams = useSearchParams();
   const initialView = searchParams.get('view') === 'pipeline' ? 'kanban' : 'list';
 
+  // أنماط العرض والنوافذ المنبثقة
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>(initialView);
+  const [quickModalOpen, setQuickModalOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+
+  // الفلاتر
   const [selectedStage, setSelectedStage] = useState<CustomerStage | 'all'>('all');
   const [followupFilter, setFollowupFilter] = useState<'all' | 'today' | 'overdue' | 'upcoming' | 'none'>('all');
+  const [ownerFilter, setOwnerFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [budgetFilter, setBudgetFilter] = useState<string>('all');
 
@@ -40,14 +67,14 @@ function CustomersContent() {
   const [todayStart, setTodayStart] = useState<number>(0);
   const [todayEnd, setTodayEnd] = useState<number>(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     setTodayStart(start);
     setTodayEnd(start + 24 * 60 * 60 * 1000);
   }, []);
 
-  // Follow-up accurate statistics
+  // إحصائيات المتابعات المستحقة
   const followupStats = useMemo(() => {
     let today = 0;
     let overdue = 0;
@@ -72,7 +99,7 @@ function CustomersContent() {
     return { today, overdue, upcoming, none };
   }, [myCustomers, todayStart, todayEnd]);
 
-  // Stage counts
+  // إحصائيات المراحل
   const stageCounts = useMemo(() => {
     return {
       all: myCustomers.length,
@@ -82,11 +109,12 @@ function CustomersContent() {
       negotiating: myCustomers.filter((c) => c.stage === 'negotiating').length,
       reserved: myCustomers.filter((c) => c.stage === 'reserved').length,
       closed: myCustomers.filter((c) => c.stage === 'closed').length,
+      lost: myCustomers.filter((c) => c.stage === 'lost').length,
     };
   }, [myCustomers]);
 
-  // Quick reschedule helper
-  const handleQuickReschedule = (leadId: string, leadName: string, preset: 'today' | 'tomorrow' | '3days') => {
+  // تأجيل / إعادة جدولة سريعة للمتابعة
+  const handleQuickReschedule = async (leadId: string, leadName: string, preset: 'today' | 'tomorrow' | '3days') => {
     const d = new Date();
     if (preset === 'today') {
       d.setHours(d.getHours() + 2);
@@ -98,7 +126,7 @@ function CustomersContent() {
       d.setHours(12, 0, 0, 0);
     }
     const iso = d.toISOString();
-    updateCustomer(leadId, { nextFollowupAt: iso });
+    await updateCustomer(leadId, { nextFollowupAt: iso });
     const formatted = d.toLocaleString('ar-EG', {
       weekday: 'short',
       month: 'short',
@@ -106,17 +134,24 @@ function CustomersContent() {
       hour: '2-digit',
       minute: '2-digit',
     });
-    addCustomerActivity(leadId, 'call', `تم تأجيل موعد المتابعة إلى: ${formatted}`);
+    await addCustomerActivity(leadId, 'call', `تم تأجيل موعد المتابعة إلى: ${formatted}`);
     showToast(`تم تحديث موعد متابعة ${leadName} إلى ${formatted}`);
   };
 
-  // Filtered customers
+  // قائمة العملاء بعد تطبيق الفلاتر
   const filteredCustomers = useMemo(() => {
     return myCustomers.filter((c) => {
-      // Stage
+      // المرحلة
       if (selectedStage !== 'all' && c.stage !== selectedStage) return false;
 
-      // Follow-up status filter
+      // الموظف المسؤول
+      if (ownerFilter === 'me') {
+        if (c.ownerId !== currentUser?.id) return false;
+      } else if (ownerFilter !== 'all') {
+        if (c.ownerId !== ownerFilter) return false;
+      }
+
+      // حالة المتابعة
       if (followupFilter !== 'all') {
         if (followupFilter === 'none') {
           if (c.nextFollowupAt) return false;
@@ -129,7 +164,7 @@ function CustomersContent() {
         }
       }
 
-      // Budget
+      // الميزانية
       if (budgetFilter !== 'all' && c.budget) {
         const [minStr, maxStr] = budgetFilter.split('-');
         const min = minStr ? parseFloat(minStr) * 1000000 : 0;
@@ -137,528 +172,516 @@ function CustomersContent() {
         if (c.budget < min || c.budget > max) return false;
       }
 
-      // Search
+      // البحث النصي
       if (searchTerm) {
         const q = searchTerm.toLowerCase();
         const matchName = c.name.toLowerCase().includes(q);
         const matchPhone = c.phone.includes(q);
         const matchNotes = c.notes?.toLowerCase().includes(q);
-        if (!matchName && !matchPhone && !matchNotes) return false;
+        const matchOwner = c.ownerName?.toLowerCase().includes(q);
+        if (!matchName && !matchPhone && !matchNotes && !matchOwner) return false;
       }
 
       return true;
     });
-  }, [myCustomers, selectedStage, followupFilter, budgetFilter, searchTerm, todayStart, todayEnd]);
-
-  if (currentUser?.role === 'admin' || currentUser?.role === 'company_admin' || currentUser?.role === 'super_admin') {
-    return (
-      <div className="p-8 max-w-2xl mx-auto my-12 bg-surface-container-lowest rounded-3xl border border-surface-container-high text-center shadow-sm">
-        <div className="w-16 h-16 rounded-2xl bg-warning-container text-warning flex items-center justify-center mx-auto mb-4">
-          <span className="material-symbols-outlined text-[32px]">lock</span>
-        </div>
-        <h2 className="text-xl font-bold text-on-surface mb-2">خصوصية العملاء وجداول المواعيد</h2>
-        <p className="text-sm text-on-surface-variant mb-6 leading-relaxed">
-          سجل العملاء والمتابعات ومواعيد الاتصال مخصص حصرياً لكل وسيط عقاري على حدة. حفاظاً على أمان بيانات الصفقات وسريتها، لا يمكن لأي مدير شركة أو مدير المنصة الاطلاع على عملاء أو جداول مواعيد الوسطاء.
-        </p>
-        <div className="flex items-center justify-center gap-3">
-          <Link
-            href={currentUser?.role === 'super_admin' ? '/super-admin' : '/'}
-            className="px-5 py-2.5 rounded-xl bg-warning hover:bg-warning text-white font-bold text-xs shadow-md transition"
-          >
-            العودة للوحة الإدارة
-          </Link>
-          <Link
-            href="/units"
-            className="px-5 py-2.5 rounded-xl bg-surface-container-high text-on-surface font-bold text-xs hover:bg-surface-container-highest transition"
-          >
-            استعراض محفظة الوحدات
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  }, [myCustomers, selectedStage, ownerFilter, followupFilter, budgetFilter, searchTerm, currentUser?.id, todayStart, todayEnd]);
 
   return (
-    <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
-      {/* 1. Header & Action Ribbon */}
-      <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm border border-surface-container-high/40">
+    <div className="flex flex-col w-full space-y-5 animate-in fade-in duration-300">
+      {/* 1. الشريط العلوي وإجراءات سريعة */}
+      <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-container-lowest p-5 sm:p-6 rounded-3xl shadow-xs border border-outline-variant">
         <div className="flex flex-col">
-          <div className="flex items-center gap-space-xs text-primary text-xs font-bold">
-            <span className="material-symbols-outlined text-[18px]">hub</span>
-            <span>منظومة إدارة علاقات العملاء الذكية (CRM)</span>
+          <div className="flex items-center gap-2 text-primary text-xs font-bold">
+            <Sparkles className="w-4 h-4" />
+            <span>منظومة علاقات العملاء التشاركية (CRM Team)</span>
           </div>
-          <h1 className="text-on-surface font-extrabold tracking-tight mt-0.5 text-2xl lg:text-3xl">
-            إدارة العملاء والمتابعات
+          <h1 className="text-on-surface font-black tracking-tight mt-1 text-2xl lg:text-3xl">
+            إدارة العملاء ومتابعات الفريق
           </h1>
-          <p className="text-on-surface-variant mt-1 text-sm">
-            متابعة وتحديث مسار مشتري العقارات، تسجيل الملاحظات اليومية وتحديد مواعيد المعاينات بدقة.
+          <p className="text-on-surface-variant mt-1 text-xs sm:text-sm">
+            متابعة مشتركة لمشتري العقارات، تسجيل الملاحظات اليومية وتوزيع المهام بدقة وسرعة.
           </p>
         </div>
 
-        <div className="flex items-stretch sm:items-center flex-wrap gap-2 sm:gap-space-sm w-full sm:w-auto">
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-xl w-full sm:w-auto">
+        <div className="flex items-stretch sm:items-center flex-wrap gap-2.5 w-full sm:w-auto">
+          {/* تبديل العرض بين قائمة وكانبان */}
+          <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-2xl border border-outline-variant/60 w-full sm:w-auto">
             <button
+              type="button"
               onClick={() => setViewMode('list')}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer min-h-[36px] ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 viewMode === 'list'
-                  ? 'bg-surface-container-lowest text-primary shadow-sm'
+                  ? 'bg-surface-container-lowest text-primary shadow-xs'
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              <span className="material-symbols-outlined text-[18px]">view_list</span>
-              قائمة تفصيلية
+              <Layers className="w-4 h-4" />
+              <span>قائمة تفصيلية</span>
             </button>
             <button
+              type="button"
               onClick={() => setViewMode('kanban')}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer min-h-[36px] ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 viewMode === 'kanban'
-                  ? 'bg-surface-container-lowest text-primary shadow-sm'
+                  ? 'bg-surface-container-lowest text-primary shadow-xs'
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              <span className="material-symbols-outlined text-[18px]">view_kanban</span>
-              مسار الصفقات (Kanban)
+              <Building2 className="w-4 h-4" />
+              <span>مسار الصفقات (Kanban)</span>
             </button>
           </div>
 
-          <Link
-            href="/customers/new"
-            className="flex items-center justify-center gap-space-xs w-full sm:w-auto px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition-all shadow-md text-sm cursor-pointer min-h-[42px]"
+          {/* زر إضافة عميل سريع */}
+          <button
+            type="button"
+            onClick={() => {
+              setEditingCustomer(null);
+              setQuickModalOpen(true);
+            }}
+            className="btn-primary flex items-center justify-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold shadow-md cursor-pointer w-full sm:w-auto min-h-[42px]"
           >
-            <span className="material-symbols-outlined text-[20px]">person_add</span>
-            <span>+ إضافة عميل جديد</span>
-          </Link>
+            <Plus className="w-4 h-4" />
+            <span>+ إضافة عميل سريع</span>
+          </button>
         </div>
       </div>
 
-      {/* 2. Stats & Pipeline Quick Highlights */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-        <div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
+      {/* 2. مؤشرات الأداء السريعة */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant flex items-center justify-between">
           <div className="flex flex-col">
-            <span className="text-on-surface-variant font-medium text-xs">
-              متابعات اليوم المستحقة
-            </span>
-            <span className="text-secondary font-bold text-2xl">
-              {followupStats.today} عملاء
+            <span className="text-on-surface-variant font-bold text-xs">مستحقة اليوم</span>
+            <span className="text-on-surface font-black text-2xl sm:text-3xl mt-1">
+              {followupStats.today} <span className="text-xs text-on-surface-variant">عميل</span>
             </span>
             {followupStats.overdue > 0 ? (
-              <span className="text-error flex items-center gap-1 font-bold mt-0.5 text-[11px]">
+              <span className="text-error font-bold text-[11px] mt-1 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-error animate-ping" />
-                +{followupStats.overdue} متأخرة بحاجة لاتصال
+                +{followupStats.overdue} متأخرة عن موعدها
               </span>
             ) : (
-              <span className="text-secondary flex items-center gap-1 font-semibold mt-0.5 text-[11px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-ping" />
-                جاهزة للمتابعة الفورية
+              <span className="text-success font-semibold text-[11px] mt-1">
+                لا توجد متابعات متأخرة
               </span>
             )}
           </div>
-          <div className="w-12 h-12 rounded-xl bg-secondary-fixed/50 flex items-center justify-center text-secondary">
-            <span className="material-symbols-outlined text-[28px]">notification_important</span>
+          <div className="w-12 h-12 rounded-xl bg-warning-container text-on-warning-container flex items-center justify-center font-bold">
+            <Clock className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
+        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant flex items-center justify-between">
           <div className="flex flex-col">
-            <span className="text-on-surface-variant font-medium text-xs">
-              معاينات ميدانية نشطة
+            <span className="text-on-surface-variant font-bold text-xs">معاينات ميدانية</span>
+            <span className="text-on-surface font-black text-2xl sm:text-3xl mt-1">
+              {stageCounts.viewed} <span className="text-xs text-on-surface-variant">معاينة</span>
             </span>
-            <span className="text-primary font-bold text-2xl">
-              {stageCounts.viewed} زيارات
-            </span>
-            <span className="text-primary font-semibold mt-0.5 text-[11px]">
-              مرحلة المعاينة الميدانية
+            <span className="text-primary font-semibold text-[11px] mt-1">
+              مرحلة المعاينة على أرض الواقع
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined text-[28px]">travel_explore</span>
+          <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+            <Eye className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
+        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant flex items-center justify-between">
           <div className="flex flex-col">
-            <span className="text-on-surface-variant font-medium text-xs">
-              صفقات قيد التفاوض
+            <span className="text-on-surface-variant font-bold text-xs">مرحلة التفاوض</span>
+            <span className="text-on-surface font-black text-2xl sm:text-3xl mt-1">
+              {stageCounts.negotiating} <span className="text-xs text-on-surface-variant">صفقة</span>
             </span>
-            <span className="text-tertiary font-bold text-2xl">
-              {stageCounts.negotiating} صفقات
-            </span>
-            <span className="text-on-surface-variant mt-0.5 text-[11px]">
-              في مرحلة تقديم العروض
+            <span className="text-on-surface-variant font-semibold text-[11px] mt-1">
+              عروض أسعار وشروط سداد
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-tertiary-fixed/40 flex items-center justify-center text-tertiary">
-            <span className="material-symbols-outlined text-[28px]">payments</span>
+          <div className="w-12 h-12 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold">
+            <DollarSign className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex items-center justify-between border border-surface-container-high/40">
+        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl shadow-xs border border-outline-variant flex items-center justify-between">
           <div className="flex flex-col">
-            <span className="text-on-surface-variant font-medium text-xs">
-              نسبة تحويل الصفقات
+            <span className="text-on-surface-variant font-bold text-xs">تم الحجز والتعاقد</span>
+            <span className="text-success font-black text-2xl sm:text-3xl mt-1">
+              {stageCounts.reserved + stageCounts.closed} <span className="text-xs text-on-surface-variant">صفقة</span>
             </span>
-            <span className="text-primary-container font-bold text-2xl">
-              {myCustomers.length > 0 ? Math.round(((stageCounts.reserved + stageCounts.closed) / myCustomers.length) * 100) : 0}%
-            </span>
-            <span className="text-primary font-semibold mt-0.5 text-[11px]">
-              معدل الإغلاق والتعاقد
+            <span className="text-success font-semibold text-[11px] mt-1">
+              نسبة التحويل {myCustomers.length > 0 ? Math.round(((stageCounts.reserved + stageCounts.closed) / myCustomers.length) * 100) : 0}%
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined text-[28px]">trending_up</span>
+          <div className="w-12 h-12 rounded-xl bg-success-container text-on-success-container flex items-center justify-center font-bold">
+            <Building2 className="w-6 h-6" />
           </div>
         </div>
       </div>
 
-      {/* View Mode Switching: Kanban or List */}
-      {viewMode === 'kanban' ? (
-        <CrmKanban
-          customers={myCustomers}
-          onSelectCustomer={(c) => router.push(`/customers/${c.id}`)}
-          onMoveStage={(id, stage) => updateCustomerStage(id, stage)}
-        />
-      ) : (
-        <div className="flex flex-col space-y-space-md">
-          {/* 3. Filter & Stage Segment Controls */}
-          <div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col gap-space-md border border-surface-container-high/40">
-            {/* Follow-up Status Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 border-b border-surface-container-low">
-              <span className="text-xs font-bold text-on-surface-variant shrink-0 ml-1">حالة المتابعة:</span>
+      {/* 3. شريط الفلاتر والتصنيفات */}
+      <div className="bg-surface-container-lowest rounded-3xl p-4 sm:p-5 shadow-xs border border-outline-variant space-y-4">
+        {/* أزرار الحالات (Tabs) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5">
+          <button
+            type="button"
+            onClick={() => setSelectedStage('all')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              selectedStage === 'all'
+                ? 'bg-primary text-on-primary shadow-xs'
+                : 'bg-surface-container hover:bg-surface-container-high text-on-surface'
+            }`}
+          >
+            الكل ({myCustomers.length})
+          </button>
+          {Object.entries(STAGE_CONFIG).map(([stKey, cfg]) => {
+            const count = stageCounts[stKey as CustomerStage] || 0;
+            const isSelected = selectedStage === stKey;
+            return (
               <button
+                key={stKey}
                 type="button"
-                onClick={() => setFollowupFilter('all')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  followupFilter === 'all'
+                onClick={() => setSelectedStage(stKey as CustomerStage)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                  isSelected
                     ? 'bg-primary text-on-primary shadow-xs'
                     : 'bg-surface-container hover:bg-surface-container-high text-on-surface'
                 }`}
               >
-                <span>الكل</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-black/10 text-[10px]">{myCustomers.length}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFollowupFilter('today')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  followupFilter === 'today'
-                    ? 'bg-warning text-white shadow-xs'
-                    : 'bg-warning-container  hover:bg-warning-container text-warning  border border-warning '
-                }`}
-              >
-                <span>🔔 مستحقة اليوم</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-warning/20 text-[10px] font-black">{followupStats.today}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFollowupFilter('overdue')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  followupFilter === 'overdue'
-                    ? 'bg-error text-white shadow-xs'
-                    : 'bg-error-container  hover:bg-error-container text-on-error-container  border border-error '
-                }`}
-              >
-                <span>⚠️ متأخرة</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-black/10 text-[10px] font-black">{followupStats.overdue}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFollowupFilter('upcoming')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  followupFilter === 'upcoming'
-                    ? 'bg-success text-white shadow-xs'
-                    : 'bg-success-container  hover:bg-success-container text-success  border border-success '
-                }`}
-              >
-                <span>📅 قادمة</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-black/10 text-[10px] font-black">{followupStats.upcoming}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFollowupFilter('none')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  followupFilter === 'none'
-                    ? 'bg-inverse-surface text-white shadow-xs'
-                    : 'bg-surface-container hover:bg-surface-container-high text-on-surface-variant '
-                }`}
-              >
-                <span>⏳ بدون موعد</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-black/10 text-[10px]">{followupStats.none}</span>
-              </button>
-            </div>
-
-            {/* Stage Tabs */}
-            <div className="flex items-center gap-space-xs overflow-x-auto pb-1">
-              <button
-                onClick={() => setSelectedStage('all')}
-                className={`px-space-md py-space-sm rounded-xl transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
-                  selectedStage === 'all'
-                    ? 'bg-primary text-on-primary font-bold shadow-sm'
-                    : 'bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold'
-                }`}
-                type="button"
-              >
-                <span>الكل</span>
-                <span className="px-2 py-0.5 rounded-full bg-primary-container text-on-primary text-[11px]">
-                  {stageCounts.all}
+                <span>{cfg.label}</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-black/10 text-[10px] font-bold">
+                  {count}
                 </span>
               </button>
+            );
+          })}
+        </div>
 
-              <button
-                onClick={() => setSelectedStage('lead')}
-                className={`px-space-md py-space-sm rounded-xl transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
-                  selectedStage === 'lead'
-                    ? 'bg-primary text-on-primary font-bold shadow-sm'
-                    : 'bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold'
-                }`}
-                type="button"
-              >
-                <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-                <span>عميل محتمل</span>
-                <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-bold text-[11px]">
-                  {stageCounts.lead}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setSelectedStage('viewed')}
-                className={`px-space-md py-space-sm rounded-xl transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
-                  selectedStage === 'viewed'
-                    ? 'bg-primary text-on-primary font-bold shadow-sm'
-                    : 'bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold'
-                }`}
-                type="button"
-              >
-                <span className="w-2.5 h-2.5 rounded-full bg-tertiary" />
-                <span>تمت المعاينة</span>
-                <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-tertiary font-bold text-[11px]">
-                  {stageCounts.viewed}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setSelectedStage('negotiating')}
-                className={`px-space-md py-space-sm rounded-xl transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
-                  selectedStage === 'negotiating'
-                    ? 'bg-primary text-on-primary font-bold shadow-sm'
-                    : 'bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold'
-                }`}
-                type="button"
-              >
-                <span className="w-2.5 h-2.5 rounded-full bg-secondary-container" />
-                <span>تفاوض وعروض</span>
-                <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-secondary-container font-bold text-[11px]">
-                  {stageCounts.negotiating}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setSelectedStage('reserved')}
-                className={`px-space-md py-space-sm rounded-xl transition-all flex items-center gap-space-xs text-xs cursor-pointer ${
-                  selectedStage === 'reserved'
-                    ? 'bg-primary text-on-primary font-bold shadow-sm'
-                    : 'bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold'
-                }`}
-                type="button"
-              >
-                <span className="w-2.5 h-2.5 rounded-full bg-outline" />
-                <span>حجز مؤقت</span>
-                <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-outline font-bold text-[11px]">
-                  {stageCounts.reserved}
-                </span>
-              </button>
-            </div>
-
-            {/* Advanced Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm items-center pt-space-xs border-t border-surface-container-low pt-2">
-              <div className="relative">
-                <span className="material-symbols-outlined absolute right-space-md top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">
-                  search
-                </span>
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="بحث بالاسم، رقم الموبايل أو الملاحظات..."
-                  className="w-full bg-white border border-outline-variant rounded-xl py-2.5 pr-11 pl-space-md font-semibold text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary text-xs shadow-xs"
-                />
-              </div>
-
-              <div className="relative">
-                <select
-                  value={budgetFilter}
-                  onChange={(e) => setBudgetFilter(e.target.value)}
-                  className="w-full bg-white border border-outline-variant rounded-xl py-2.5 pr-space-md pl-8 font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary appearance-none cursor-pointer text-xs shadow-xs"
-                >
-                  <option value="all">نطاق الميزانية (الكل)</option>
-                  <option value="1-3">1 - 3 مليون ج.م</option>
-                  <option value="3-6">3 - 6 مليون ج.م</option>
-                  <option value="6-10">6 - 10 مليون ج.م</option>
-                  <option value="10-30">أكثر من 10 مليون ج.م</option>
-                </select>
-                <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">
-                  expand_more
-                </span>
-              </div>
-            </div>
+        {/* فلاتر البحث والموظف المسؤول والمتابعة */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-outline-variant/60">
+          {/* البحث */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-on-surface-variant absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="بحث بالاسم، رقم الموبايل أو الملاحظات..."
+              className="input-base w-full text-xs font-semibold py-2.5 pr-10"
+            />
           </div>
 
-          {/* 4. Main CRM Client Cards */}
-          <div className="flex flex-col gap-space-md">
-            {filteredCustomers.length > 0 ? (
-              filteredCustomers.map((lead) => {
-                const stageConfig = STAGE_CONFIG[lead.stage] || STAGE_CONFIG.lead;
-                const leadTimestamp = lead.nextFollowupAt ? new Date(lead.nextFollowupAt).getTime() : 0;
-                const isLeadOverdue = leadTimestamp > 0 && todayStart > 0 && leadTimestamp < todayStart;
-                const isLeadToday = leadTimestamp > 0 && todayStart > 0 && todayEnd > 0 && leadTimestamp >= todayStart && leadTimestamp < todayEnd;
+          {/* فلتر الموظف المسؤول */}
+          <div className="relative">
+            <User className="w-4 h-4 text-on-surface-variant absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <select
+              value={ownerFilter}
+              onChange={(e) => setOwnerFilter(e.target.value)}
+              className="input-base w-full text-xs font-bold py-2.5 pr-10"
+            >
+              <option value="all">كل فريق العمل (جميع العملاء)</option>
+              <option value="me">عملائي أنا فقط</option>
+              {companyUsers &&
+                companyUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    عملاء: {u.fullName}
+                  </option>
+                ))}
+            </select>
+          </div>
 
-                return (
-                  <div
-                    key={lead.id}
-                    className="client-card bg-surface-container-lowest rounded-2xl p-3.5 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row md:items-center justify-between gap-3.5 sm:gap-4 border border-surface-container-high/50 hover:border-primary/40"
-                  >
-                    {/* 1. هوية العميل والحالة ورقم التليفون وموعد المتابعة */}
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                      {/* الحرف الأول من الاسم */}
-                      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-primary-fixed text-primary flex items-center justify-center font-bold text-base sm:text-lg shrink-0 shadow-xs">
-                        {lead.name.charAt(0)}
-                      </div>
+          {/* فلتر حالة المتابعة */}
+          <div>
+            <select
+              value={followupFilter}
+              onChange={(e) => setFollowupFilter(e.target.value as any)}
+              className="input-base w-full text-xs font-bold py-2.5"
+            >
+              <option value="all">كافة مواعيد المتابعة ({myCustomers.length})</option>
+              <option value="today">🔔 مستحقة اليوم ({followupStats.today})</option>
+              <option value="overdue">⚠️ متأخرة عن موعدها ({followupStats.overdue})</option>
+              <option value="upcoming">📅 قادمة ومجدولة ({followupStats.upcoming})</option>
+              <option value="none">⏳ بدون موعد متابعة ({followupStats.none})</option>
+            </select>
+          </div>
 
-                      {/* البيانات الأساسية */}
-                      <div className="flex flex-col min-w-0 flex-1 gap-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-bold text-sm sm:text-base text-on-surface truncate">
-                            {lead.name}
-                          </h3>
-                          {/* الحالة */}
-                          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${stageConfig.bg} ${stageConfig.color} ${stageConfig.border}`}>
-                            {stageConfig.label}
-                          </span>
-                        </div>
+          {/* فلتر الميزانية */}
+          <div>
+            <select
+              value={budgetFilter}
+              onChange={(e) => setBudgetFilter(e.target.value)}
+              className="input-base w-full text-xs font-bold py-2.5"
+            >
+              <option value="all">كافة الميزانيات</option>
+              <option value="1-3">1 - 3 مليون ج.م</option>
+              <option value="3-6">3 - 6 مليون ج.م</option>
+              <option value="6-10">6 - 10 مليون ج.م</option>
+              <option value="10-30">أكثر من 10 مليون ج.م</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
-                        <div className="flex items-center gap-2 sm:gap-3 flex-wrap text-xs text-on-surface-variant">
-                          {/* رقم التليفون وأيقونات التواصل */}
-                          <div className="flex items-center gap-1.5 font-semibold bg-surface-container-low px-2 py-0.5 rounded-lg">
-                            <a
-                              href={`tel:${lead.phone}`}
-                              className="flex items-center gap-1 hover:text-primary transition font-mono text-[12px]"
-                              dir="ltr"
-                              title="اتصال هاتفياً"
-                            >
-                              <span className="material-symbols-outlined text-[15px] text-primary">call</span>
-                              <span>{lead.phone}</span>
-                            </a>
-                            <a
-                              href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-success hover:text-success transition"
-                              title="محادثة واتساب"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">chat</span>
-                            </a>
-                          </div>
+      {/* 4. عرض البيانات: مسار الصفقات (كانبان) أو القائمة المدمجة */}
+      {viewMode === 'kanban' ? (
+        <CrmKanban
+          customers={filteredCustomers}
+          onSelectCustomer={(c) => {
+            setEditingCustomer(c);
+            setQuickModalOpen(true);
+          }}
+          onMoveStage={(id, stage) => {
+            updateCustomerStage(id, stage);
+            showToast('تم تحديث مرحلة العميل');
+          }}
+        />
+      ) : (
+        <div className="space-y-3">
+          {filteredCustomers.length > 0 ? (
+            filteredCustomers.map((lead) => {
+              const stageConfig = STAGE_CONFIG[lead.stage] || STAGE_CONFIG.lead;
+              const waClean = (lead.whatsapp || lead.phone).replace(/[^0-9]/g, '');
+              const waLink = `https://wa.me/${waClean.startsWith('0') ? '2' + waClean : waClean}`;
+              const followup = lead.nextFollowupAt ? formatArabicFollowupDate(lead.nextFollowupAt) : null;
 
-                          {/* موعد المتابعة مع اسم اليوم والوقت */}
-                          {lead.nextFollowupAt ? (
-                            (() => {
-                              const followup = formatArabicFollowupDate(lead.nextFollowupAt);
-                              return (
-                                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border transition-all ${
-                                  followup.isOverdue
-                                    ? 'bg-error-container text-error   border-error  shadow-xs'
-                                    : followup.isToday
-                                    ? 'bg-warning-container text-warning   border-warning  shadow-xs'
-                                    : 'bg-success-container text-success   border-success  shadow-xs'
-                                }`}>
-                                  <span className="material-symbols-outlined text-[15px]">alarm</span>
-                                  <span>
-                                    {followup.isOverdue ? '⚠️ متأخرة: ' : followup.isToday ? '🔔 اليوم: ' : '📅 '}
-                                    <strong className="text-on-surface font-extrabold">{followup.dayName}</strong>
-                                    {' '}
-                                    <span>({followup.formattedDate})</span>
-                                    {' • '}
-                                    <span className="font-mono">{followup.formattedTime}</span>
-                                  </span>
-                                </div>
-                              );
-                            })()
-                          ) : (
-                            <span className="text-[11px] text-on-surface-variant font-medium">بدون موعد متابعة</span>
-                          )}
-                        </div>
-                      </div>
+              return (
+                <div
+                  key={lead.id}
+                  className="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md border border-outline-variant transition flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                >
+                  {/* بيانات العميل والتواصل */}
+                  <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black text-lg shrink-0">
+                      {lead.name.charAt(0)}
                     </div>
 
-                    {/* 2. شريط أزرار الإجراءات المنظم: عرض التفاصيل والمطابقة وتعديل وحذف */}
-                    <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-2 shrink-0 pt-2.5 md:pt-0 border-t md:border-t-0 border-surface-container-high/30 w-full md:w-auto">
-                      {/* زر عرض التفاصيل */}
-                      <Link
-                        href={`/customers/${lead.id}`}
-                        className="px-3 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container text-on-surface font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer min-h-[42px]"
-                        title="عرض كافة التفاصيل والملاحظات وسجل العميل"
-                      >
-                        <span className="material-symbols-outlined text-[17px] text-primary">visibility</span>
-                        <span>التفاصيل</span>
-                      </Link>
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-black text-sm sm:text-base text-on-surface truncate">
+                          {lead.name}
+                        </h3>
 
-                      {/* زر المطابقة */}
-                      <Link
-                        href={`/matching?customerId=${lead.id}`}
-                        className="px-3 py-2 rounded-xl bg-primary hover:bg-primary-strong text-on-primary font-bold transition flex items-center justify-center gap-1.5 shadow-sm text-xs min-h-[42px]"
-                        title="مطابقة الوحدات المعروضة لطلب العميل"
-                      >
-                        <span className="material-symbols-outlined text-[17px]">travel_explore</span>
-                        <span>المطابقة</span>
-                      </Link>
+                        {/* تغيير سريع للمرحلة من السطر */}
+                        <select
+                          value={lead.stage}
+                          onChange={(e) => {
+                            const newSt = e.target.value as CustomerStage;
+                            updateCustomerStage(lead.id, newSt);
+                            showToast(`تم تغيير مرحلة ${lead.name} إلى ${STAGE_CONFIG[newSt]?.label}`);
+                          }}
+                          className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition cursor-pointer ${stageConfig.bg} ${stageConfig.color} ${stageConfig.border}`}
+                        >
+                          {Object.entries(STAGE_CONFIG).map(([stKey, cfg]) => (
+                            <option key={stKey} value={stKey}>
+                              {cfg.label}
+                            </option>
+                          ))}
+                        </select>
 
-                      {/* زر التعديل */}
-                      <Link
-                        href={`/customers/${lead.id}/edit`}
-                        className="px-3 py-2 rounded-xl bg-warning-container text-warning border border-warning hover:bg-warning hover:text-white transition-all flex items-center justify-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[42px]"
-                        title="تعديل بيانات ومتابعة العميل"
-                      >
-                        <span className="material-symbols-outlined text-[17px]">edit_note</span>
-                        <span>تعديل</span>
-                      </Link>
+                        {/* بادج الموظف المسؤول وإمكانية إعادة التعيين */}
+                        <div className="flex items-center gap-1 bg-surface-container px-2 py-0.5 rounded-lg text-[11px] font-bold text-on-surface-variant border border-outline-variant/60">
+                          <UserCheck className="w-3 h-3 text-primary shrink-0" />
+                          <span>المسؤول:</span>
+                          <select
+                            value={lead.ownerId}
+                            onChange={async (e) => {
+                              const newOwner = e.target.value;
+                              await updateCustomer(lead.id, { ownerId: newOwner });
+                              showToast(`تمت إعادة تعيين العميل`);
+                            }}
+                            className="bg-transparent font-black text-on-surface cursor-pointer focus:outline-none"
+                          >
+                            {companyUsers && companyUsers.length > 0 ? (
+                              companyUsers.map((u) => (
+                                <option key={u.id} value={u.id}>
+                                  {u.fullName} {u.id === currentUser?.id ? '(أنت)' : ''}
+                                </option>
+                              ))
+                            ) : (
+                              <option value={lead.ownerId}>{lead.ownerName || 'المسؤول'}</option>
+                            )}
+                          </select>
+                        </div>
+                      </div>
 
-                      {/* زر الحذف */}
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (confirm(`هل أنت متأكد من حذف العميل "${lead.name}" نهائياً؟`)) {
-                            const res = await deleteCustomer(lead.id);
-                            if (res.success) {
-                              showToast(`تم حذف العميل "${lead.name}" بنجاح`);
-                            } else {
-                              showToast(res.message || 'فشل حذف العميل');
-                            }
-                          }
-                        }}
-                        className="px-3 py-2 rounded-xl bg-error-container text-error border border-error hover:bg-error hover:text-white transition-all flex items-center justify-center gap-1 font-bold text-xs shadow-xs cursor-pointer min-h-[42px]"
-                        title="حذف العميل"
-                      >
-                        <span className="material-symbols-outlined text-[17px]">delete_forever</span>
-                        <span>حذف</span>
-                      </button>
+                      <div className="flex items-center gap-3 flex-wrap text-xs text-on-surface-variant">
+                        {/* أزرار الاتصال والواتساب الفورية */}
+                        <div className="flex items-center gap-1.5 bg-surface-container-low px-2 py-1 rounded-xl">
+                          <a
+                            href={`tel:${lead.phone}`}
+                            className="flex items-center gap-1 font-mono font-bold text-on-surface hover:text-primary transition"
+                            dir="ltr"
+                            title="اتصال هاتفياً"
+                          >
+                            <Phone className="w-3.5 h-3.5 text-primary" />
+                            <span>{lead.phone}</span>
+                          </a>
+
+                          <span className="text-outline">|</span>
+
+                          <a
+                            href={waLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1 text-success hover:underline font-bold text-[11px]"
+                            title="محادثة واتساب فورية"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            <span>واتساب</span>
+                          </a>
+                        </div>
+
+                        {/* الميزانية إن وجدت */}
+                        {lead.budget && (
+                          <span className="text-[11px] font-bold text-on-surface bg-surface-container px-2 py-1 rounded-lg">
+                            الميزانية: {(lead.budget / 1000000).toFixed(1)} مليون ج.م
+                          </span>
+                        )}
+
+                        {/* المصدر */}
+                        {lead.source && (
+                          <span className="text-[11px] text-on-surface-variant">
+                            • المصدر: {lead.source}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* موعد المتابعة وأزرار التأجيل السريع */}
+                      <div className="flex items-center gap-2 flex-wrap pt-1">
+                        {followup ? (
+                          <span
+                            className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-lg border ${
+                              followup.isOverdue
+                                ? 'bg-error-container text-on-error-container border-error/30'
+                                : followup.isToday
+                                ? 'bg-warning-container text-on-warning-container border-warning/30'
+                                : 'bg-success-container text-on-success-container border-success/30'
+                            }`}
+                          >
+                            <Calendar className="w-3 h-3" />
+                            <span>
+                              {followup.isOverdue ? '⚠️ متأخرة: ' : followup.isToday ? '🔔 اليوم: ' : '📅 '}
+                              {followup.dayName} ({followup.formattedDate} - {followup.formattedTime})
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-on-surface-variant flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            <span>بدون موعد متابعة</span>
+                          </span>
+                        )}
+
+                        {/* أزرار سريعة لإعادة الجدولة */}
+                        <div className="flex items-center gap-1 text-[10px]">
+                          <button
+                            type="button"
+                            onClick={() => handleQuickReschedule(lead.id, lead.name, 'today')}
+                            className="px-2 py-0.5 rounded-md bg-surface-container hover:bg-surface-container-high font-bold transition cursor-pointer"
+                            title="تأجيل ساعتين اليوم"
+                          >
+                            +ساعتين
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickReschedule(lead.id, lead.name, 'tomorrow')}
+                            className="px-2 py-0.5 rounded-md bg-surface-container hover:bg-surface-container-high font-bold transition cursor-pointer"
+                            title="تأجيل لغداً 12 ظهراً"
+                          >
+                            غداً
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickReschedule(lead.id, lead.name, '3days')}
+                            className="px-2 py-0.5 rounded-md bg-surface-container hover:bg-surface-container-high font-bold transition cursor-pointer"
+                            title="تأجيل بعد 3 أيام"
+                          >
+                            +3 أيام
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                );
-              })
-            ) : (
-              <div className="p-12 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high">
-                <span className="material-symbols-outlined text-4xl text-outline mb-2">group</span>
-                <p className="text-on-surface font-bold text-base">لا يوجد عملاء في هذه المرحلة أو الفلتر حالياً.</p>
-                <p className="text-xs text-on-surface-variant mt-1">جرّب اختيار فلتر آخر أو تسجيل عميل جديد.</p>
-              </div>
-            )}
-          </div>
+
+                  {/* إجراءات سريعة: مطابقة، تعديل، حذف، تفاصيل */}
+                  <div className="flex items-center gap-1.5 self-end lg:self-center shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-outline-variant/50 w-full lg:w-auto justify-end">
+                    {/* زر المطابقة العقارية */}
+                    <Link
+                      href={`/matching?customerId=${lead.id}`}
+                      className="btn-tonal px-3 py-2 text-xs font-bold flex items-center gap-1"
+                      title="مطابقة الوحدات المعروضة مع طلب العميل"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-primary" />
+                      <span>المطابقة</span>
+                    </Link>
+
+                    {/* تعديل سريع بالنافذة المنبثقة */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCustomer(lead);
+                        setQuickModalOpen(true);
+                      }}
+                      className="btn-tonal p-2.5 text-on-surface hover:text-primary"
+                      title="تعديل سريع للعميل"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+
+                    {/* حذف مع تأكيد */}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (confirm(`هل أنت متأكد من حذف العميل "${lead.name}"؟`)) {
+                          const res = await deleteCustomer(lead.id);
+                          if (res.success) {
+                            showToast(`تم حذف العميل "${lead.name}" بنجاح`);
+                          } else {
+                            showToast(res.message || 'فشل حذف العميل');
+                          }
+                        }
+                      }}
+                      className="btn-tonal p-2.5 text-error hover:bg-error-container hover:text-on-error-container"
+                      title="حذف العميل"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+
+                    {/* تفاصيل كاملة */}
+                    <Link
+                      href={`/customers/${lead.id}`}
+                      className="btn-tonal p-2.5 text-on-surface hover:text-primary"
+                      title="عرض صفحة التفاصيل وسجل النشاط"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="p-12 text-center bg-surface-container-lowest rounded-3xl border border-outline-variant">
+              <User className="w-12 h-12 text-on-surface-variant/40 mx-auto mb-2" />
+              <p className="text-on-surface font-bold text-base">لا يوجد عملاء يطابقون هذه المعايير حالياً.</p>
+              <p className="text-xs text-on-surface-variant mt-1">جرّب تغيير فلاتر البحث أو تسجيل عميل جديد بالزر أعلاه.</p>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Floating Toast Notification */}
+      {/* نافذة إضافة وتعديل العميل السريعة */}
+      <QuickCustomerModal
+        isOpen={quickModalOpen}
+        onClose={() => {
+          setQuickModalOpen(false);
+          setEditingCustomer(null);
+        }}
+        initialCustomer={editingCustomer}
+        onSaved={() => {
+          showToast(editingCustomer ? 'تم تحديث بيانات العميل بنجاح' : 'تم إضافة العميل بنجاح');
+        }}
+      />
+
+      {/* إشعار عائم Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-surface-container-low text-white font-bold text-xs shadow-2xl border border-white/20 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-inverse-surface text-inverse-on-surface font-bold text-xs shadow-2xl border border-outline-variant flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-200">
           <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
           <span>{toastMessage}</span>
         </div>
@@ -669,8 +692,14 @@ function CustomersContent() {
 
 export default function CustomersPage() {
   return (
-    <React.Suspense fallback={<div className="p-8 text-center text-xs text-on-surface-variant font-bold">جاري تحميل سجل العملاء...</div>}>
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-xs text-on-surface-variant font-bold">
+          جاري تحميل منظومة العملاء...
+        </div>
+      }
+    >
       <CustomersContent />
-    </React.Suspense>
+    </Suspense>
   );
 }

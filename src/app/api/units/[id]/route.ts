@@ -87,22 +87,29 @@ export async function PUT(
 
     const isSuper = authUser.role === 'super_admin';
     const isCompanyAdmin = authUser.role === 'company_admin' || authUser.role === 'admin';
+    const isEmployee = authUser.role === 'user' && !!authUser.companyId;
 
-    // إذا كان وسيطاً، يسمح له بتحديث الحالة فقط
-    if (!isSuper && !isCompanyAdmin) {
-      if (body.status !== undefined) {
-        const { error } = await serverSupabase
-          .from('units')
-          .update({ status: body.status, updated_at: new Date().toISOString() })
-          .eq('id', id);
-
-        if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-        return NextResponse.json({ success: true, message: 'تم تحديث حالة الوحدة' });
-      }
+    if (!isSuper && !isCompanyAdmin && !isEmployee) {
       return NextResponse.json(
-        { success: false, error: 'غير مصرح للوسيط بتعديل تفاصيل الوحدة الكاملة' },
+        { success: false, error: 'غير مصرح بتعديل الوحدة العقارية' },
         { status: 403 }
       );
+    }
+
+    // للمستخدمين غير السوبر أدمن، نتحقق أن الوحدة تنتمي لشركة المستخدم
+    if (!isSuper) {
+      const { data: targetUnit } = await serverSupabase
+        .from('units')
+        .select('id, company_id')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (!targetUnit || targetUnit.company_id !== authUser.companyId) {
+        return NextResponse.json(
+          { success: false, error: 'الوحدة غير موجودة أو لا تنتمي لشركتك' },
+          { status: 403 }
+        );
+      }
     }
 
     const dbUpdates: any = { updated_at: new Date().toISOString() };
@@ -170,7 +177,33 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await requireAuth(request, ['super_admin', 'company_admin', 'admin']);
+    const authUser = await requireAuth(request);
+
+    const isSuper = authUser.role === 'super_admin';
+    const isCompanyAdmin = authUser.role === 'company_admin' || authUser.role === 'admin';
+    const isEmployee = authUser.role === 'user' && !!authUser.companyId;
+
+    if (!isSuper && !isCompanyAdmin && !isEmployee) {
+      return NextResponse.json(
+        { success: false, error: 'غير مصرح بحذف الوحدة العقارية' },
+        { status: 403 }
+      );
+    }
+
+    if (!isSuper) {
+      const { data: targetUnit } = await serverSupabase
+        .from('units')
+        .select('id, company_id')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (!targetUnit || targetUnit.company_id !== authUser.companyId) {
+        return NextResponse.json(
+          { success: false, error: 'الوحدة غير موجودة أو لا تنتمي لشركتك' },
+          { status: 403 }
+        );
+      }
+    }
 
     const { error } = await serverSupabase.from('units').delete().eq('id', id);
 

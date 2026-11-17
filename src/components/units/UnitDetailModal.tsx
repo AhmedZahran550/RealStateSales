@@ -50,7 +50,7 @@ export default function UnitDetailModal({
   onEdit,
   onDelete,
 }: UnitDetailModalProps) {
-  const { currentUser, isCompanyAdmin, isSuperAdmin, updateUnitStatus, buildings, zones } = useApp();
+  const { currentUser, isCompanyAdmin, isSuperAdmin, canManageUnits, updateUnitStatus, buildings, zones } = useApp();
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -82,7 +82,7 @@ export default function UnitDetailModal({
 
   if (!unit) return null;
 
-  const canManage = isCompanyAdmin || isSuperAdmin;
+  const canManage = canManageUnits;
   const statusInfo = UNIT_STATUS_CONFIG[unit.status];
   const mediaList = [...(unit.media || [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   const currentMedia = mediaList[activeMediaIndex];

@@ -40,7 +40,7 @@ const LEAD_SOURCES = [
 
 export default function CustomerForm({ initialCustomer, isEdit = false }: CustomerFormProps) {
   const router = useRouter();
-  const { myUnits, units: allUnits, zones, currentUser, addCustomer, updateCustomer } = useApp();
+  const { myUnits, units: allUnits, zones, currentUser, companyUsers, addCustomer, updateCustomer } = useApp();
   const availableUnits = (myUnits && myUnits.length > 0) ? myUnits : allUnits;
 
   const [name, setName] = useState('');
@@ -49,6 +49,7 @@ export default function CustomerForm({ initialCustomer, isEdit = false }: Custom
   const [budget, setBudget] = useState<number | undefined>(undefined);
   const [source, setSource] = useState('إعلان فيسبوك وتيك توك');
   const [stage, setStage] = useState<CustomerStage>('lead');
+  const [ownerId, setOwnerId] = useState<string>('');
   const [nextFollowupAt, setNextFollowupAt] = useState('');
   const [notes, setNotes] = useState('');
   const [interestedUnitIds, setInterestedUnitIds] = useState<string[]>([]);
@@ -94,7 +95,9 @@ export default function CustomerForm({ initialCustomer, isEdit = false }: Custom
       setNextFollowupAt(toDatetimeLocal(initialCustomer.nextFollowupAt));
       setNotes(initialCustomer.notes || '');
       setInterestedUnitIds(initialCustomer.interestedUnitIds || []);
+      setOwnerId(initialCustomer.ownerId || currentUser?.id || '');
     } else {
+      setOwnerId(currentUser?.id || '');
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(12, 0, 0, 0);
@@ -134,8 +137,8 @@ export default function CustomerForm({ initialCustomer, isEdit = false }: Custom
       nextFollowupAt: nextFollowupAt ? new Date(nextFollowupAt).toISOString() : undefined,
       notes: notes.trim() || undefined,
       interestedUnitIds,
-      ownerId: currentUser?.id || '',
-      ownerName: currentUser?.fullName || '',
+      ownerId: ownerId || currentUser?.id || '',
+      ownerName: companyUsers?.find(u => u.id === (ownerId || currentUser?.id))?.fullName || currentUser?.fullName || '',
     };
 
     try {
@@ -288,7 +291,28 @@ export default function CustomerForm({ initialCustomer, isEdit = false }: Custom
             المسار ومصدر العميل
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-on-surface mb-1.5">
+                الموظف المسؤول (Owner)
+              </label>
+              <select
+                value={ownerId}
+                onChange={(e) => setOwnerId(e.target.value)}
+                className="input-base w-full"
+              >
+                {companyUsers && companyUsers.length > 0 ? (
+                  companyUsers.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.fullName} {u.id === currentUser?.id ? '(أنت)' : ''}
+                    </option>
+                  ))
+                ) : (
+                  <option value={currentUser?.id || ''}>{currentUser?.fullName || 'أنا'}</option>
+                )}
+              </select>
+            </div>
+
             <div>
               <label className="block text-xs font-bold text-on-surface mb-1.5">
                 مصدر العميل (Lead Source)

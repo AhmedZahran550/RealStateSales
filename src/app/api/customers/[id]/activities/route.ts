@@ -11,19 +11,19 @@ export async function POST(
     const authUser = await requireAuth(request);
     const body = await request.json();
 
-    const type = body.type || 'note';
-    const note = (body.note || '').trim();
-
-    if (!note) {
-      return NextResponse.json({ success: false, error: 'نص النشاط مطلوب' }, { status: 400 });
+    if (!body.type || !body.note) {
+      return NextResponse.json(
+        { success: false, error: 'نوع النشاط والملاحظة مطلوبان' },
+        { status: 400 }
+      );
     }
 
-    const { data: act, error } = await serverSupabase
+    const { data, error } = await serverSupabase
       .from('customer_activities')
       .insert({
         customer_id: id,
-        type,
-        note,
+        type: body.type,
+        note: body.note,
       })
       .select()
       .single();
@@ -32,23 +32,16 @@ export async function POST(
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    await serverSupabase
-      .from('customers')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .eq('owner_id', authUser.sub);
-
     return NextResponse.json({
       success: true,
       data: {
-        id: act.id,
-        customerId: act.customer_id,
-        type: act.type,
-        note: act.note,
-        createdAt: act.created_at,
+        id: data.id,
+        customerId: data.customer_id,
+        type: data.type,
+        note: data.note,
+        createdAt: data.created_at,
         authorName: authUser.fullName,
       },
-      message: 'تم إضافة النشاط بنجاح',
     });
   } catch (err: any) {
     return handleApiError(err);

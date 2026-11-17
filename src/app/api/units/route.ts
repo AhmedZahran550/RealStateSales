@@ -73,10 +73,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const authUser = await requireAuth(request, ['super_admin', 'company_admin', 'admin']);
+    const authUser = await requireAuth(request);
+
+    const isSuper = authUser.role === 'super_admin';
+    const isCompanyAdmin = authUser.role === 'company_admin' || authUser.role === 'admin';
+    const isEmployee = authUser.role === 'user' && !!authUser.companyId;
+
+    if (!isSuper && !isCompanyAdmin && !isEmployee) {
+      return NextResponse.json(
+        { success: false, error: 'غير مصرح لك بإضافة وحدات عقارية' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
 
-    const targetCompanyId = body.companyId || authUser.companyId;
+    const targetCompanyId = isSuper ? (body.companyId || authUser.companyId) : authUser.companyId;
     if (!targetCompanyId) {
       return NextResponse.json(
         { success: false, error: 'يجب تحديد الشركة التابعة لها الوحدة' },
