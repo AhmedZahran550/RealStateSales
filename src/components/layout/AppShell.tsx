@@ -134,6 +134,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         active: pathname === '/',
       },
       {
+        href: '/reports',
+        label: 'التقارير والإحصائيات',
+        icon: 'analytics',
+        active: pathname === '/reports',
+      },
+      {
         href: '/units',
         label: 'محفظة وحدات الشركة',
         icon: 'apartment',
@@ -193,6 +199,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         label: 'لوحة التحكم',
         icon: 'speed',
         active: pathname === '/',
+      },
+      {
+        href: '/reports',
+        label: 'التقارير والتحليلات',
+        icon: 'analytics',
+        active: pathname === '/reports',
       },
       {
         href: '/units',

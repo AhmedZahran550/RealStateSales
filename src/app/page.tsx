@@ -9,7 +9,7 @@ import { formatArabicFollowupDate } from '@/lib/date-utils';
 import { createUnitWhatsAppUrl } from '@/lib/shareUtils';
 import { zoneDisplayName } from '@/lib/zone-utils';
 import { firstImageUrl } from '@/lib/public-utils';
-import BrokerStatsBento from '@/components/dashboard/BrokerStatsBento';
+
 import BrokerAgendaTab from '@/components/dashboard/BrokerAgendaTab';
 import BrokerPipelineTab from '@/components/dashboard/BrokerPipelineTab';
 import BrokerQuickShareTab from '@/components/dashboard/BrokerQuickShareTab';
@@ -168,99 +168,65 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* 2. Key Metrics Row (4 Admin Stats) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-          {/* Stat 1: Total Users */}
-          <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 hover:border-primary/50 transition-all flex flex-col justify-between group shadow-xs hover:shadow-sm">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-on-surface-variant">فريق الوسطاء المسجلين</span>
-                <div className="w-9 h-9 rounded-xl bg-warning-container text-on-warning-container flex items-center justify-center transition-transform group-hover:scale-105">
-                  <Users className="w-4 h-4 text-warning" />
-                </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-black text-on-surface tabular-nums">
-                  {companyBrokers.length}
-                </span>
-                <span className="text-xs text-on-surface-variant font-bold">وسيط معتمد</span>
+        {/* 2. Compact Operational Metrics Ribbon */}
+        <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-3.5 sm:p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto pb-1 md:pb-0 text-xs">
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="w-8 h-8 rounded-xl bg-warning-container text-on-warning-container flex items-center justify-center font-bold">
+                <Users className="w-4 h-4 text-warning" />
+              </span>
+              <div>
+                <span className="text-[11px] text-on-surface-variant block font-medium">الوسطاء</span>
+                <span className="font-black text-on-surface text-sm tabular-nums">{companyBrokers.length} وسيط</span>
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-xs">
-              <Link href="/admin/users" className="text-warning font-bold hover:underline flex items-center gap-1">
-                <span>إدارة وإضافة وسطاء</span>
-                <ArrowLeft className="w-3.5 h-3.5" />
-              </Link>
+
+            <div className="h-6 w-px bg-surface-container-high hidden sm:block shrink-0" />
+
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                <Building2 className="w-4 h-4" />
+              </span>
+              <div>
+                <span className="text-[11px] text-on-surface-variant block font-medium">المحفظة</span>
+                <span className="font-black text-primary text-sm tabular-nums">{myUnits.length} وحدة</span>
+              </div>
+            </div>
+
+            <div className="h-6 w-px bg-surface-container-high hidden sm:block shrink-0" />
+
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="w-8 h-8 rounded-xl bg-success-container text-success flex items-center justify-center font-bold">
+                <CheckCircle2 className="w-4 h-4" />
+              </span>
+              <div>
+                <span className="text-[11px] text-on-surface-variant block font-medium">المعروض المتاح</span>
+                <span className="font-black text-success text-sm tabular-nums">
+                  {availableUnits.length} وحدة ({(totalInventoryValue / 1_000_000).toFixed(1)}M ج)
+                </span>
+              </div>
+            </div>
+
+            <div className="h-6 w-px bg-surface-container-high hidden sm:block shrink-0" />
+
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="w-8 h-8 rounded-xl bg-accent-purple-container text-on-accent-purple-container flex items-center justify-center font-bold">
+                <Handshake className="w-4 h-4" />
+              </span>
+              <div>
+                <span className="text-[11px] text-on-surface-variant block font-medium">محجوز / مباع</span>
+                <span className="font-black text-on-surface text-sm tabular-nums">{totalReservedUnits + totalSoldUnits} وحدة</span>
+              </div>
             </div>
           </div>
 
-          {/* Stat 2: Total Units */}
-          <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 hover:border-primary/50 transition-all flex flex-col justify-between group shadow-xs hover:shadow-sm">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-on-surface-variant">محفظة الوحدات المسجلة</span>
-                <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center transition-transform group-hover:scale-105">
-                  <Building2 className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-black text-primary tabular-nums">
-                  {myUnits.length}
-                </span>
-                <span className="text-xs text-on-surface-variant font-bold">وحدة</span>
-              </div>
-            </div>
-            <div className="mt-3 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-xs">
-              <Link href="/admin/zones" className="text-primary font-bold hover:underline flex items-center gap-1">
-                <span>{zones.length} منطقة ومجاورة مسجلة</span>
-                <ArrowLeft className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Stat 3: Available Units & Value */}
-          <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 hover:border-primary/50 transition-all flex flex-col justify-between group shadow-xs hover:shadow-sm">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-on-surface-variant">المعروض المتاح حالياً</span>
-                <div className="w-9 h-9 rounded-xl bg-success-container text-success flex items-center justify-center transition-transform group-hover:scale-105">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-black text-success tabular-nums">
-                  {availableUnits.length}
-                </span>
-                <span className="text-xs text-on-surface-variant font-bold">وحدة متاحة</span>
-              </div>
-            </div>
-            <div className="mt-3 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-xs text-on-surface-variant">
-              <span>بقيمة: <strong className="text-on-surface">{(totalInventoryValue / 1_000_000).toFixed(1)} مليون ج.م</strong></span>
-              <DollarSign className="w-3.5 h-3.5 text-success" />
-            </div>
-          </div>
-
-          {/* Stat 4: Reserved and Sold Units */}
-          <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 hover:border-primary/50 transition-all flex flex-col justify-between group shadow-xs hover:shadow-sm">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-on-surface-variant">حركات الحجز والتعاقد</span>
-                <div className="w-9 h-9 rounded-xl bg-accent-purple-container text-on-accent-purple-container flex items-center justify-center transition-transform group-hover:scale-105">
-                  <Handshake className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-black text-on-surface tabular-nums">
-                  {totalReservedUnits + totalSoldUnits}
-                </span>
-                <span className="text-xs text-on-surface-variant font-bold">وحدة</span>
-              </div>
-            </div>
-            <div className="mt-3 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-xs text-on-surface-variant">
-              <span>{totalReservedUnits} حجز مؤقت • {totalSoldUnits} مباعة</span>
-              <CheckCircle className="w-3.5 h-3.5 text-primary" />
-            </div>
-          </div>
+          <Link
+            href="/reports"
+            className="btn-tonal text-xs font-bold py-2 px-3.5 rounded-xl flex items-center justify-center gap-1.5 shrink-0 hover:bg-surface-container-high transition min-h-[38px]"
+          >
+            <span>عرض التقارير والتحليلات الشاملة</span>
+            <ArrowLeft className="w-3.5 h-3.5 text-primary" />
+          </Link>
         </div>
 
         {/* 3. Brokers Directory Section */}
@@ -599,17 +565,88 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 2. Key Metrics Row (4 Smart Bento Tiles) */}
-      <BrokerStatsBento
-        urgentFollowupsCount={myCustomers.filter((c) => c.nextFollowupAt).length}
-        totalCustomersCount={myCustomers.length}
-        negotiatingCustomersCount={negotiatingCustomers.length}
-        negotiatingSumFormatted={formattedNegotiatingSum}
-        negotiatingSumUnit={negotiatingSumUnit}
-        expectedCommissionFormatted={expectedCommission.toLocaleString()}
-        availableUnitsCount={availableUnitsCount}
-        onSelectTab={setBrokerTab}
-      />
+      {/* 2. Compact Broker Operational Ribbon */}
+      <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-3.5 sm:p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto pb-1 md:pb-0 text-xs">
+          <button
+            type="button"
+            onClick={() => setBrokerTab('agenda')}
+            className="flex items-center gap-2 shrink-0 cursor-pointer text-right group"
+          >
+            <span
+              className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold ${
+                myCustomers.filter((c) => c.nextFollowupAt).length > 0
+                  ? 'bg-error-container text-on-error-container'
+                  : 'bg-success-container text-success'
+              }`}
+            >
+              <Clock className="w-4 h-4" />
+            </span>
+            <div>
+              <span className="text-[11px] text-on-surface-variant block font-medium">متابعات اليوم</span>
+              <span className="font-black text-on-surface text-sm tabular-nums group-hover:text-primary transition">
+                {myCustomers.filter((c) => c.nextFollowupAt).length} عميل
+              </span>
+            </div>
+          </button>
+
+          <div className="h-6 w-px bg-surface-container-high hidden sm:block shrink-0" />
+
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+              <Users className="w-4 h-4" />
+            </span>
+            <div>
+              <span className="text-[11px] text-on-surface-variant block font-medium">قاعدة العملاء</span>
+              <span className="font-black text-primary text-sm tabular-nums">{myCustomers.length} عميل</span>
+            </div>
+          </div>
+
+          <div className="h-6 w-px bg-surface-container-high hidden sm:block shrink-0" />
+
+          <button
+            type="button"
+            onClick={() => setBrokerTab('pipeline')}
+            className="flex items-center gap-2 shrink-0 cursor-pointer text-right group"
+          >
+            <span className="w-8 h-8 rounded-xl bg-accent-purple-container text-on-accent-purple-container flex items-center justify-center font-bold">
+              <Handshake className="w-4 h-4" />
+            </span>
+            <div>
+              <span className="text-[11px] text-on-surface-variant block font-medium">قيد التفاوض</span>
+              <span className="font-black text-on-surface text-sm tabular-nums group-hover:text-primary transition">
+                {formattedNegotiatingSum} {negotiatingSumUnit}
+              </span>
+            </div>
+          </button>
+
+          <div className="h-6 w-px bg-surface-container-high hidden sm:block shrink-0" />
+
+          <button
+            type="button"
+            onClick={() => setBrokerTab('share')}
+            className="flex items-center gap-2 shrink-0 cursor-pointer text-right group"
+          >
+            <span className="w-8 h-8 rounded-xl bg-success-container text-success flex items-center justify-center font-bold">
+              <CheckCircle2 className="w-4 h-4" />
+            </span>
+            <div>
+              <span className="text-[11px] text-on-surface-variant block font-medium">المعروض المتاح</span>
+              <span className="font-black text-success text-sm tabular-nums group-hover:text-primary transition">
+                {availableUnitsCount} وحدة
+              </span>
+            </div>
+          </button>
+        </div>
+
+        <Link
+          href="/reports"
+          className="btn-tonal text-xs font-bold py-2 px-3.5 rounded-xl flex items-center justify-center gap-1.5 shrink-0 hover:bg-surface-container-high transition min-h-[38px]"
+        >
+          <span>📊 صفحة التقارير والتحليلات</span>
+          <ArrowLeft className="w-3.5 h-3.5 text-primary" />
+        </Link>
+      </div>
 
       {/* 3. Streamlined Operation Hub (Navigation Tabs) */}
       <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 space-y-4 shadow-xs">
