@@ -16,6 +16,7 @@ import {
   Briefcase,
   Edit,
   Trash2,
+  User,
 } from 'lucide-react';
 
 interface UnitCardProps {
@@ -122,6 +123,15 @@ export default function UnitCard({
                   >
                     <Briefcase className="w-2.5 h-2.5 shrink-0" />
                     <span className="truncate">{unit.belongTo || unit.companyName}</span>
+                  </span>
+                )}
+                {unit.createdByName && (
+                  <span
+                    className="text-[10px] px-1.5 py-0.5 rounded font-semibold truncate max-w-[120px] inline-flex items-center gap-1 bg-surface-container-high text-on-surface-variant border border-outline-variant/40"
+                    title={`أضاف بواسطة: ${unit.createdByName}`}
+                  >
+                    <User className="w-2.5 h-2.5 shrink-0 text-outline" />
+                    <span className="truncate">{unit.createdByName}</span>
                   </span>
                 )}
               </div>

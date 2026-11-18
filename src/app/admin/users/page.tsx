@@ -239,7 +239,7 @@ export default function AdminUsersPage() {
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2.5 bg-surface-container-low text-white rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold animate-in fade-in border border-outline">
+        <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)] lg:bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2.5 bg-inverse-surface text-inverse-on-surface rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold animate-in fade-in border border-outline">
           <CheckCircle className="w-4 h-4 text-success" />
           <span>{toastMessage}</span>
         </div>
@@ -256,7 +256,7 @@ export default function AdminUsersPage() {
               <h1 className="text-xl sm:text-2xl font-black text-on-surface ">
                 {isSuper ? 'إدارة كافة المستخدمين والوسطاء' : `إدارة وسطاء ومبيعات ${currentUser.companyName || 'الشركة'}`}
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full bg-warning-container text-warning text-xs font-bold">
+              <span className="px-2.5 py-0.5 rounded-full bg-warning-container text-on-warning-container text-xs font-bold">
                 {filteredUsers.length} وسيط مسجل
               </span>
             </div>

@@ -26,11 +26,21 @@ import {
   Eye,
   Copy,
   MessageCircle,
+  User,
 } from 'lucide-react';
 import QuickUnitModal from '@/components/units/QuickUnitModal';
 import { exportUnitsToExcel } from '@/lib/excel';
 import { formatUnitFullDetails, createUnitWhatsAppUrl } from '@/lib/shareUtils';
 import { zoneDisplayName } from '@/lib/zone-utils';
+
+export type GroupByOption = 'none' | 'zone' | 'creator' | 'belongTo';
+
+interface UnitGroup {
+  key: string;
+  title: string;
+  units: Unit[];
+  count: number;
+}
 
 function getZoneSortKey(zoneId: number, zones: any[]): number {
   const z = zones.find((item) => item.id === zoneId);
@@ -72,6 +82,15 @@ export default function UnitsPage() {
   const [zoneFilter, setZoneFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [belongToFilter, setBelongToFilter] = useState<string>('all');
+  const [groupBy, setGroupBy] = useState<GroupByOption>('none');
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+
+  const toggleGroupCollapse = (groupKey: string) => {
+    setCollapsedGroups((prev) => ({
+      ...prev,
+      [groupKey]: !prev[groupKey],
+    }));
+  };
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -192,6 +211,58 @@ export default function UnitsPage() {
       return 0;
     });
 }, [myUnits, zones, statusFilter, zoneFilter, typeFilter, belongToFilter, searchTerm, sortBy]);
+
+  const groupedUnits = useMemo<UnitGroup[]>(() => {
+    if (groupBy === 'none') {
+      return [{ key: 'all', title: '', units: filteredUnits, count: filteredUnits.length }];
+    }
+
+    const map = new Map<string, { title: string; units: Unit[] }>();
+
+    for (const unit of filteredUnits) {
+      let key = '';
+      let title = '';
+
+      if (groupBy === 'zone') {
+        key = String(unit.zoneId);
+        title = zoneDisplayName(unit.zoneId, zones);
+      } else if (groupBy === 'creator') {
+        key = unit.createdByName?.trim() || 'unassigned';
+        title = unit.createdByName?.trim() || 'غير محدد';
+      } else if (groupBy === 'belongTo') {
+        key = unit.belongTo?.trim() || 'unassigned';
+        title = unit.belongTo?.trim() || 'غير محدد';
+      }
+
+      if (!map.has(key)) {
+        map.set(key, { title, units: [] });
+      }
+      map.get(key)!.units.push(unit);
+    }
+
+    const groups: UnitGroup[] = Array.from(map.entries()).map(([key, data]) => ({
+      key,
+      title: data.title,
+      units: data.units,
+      count: data.units.length,
+    }));
+
+    if (groupBy === 'zone') {
+      groups.sort((a, b) => {
+        const zA = getZoneSortKey(Number(a.key), zones);
+        const zB = getZoneSortKey(Number(b.key), zones);
+        return zA - zB;
+      });
+    } else {
+      groups.sort((a, b) => {
+        if (a.title === 'غير محدد') return 1;
+        if (b.title === 'غير محدد') return -1;
+        return a.title.localeCompare(b.title, 'ar');
+      });
+    }
+
+    return groups;
+  }, [filteredUnits, groupBy, zones]);
 
 // حساب بيانات المباني وإحصائيات وحداتها
 const buildingsWithStats = useMemo(() => {
@@ -502,7 +573,7 @@ return (
       </div>
 
       {/* Filter Inputs Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-sm">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ${inventoryView === 'units' ? 'xl:grid-cols-6' : 'xl:grid-cols-5'} gap-space-sm`}>
           {/* Search */}
           <div className="relative">
             <Search className="w-4 h-4 text-outline absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -602,10 +673,30 @@ return (
             </select>
             <ChevronDown className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
+
+          {/* Group-By Selector */}
+          {inventoryView === 'units' && (
+            <div className="relative">
+              <select
+                value={groupBy}
+                onChange={(e) => {
+                  setGroupBy(e.target.value as GroupByOption);
+                  setCollapsedGroups({});
+                }}
+                className="w-full border border-outline-variant bg-surface-container-lowest rounded-xl py-2.5 pr-space-md pl-8 text-on-surface font-semibold focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer text-xs shadow-xs"
+              >
+                <option value="none" className="bg-surface-container-lowest text-on-surface">بدون تجميع (افتراضي)</option>
+                <option value="zone" className="bg-surface-container-lowest text-on-surface">تجميع: المنطقة</option>
+                <option value="creator" className="bg-surface-container-lowest text-on-surface">تجميع: أضاف بواسطة</option>
+                <option value="belongTo" className="bg-surface-container-lowest text-on-surface">تجميع: الجهة / المطور</option>
+              </select>
+              <ChevronDown className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          )}
         </div>
 
         {/* Active Filter Chips */}
-          {(zoneFilter !== 'all' || typeFilter !== 'all' || belongToFilter !== 'all' || searchTerm) && (
+          {(zoneFilter !== 'all' || typeFilter !== 'all' || belongToFilter !== 'all' || searchTerm || groupBy !== 'none') && (
             <div className="flex items-center flex-wrap gap-space-xs pt-1 border-t border-surface-container-low pt-2">
               <span className="text-outline text-xs">الفلاتر المطبقة:</span>
               {zoneFilter !== 'all' && (
@@ -632,12 +723,28 @@ return (
                   </button>
                 </span>
               )}
+              {groupBy !== 'none' && (
+                <span className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-lg bg-surface-container-high text-on-surface text-xs font-bold">
+                  تجميع حسب: {groupBy === 'zone' ? 'المنطقة' : groupBy === 'creator' ? 'أضاف بواسطة' : 'الجهة / المطور'}
+                  <button
+                    onClick={() => {
+                      setGroupBy('none');
+                      setCollapsedGroups({});
+                    }}
+                    className="hover:text-error cursor-pointer font-black text-xs"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
               <button
                 onClick={() => {
                   setZoneFilter('all');
                   setTypeFilter('all');
                   setBelongToFilter('all');
                   setSearchTerm('');
+                  setGroupBy('none');
+                  setCollapsedGroups({});
                 }}
                 className="text-secondary hover:underline mr-space-xs font-bold text-xs cursor-pointer"
                 type="button"
@@ -698,9 +805,15 @@ return (
           )}
         </div>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
-          {filteredUnits.length > 0 ? (
-            filteredUnits.map((unit) => (
+        filteredUnits.length === 0 ? (
+          <div className="col-span-full p-12 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high">
+            <Building2 className="w-12 h-12 text-outline/40 mx-auto mb-2" />
+            <p className="text-on-surface font-bold text-base">لا توجد وحدات تطابق هذه المحددات.</p>
+            <p className="text-xs text-on-surface-variant mt-1">جرّب تغيير فلاتر البحث أو اختيار وسيط آخر.</p>
+          </div>
+        ) : groupBy === 'none' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+            {filteredUnits.map((unit) => (
               <UnitCard
                 key={unit.id}
                 unit={unit}
@@ -725,15 +838,69 @@ return (
                   }
                 }}
               />
-            ))
-          ) : (
-            <div className="col-span-full p-12 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high">
-              <Building2 className="w-12 h-12 text-outline/40 mx-auto mb-2" />
-              <p className="text-on-surface font-bold text-base">لا توجد وحدات تطابق هذه المحددات.</p>
-              <p className="text-xs text-on-surface-variant mt-1">جرّب تغيير فلاتر البحث أو اختيار وسيط آخر.</p>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {groupedUnits.map((group) => {
+              const isCollapsed = !!collapsedGroups[group.key];
+              return (
+                <div key={group.key} className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={() => toggleGroupCollapse(group.key)}
+                    className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-surface-container border border-surface-container-high hover:bg-surface-container-high/60 transition-colors cursor-pointer text-right group select-none shadow-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className={`w-7 h-7 rounded-xl bg-surface-container-lowest text-primary flex items-center justify-center shadow-xs transition-transform duration-200 ${isCollapsed ? 'rotate-90 rtl:-rotate-90' : 'rotate-0'}`}>
+                        <ChevronDown className="w-4 h-4" />
+                      </span>
+                      <span className="font-extrabold text-on-surface text-sm sm:text-base">
+                        {group.title}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs">
+                        {group.count} {group.count === 1 ? 'وحدة' : group.count === 2 ? 'وحدتان' : group.count <= 10 ? 'وحدات' : 'وحدة'}
+                      </span>
+                    </div>
+                    <span className="text-xs text-on-surface-variant font-bold">
+                      {isCollapsed ? 'انقر للتوسيع' : 'انقر للطي'}
+                    </span>
+                  </button>
+                  {!isCollapsed && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+                      {group.units.map((unit) => (
+                        <UnitCard
+                          key={unit.id}
+                          unit={unit}
+                          zones={zones}
+                          currentUser={currentUser}
+                          canManage={canManageUnits}
+                          onStatusChange={(unitId, newStatus) => {
+                            updateUnitStatus(unitId, newStatus);
+                            showToast(`تم تغيير حالة الوحدة قطعة ${unit.plotNo}`);
+                          }}
+                          onCopy={copyUnitDetails}
+                          onEdit={(u) => {
+                            setEditingUnit(u);
+                            setQuickModalOpen(true);
+                          }}
+                          onDelete={async (uId) => {
+                            const res = await deleteUnit(uId);
+                            if (res.success) {
+                              showToast('تم حذف الوحدة بنجاح');
+                            } else {
+                              showToast(res.message || 'فشل حذف الوحدة');
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )
       ) : (
         /* Table View */
         <div className="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden border border-surface-container-high/40">
@@ -756,7 +923,7 @@ return (
                 </button>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[760px] text-right text-xs">
+                <table className="w-full min-w-[880px] text-right text-xs">
                   <thead className="bg-surface-container-low text-on-surface-variant font-bold border-b border-surface-container-high">
                     <tr>
                       <th className="p-3.5">الوحدة</th>
@@ -810,173 +977,221 @@ return (
                         </div>
                       </th>
                       <th className="p-3.5">خاص بـ / الجهة</th>
+                      <th className="p-3.5">أضاف بواسطة</th>
                       <th className="p-3.5">الحالة</th>
                       <th className="p-3.5 text-center">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-surface-container-low">
-                    {filteredUnits.map((u) => {
-                      const firstMedia = u.media && u.media[0];
+                    {groupedUnits.map((group) => {
+                      const isCollapsed = !!collapsedGroups[group.key];
                       return (
-                        <tr key={u.id} className="hover:bg-surface-container-low/50 transition-colors">
-                          <td className="p-3.5">
-                            <div className="flex items-center gap-2.5">
-                              {firstMedia ? (
-                                <img
-                                  src={firstMedia.externalUrl || firstMedia.storagePath}
-                                  alt=""
-                                  className="w-10 h-10 rounded-lg object-cover border border-outline-variant shrink-0"
-                                />
-                              ) : (
-                                <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0 border border-outline-variant">
-                                  <Home className="w-4 h-4 text-primary" />
-                                </div>
-                              )}
-                              <div>
-                                <Link
-                                  href={`/units/${u.id}`}
-                                  className="font-bold text-primary hover:underline block font-mono"
-                                >
-                                  #BD-{u.zoneId}-{u.plotNo}
-                                </Link>
-                                <span className="text-[10px] text-on-surface-variant">
-                                  {u.deliveryNote || 'استلام فوري'}
-                                </span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-3.5">
-                            <div className="flex flex-col">
-                              <div className="flex items-center gap-1.5">
-                                <span className="w-5 h-5 rounded-md bg-primary text-on-primary text-[10px] font-black flex items-center justify-center shrink-0">
-                                  {u.zoneId}
-                                </span>
-                                <span className="font-bold text-on-surface">{zoneDisplayName(u.zoneId, zones)}</span>
-                              </div>
-                              <span className="text-[11px] text-on-surface-variant mt-0.5">قطعة {u.plotNo}</span>
-                            </div>
-                          </td>
-                          <td className="p-3.5">
-                            <span className="font-bold text-on-surface block">
-                              {UNIT_KIND_LABELS[u.unitKind] || 'شقة'}
-                            </span>
-                            <span className="text-[11px] text-on-surface-variant">
-                              {u.floor === 0 ? 'الأرضي' : u.floor ? `الدور ${u.floor}` : 'متكرر'} {u.side ? `• ${u.side}` : ''}
-                            </span>
-                          </td>
-                          <td className="p-3.5">
-                            <span className="font-bold text-on-surface block font-mono">{u.area} م²</span>
-                            {u.gardenArea ? (
-                              <span className="text-[10px] text-success font-semibold block">+ {u.gardenArea} م² حديقة</span>
-                            ) : null}
-                          </td>
-                          <td className="p-3.5">
-                            <span className="font-black text-on-surface block font-mono">{u.price.toLocaleString('ar-EG')} ج</span>
-                            {u.area > 0 && (
-                              <span className="text-[10px] text-on-surface-variant font-semibold block">
-                                {Math.round(u.price / u.area).toLocaleString('ar-EG')} ج/م²
-                              </span>
-                            )}
-                          </td>
-                            <td className="p-3.5">
-                              <div className="flex flex-col min-w-0 max-w-[150px]">
-                                <span
-                                  className="font-bold text-on-surface text-xs truncate"
-                                  title={u.belongTo || u.companyName || 'محفظة الشركة'}
-                                >
-                                  {u.belongTo || u.companyName || 'محفظة الشركة'}
-                                </span>
-                                {u.belongTo && u.belongTo !== u.companyName && (
-                                  <span className="inline-flex items-center gap-1 text-[10px] text-secondary font-bold mt-0.5">
-                                    <Briefcase className="w-2.5 h-2.5 shrink-0" />
-                                    <span>مطور خارجي</span>
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="p-3.5">
-                              <select
-                                value={u.status}
-                                onChange={(e) => {
-                                  const newSt = e.target.value as UnitStatus;
-                                  updateUnitStatus(u.id, newSt);
-                                  showToast(`تم تغيير حالة الوحدة #BD-${u.zoneId}-${u.plotNo} إلى ${newSt === 'available' ? 'متاح للبيع' : newSt === 'reserved' ? 'حجز مؤقت' : 'تم البيع'}`);
-                                }}
-                                className={`px-2 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer ${u.status === 'available'
-                                    ? 'bg-success-container text-success border-success'
-                                    : u.status === 'reserved'
-                                      ? 'bg-warning-container text-warning border-warning'
-                                      : 'bg-error-container text-on-error-container border-error'
-                                  }`}
-                              >
-                                <option value="available">متاحة للبيع</option>
-                                <option value="reserved">حجز مؤقت</option>
-                                <option value="sold">تم البيع</option>
-                              </select>
-                            </td>
-                            <td className="p-3.5 text-center">
-                              <div className="flex items-center justify-center gap-1.5">
-                                <Link
-                                  href={`/units/${u.id}`}
-                                  className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition"
-                                  title="عرض التفاصيل الكاملة"
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </Link>
-                                {canManageUnits && (
-                                  <>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setEditingUnit(u);
-                                        setQuickModalOpen(true);
-                                      }}
-                                      className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition cursor-pointer"
-                                      title="تعديل سريع للوحدة"
-                                    >
-                                      <Edit className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={async () => {
-                                        if (window.confirm(`هل أنت متأكد من حذف الوحدة قطعة ${u.plotNo}؟`)) {
-                                          const res = await deleteUnit(u.id);
-                                          if (res.success) {
-                                            showToast('تم حذف الوحدة بنجاح');
-                                          } else {
-                                            showToast(res.message || 'فشل حذف الوحدة');
-                                          }
-                                        }
-                                      }}
-                                      className="p-1.5 rounded-lg hover:bg-error-container text-error transition cursor-pointer"
-                                      title="حذف الوحدة"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  </>
-                                )}
+                        <React.Fragment key={group.key}>
+                          {groupBy !== 'none' && (
+                            <tr className="bg-surface-container/80 hover:bg-surface-container transition-colors border-y border-surface-container-high select-none">
+                              <td colSpan={9} className="p-2.5 sm:p-3">
                                 <button
                                   type="button"
-                                  onClick={() => copyUnitDetails(u)}
-                                  className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant transition cursor-pointer"
-                                  title="نسخ التفاصيل"
+                                  onClick={() => toggleGroupCollapse(group.key)}
+                                  className="flex items-center justify-between w-full text-right cursor-pointer group"
                                 >
-                                  <Copy className="w-4 h-4" />
+                                  <div className="flex items-center gap-2">
+                                    <span className={`w-6 h-6 rounded-lg bg-surface-container-lowest text-primary flex items-center justify-center shadow-xs transition-transform duration-200 ${isCollapsed ? 'rotate-90 rtl:-rotate-90' : 'rotate-0'}`}>
+                                      <ChevronDown className="w-3.5 h-3.5" />
+                                    </span>
+                                    <span className="font-extrabold text-on-surface text-xs sm:text-sm">
+                                      {group.title}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-[11px]">
+                                      {group.count} {group.count === 1 ? 'وحدة' : group.count === 2 ? 'وحدتان' : group.count <= 10 ? 'وحدات' : 'وحدة'}
+                                    </span>
+                                  </div>
+                                  <span className="text-[11px] text-on-surface-variant font-medium">
+                                    {isCollapsed ? 'توسيع' : 'طي'}
+                                  </span>
                                 </button>
-                                <a
-                                  href={createUnitWhatsAppUrl(u, currentUser, undefined, zones)}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition cursor-pointer"
-                                  title="مشاركة عبر واتساب"
-                                >
-                                  <MessageCircle className="w-4 h-4" />
-                                </a>
-                              </div>
-                            </td>
-                        </tr>
-                      );
-                    })}
+                              </td>
+                            </tr>
+                          )}
+                          {!isCollapsed &&
+                            group.units.map((u) => {
+                              const firstMedia = u.media && u.media[0];
+                              return (
+                                <tr key={u.id} className="hover:bg-surface-container-low/50 transition-colors">
+                                  <td className="p-3.5">
+                                    <div className="flex items-center gap-2.5">
+                                      {firstMedia ? (
+                                        <img
+                                          src={firstMedia.externalUrl || firstMedia.storagePath}
+                                          alt=""
+                                          className="w-10 h-10 rounded-lg object-cover border border-outline-variant shrink-0"
+                                        />
+                                      ) : (
+                                        <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0 border border-outline-variant">
+                                          <Home className="w-4 h-4 text-primary" />
+                                        </div>
+                                      )}
+                                      <div>
+                                        <Link
+                                          href={`/units/${u.id}`}
+                                          className="font-bold text-primary hover:underline block font-mono"
+                                        >
+                                          #BD-{u.zoneId}-{u.plotNo}
+                                        </Link>
+                                        <span className="text-[10px] text-on-surface-variant">
+                                          {u.deliveryNote || 'استلام فوري'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="p-3.5">
+                                    <div className="flex flex-col">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="w-5 h-5 rounded-md bg-primary text-on-primary text-[10px] font-black flex items-center justify-center shrink-0">
+                                          {u.zoneId}
+                                        </span>
+                                        <span className="font-bold text-on-surface">{zoneDisplayName(u.zoneId, zones)}</span>
+                                      </div>
+                                      <span className="text-[11px] text-on-surface-variant mt-0.5">قطعة {u.plotNo}</span>
+                                    </div>
+                                  </td>
+                                  <td className="p-3.5">
+                                    <span className="font-bold text-on-surface block">
+                                      {UNIT_KIND_LABELS[u.unitKind] || 'شقة'}
+                                    </span>
+                                    <span className="text-[11px] text-on-surface-variant">
+                                      {u.floor === 0 ? 'الأرضي' : u.floor ? `الدور ${u.floor}` : 'متكرر'} {u.side ? `• ${u.side}` : ''}
+                                    </span>
+                                  </td>
+                                  <td className="p-3.5">
+                                    <span className="font-bold text-on-surface block font-mono">{u.area} م²</span>
+                                    {u.gardenArea ? (
+                                      <span className="text-[10px] text-success font-semibold block">+ {u.gardenArea} م² حديقة</span>
+                                    ) : null}
+                                  </td>
+                                  <td className="p-3.5">
+                                    <span className="font-black text-on-surface block font-mono">{u.price.toLocaleString('ar-EG')} ج</span>
+                                    {u.area > 0 && (
+                                      <span className="text-[10px] text-on-surface-variant font-semibold block">
+                                        {Math.round(u.price / u.area).toLocaleString('ar-EG')} ج/م²
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="p-3.5">
+                                    <div className="flex flex-col min-w-0 max-w-[150px]">
+                                      <span
+                                        className="font-bold text-on-surface text-xs truncate"
+                                        title={u.belongTo || u.companyName || 'محفظة الشركة'}
+                                      >
+                                        {u.belongTo || u.companyName || 'محفظة الشركة'}
+                                      </span>
+                                      {u.belongTo && u.belongTo !== u.companyName && (
+                                        <span className="inline-flex items-center gap-1 text-[10px] text-secondary font-bold mt-0.5">
+                                          <Briefcase className="w-2.5 h-2.5 shrink-0" />
+                                          <span>مطور خارجي</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="p-3.5">
+                                    <div className="flex items-center gap-1.5 min-w-0 max-w-[130px]">
+                                      <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant shrink-0">
+                                        <User className="w-3.5 h-3.5" />
+                                      </div>
+                                      <span
+                                        className="font-semibold text-on-surface text-xs truncate"
+                                        title={u.createdByName || 'غير محدد'}
+                                      >
+                                        {u.createdByName || 'غير محدد'}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td className="p-3.5">
+                                    <select
+                                      value={u.status}
+                                      onChange={(e) => {
+                                        const newSt = e.target.value as UnitStatus;
+                                        updateUnitStatus(u.id, newSt);
+                                        showToast(`تم تغيير حالة الوحدة #BD-${u.zoneId}-${u.plotNo} إلى ${newSt === 'available' ? 'متاح للبيع' : newSt === 'reserved' ? 'حجز مؤقت' : 'تم البيع'}`);
+                                      }}
+                                      className={`px-2 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer ${u.status === 'available'
+                                          ? 'bg-success-container text-success border-success'
+                                          : u.status === 'reserved'
+                                            ? 'bg-warning-container text-warning border-warning'
+                                            : 'bg-error-container text-on-error-container border-error'
+                                        }`}
+                                    >
+                                      <option value="available">متاحة للبيع</option>
+                                      <option value="reserved">حجز مؤقت</option>
+                                      <option value="sold">تم البيع</option>
+                                    </select>
+                                  </td>
+                                  <td className="p-3.5 text-center">
+                                    <div className="flex items-center justify-center gap-1.5">
+                                      <Link
+                                        href={`/units/${u.id}`}
+                                        className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition"
+                                        title="عرض التفاصيل الكاملة"
+                                      >
+                                        <Eye className="w-4 h-4" />
+                                      </Link>
+                                      {canManageUnits && (
+                                        <>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setEditingUnit(u);
+                                              setQuickModalOpen(true);
+                                            }}
+                                            className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition cursor-pointer"
+                                            title="تعديل سريع للوحدة"
+                                          >
+                                            <Edit className="w-4 h-4" />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={async () => {
+                                              if (window.confirm(`هل أنت متأكد من حذف الوحدة قطعة ${u.plotNo}؟`)) {
+                                                const res = await deleteUnit(u.id);
+                                                if (res.success) {
+                                                  showToast('تم حذف الوحدة بنجاح');
+                                                } else {
+                                                  showToast(res.message || 'فشل حذف الوحدة');
+                                                }
+                                              }
+                                            }}
+                                            className="p-1.5 rounded-lg hover:bg-error-container text-error transition cursor-pointer"
+                                            title="حذف الوحدة"
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </button>
+                                        </>
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={() => copyUnitDetails(u)}
+                                        className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant transition cursor-pointer"
+                                        title="نسخ التفاصيل"
+                                      >
+                                        <Copy className="w-4 h-4" />
+                                      </button>
+                                      <a
+                                        href={createUnitWhatsAppUrl(u, currentUser, undefined, zones)}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition cursor-pointer"
+                                        title="مشاركة عبر واتساب"
+                                      >
+                                        <MessageCircle className="w-4 h-4" />
+                                      </a>
+                                    </div>
+                                  </td>
+                              </tr>
+                            );
+                          })}
+                      </React.Fragment>
+                    );
+                  })}
                   </tbody>
                 </table>
               </div>

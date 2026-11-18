@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
 import { Cairo, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
@@ -19,6 +19,15 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   variable: '--font-jakarta',
   display: 'swap',
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover',
+  themeColor: '#006042',
+};
 
 export const metadata: Metadata = {
   title: 'عقار سيلز | AqarSales Pro - المنظومة العقارية الذكية',

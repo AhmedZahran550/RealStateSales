@@ -11,7 +11,8 @@ export async function GET(request: NextRequest) {
       *,
       companies (name, slug),
       buildings (zone_id, plot_no, features),
-      unit_media (*)
+      unit_media (*),
+      creator:profiles!units_created_by_fkey (id, full_name)
     `);
 
     // غير Super Admin يرى فقط وحدات شركته
@@ -25,48 +26,53 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    const units: Unit[] = (dbUnits || []).map((u: any) => ({
-      id: u.id,
-      companyId: u.company_id || undefined,
-      companyName: u.companies?.name || undefined,
-      companySlug: u.companies?.slug || undefined,
-      belongTo: u.belong_to || u.companies?.name || undefined,
-      buildingId: Number(u.building_id),
-      zoneId: u.buildings?.zone_id || 1,
-      plotNo: u.buildings?.plot_no || 1,
-      unitKind: u.unit_kind,
-      floor: u.floor !== null && u.floor !== undefined ? Number(u.floor) : undefined,
-      side: u.side || undefined,
-      area: Number(u.area),
-      gardenArea: u.garden_area ? Number(u.garden_area) : undefined,
-      price: Number(u.price),
-      negotiable: Boolean(u.negotiable),
-      deliveryNote: u.delivery_note || '',
-      paymentTerms: u.payment_terms || '',
-      paymentType: u.payment_type || 'cash',
-      downPayment: u.down_payment ? Number(u.down_payment) : 0,
-      installmentMonths: u.installment_months ? Number(u.installment_months) : 0,
-      description: u.description || '',
-      status: u.status || 'available',
-      lat: u.lat ? Number(u.lat) : undefined,
-      lng: u.lng ? Number(u.lng) : undefined,
-      media: (u.unit_media || [])
-        .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-        .map((m: any) => ({
-          id: m.id,
-          unitId: m.unit_id,
-          ownerId: m.owner_id,
-          kind: m.kind || 'image',
-          storagePath: m.storage_path || undefined,
-          externalUrl: m.external_url || undefined,
-          caption: m.caption || '',
-          sortOrder: m.sort_order ?? 0,
-          createdAt: m.created_at,
-        })),
-      features: u.features || [],
-      createdAt: u.created_at,
-      updatedAt: u.updated_at,
-    }));
+    const units: Unit[] = (dbUnits || []).map((u: any) => {
+      const creatorObj = Array.isArray(u.creator) ? u.creator[0] : u.creator;
+      return {
+        id: u.id,
+        companyId: u.company_id || undefined,
+        companyName: u.companies?.name || undefined,
+        companySlug: u.companies?.slug || undefined,
+        belongTo: u.belong_to || u.companies?.name || undefined,
+        createdBy: u.created_by || creatorObj?.id || undefined,
+        createdByName: creatorObj?.full_name || undefined,
+        buildingId: Number(u.building_id),
+        zoneId: u.buildings?.zone_id || 1,
+        plotNo: u.buildings?.plot_no || 1,
+        unitKind: u.unit_kind,
+        floor: u.floor !== null && u.floor !== undefined ? Number(u.floor) : undefined,
+        side: u.side || undefined,
+        area: Number(u.area),
+        gardenArea: u.garden_area ? Number(u.garden_area) : undefined,
+        price: Number(u.price),
+        negotiable: Boolean(u.negotiable),
+        deliveryNote: u.delivery_note || '',
+        paymentTerms: u.payment_terms || '',
+        paymentType: u.payment_type || 'cash',
+        downPayment: u.down_payment ? Number(u.down_payment) : 0,
+        installmentMonths: u.installment_months ? Number(u.installment_months) : 0,
+        description: u.description || '',
+        status: u.status || 'available',
+        lat: u.lat ? Number(u.lat) : undefined,
+        lng: u.lng ? Number(u.lng) : undefined,
+        media: (u.unit_media || [])
+          .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+          .map((m: any) => ({
+            id: m.id,
+            unitId: m.unit_id,
+            ownerId: m.owner_id,
+            kind: m.kind || 'image',
+            storagePath: m.storage_path || undefined,
+            externalUrl: m.external_url || undefined,
+            caption: m.caption || '',
+            sortOrder: m.sort_order ?? 0,
+            createdAt: m.created_at,
+          })),
+        features: u.features || [],
+        createdAt: u.created_at,
+        updatedAt: u.updated_at,
+      };
+    });
 
     return NextResponse.json({ success: true, data: units });
   } catch (err: any) {
@@ -101,6 +107,7 @@ export async function POST(request: NextRequest) {
 
     const insertData: any = {
       company_id: targetCompanyId,
+      created_by: authUser.sub,
       belong_to: (body.belongTo && typeof body.belongTo === 'string' && body.belongTo.trim())
         ? body.belongTo.trim()
         : null,
@@ -131,7 +138,7 @@ export async function POST(request: NextRequest) {
     const { data: newUnit, error: unitErr } = await serverSupabase
       .from('units')
       .insert(insertData)
-      .select('*, companies(name), buildings(zone_id, plot_no, features)')
+      .select('*, companies(name), buildings(zone_id, plot_no, features), creator:profiles!units_created_by_fkey (id, full_name)')
       .single();
 
     if (unitErr) {

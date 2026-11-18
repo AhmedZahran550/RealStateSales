@@ -16,7 +16,8 @@ export async function GET(
         *,
         companies (name, slug),
         buildings (zone_id, plot_no, features),
-        unit_media (*)
+        unit_media (*),
+        creator:profiles!units_created_by_fkey (id, full_name)
       `)
       .eq('id', id);
 
@@ -30,12 +31,15 @@ export async function GET(
       return NextResponse.json({ success: false, error: 'الوحدة غير موجودة أو غير مصرح بالوصول إليها' }, { status: 404 });
     }
 
+    const creatorObj = Array.isArray(dbUnit.creator) ? dbUnit.creator[0] : dbUnit.creator;
     const unit = {
       id: dbUnit.id,
       companyId: dbUnit.company_id || undefined,
       companyName: dbUnit.companies?.name || undefined,
       companySlug: dbUnit.companies?.slug || undefined,
       belongTo: dbUnit.belong_to || dbUnit.companies?.name || undefined,
+      createdBy: dbUnit.created_by || creatorObj?.id || undefined,
+      createdByName: creatorObj?.full_name || undefined,
       buildingId: Number(dbUnit.building_id),
       zoneId: dbUnit.buildings?.zone_id || 1,
       plotNo: dbUnit.buildings?.plot_no || 1,

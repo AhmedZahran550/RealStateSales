@@ -168,6 +168,8 @@ export interface Unit {
   companyName?: string; // اسم الشركة
   companySlug?: string; // الاسم المخصص للرابط العام
   belongTo?: string; // الجهة التابعة أو المطور الخارجي (الافتراضي: اسم الشركة)
+  createdBy?: string; // معرف المستخدم الذي أضاف الوحدة
+  createdByName?: string; // اسم المستخدم الذي أضاف الوحدة
   buildingId: number;
   zoneId: number;
   plotNo: number;

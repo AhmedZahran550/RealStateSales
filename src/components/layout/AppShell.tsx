@@ -361,7 +361,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   className="w-11 h-11 rounded-xl object-cover bg-surface-container-lowest border border-outline-variant shadow-md group-hover:scale-105 transition-transform shrink-0"
                 />
               ) : (
-                <div className="w-11 h-11 rounded-xl bg-primary-container text-on-primary flex items-center justify-center shadow-md group-hover:scale-105 transition-transform shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-md group-hover:scale-105 transition-transform shrink-0">
                   <span className="material-symbols-outlined text-[24px]">
                     {isSuperAdmin ? 'shield_person' : isCompanyAdmin ? 'domain' : 'real_estate_agent'}
                   </span>
@@ -389,7 +389,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {/* Mobile close button */}
             <button
               onClick={() => setMobileSidebarOpen(false)}
-              className="lg:hidden p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low cursor-pointer"
+              className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low cursor-pointer"
+              aria-label="إغلاق القائمة"
             >
               <span className="material-symbols-outlined text-[22px]">close</span>
             </button>
@@ -418,7 +419,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     }
                   }
                 }}
-                className={`flex items-center justify-between gap-space-md px-space-md py-space-sm rounded-xl transition-all group ${
+                className={`flex items-center justify-between gap-space-md px-space-md min-h-[44px] py-2.5 rounded-xl transition-all group ${
                   item.active
                     ? 'bg-primary text-on-primary font-bold shadow-sm'
                     : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
@@ -473,7 +474,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   setMobileSidebarOpen(false);
                   setCurrentSuperAdminTab('companies');
                 }}
-                className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all flex items-center justify-center gap-space-xs font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
+                className="w-full min-h-[44px] py-2.5 px-space-md rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all flex items-center justify-center gap-space-xs font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">corporate_fare</span>
                 لوحة إدارة الشركات
@@ -496,7 +497,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 href="/units/new"
                 onClick={() => setMobileSidebarOpen(false)}
-                className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all flex items-center justify-center gap-space-xs font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
+                className="w-full min-h-[44px] py-2.5 px-space-md rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all flex items-center justify-center gap-space-xs font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">add</span>
                 إضافة وحدة جديدة للشركة
@@ -521,7 +522,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 href="/customers/new"
                 onClick={() => setMobileSidebarOpen(false)}
-                className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all flex items-center justify-center gap-space-xs font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
+                className="w-full min-h-[44px] py-2.5 px-space-md rounded-xl bg-primary hover:bg-primary-strong text-on-primary transition-all flex items-center justify-center gap-space-xs font-bold shadow-sm active:scale-95 text-xs cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">person_add</span>
                 + إضافة عميل جديد
@@ -535,7 +536,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               logout();
               router.replace('/login');
             }}
-            className="flex items-center justify-center gap-space-xs py-space-xs text-on-surface-variant hover:text-error transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-space-xs min-h-[44px] py-2.5 px-space-md w-full rounded-xl text-on-surface-variant hover:text-error hover:bg-surface-container-low transition-colors cursor-pointer"
             type="button"
           >
             <span className="material-symbols-outlined text-[18px]">logout</span>
@@ -550,7 +551,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-md">
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="lg:hidden p-1.5 sm:p-2 rounded-xl bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container-low cursor-pointer shrink-0"
+            className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center p-2 rounded-xl bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container-low cursor-pointer shrink-0"
             aria-label="القائمة"
           >
             <span className="material-symbols-outlined text-[22px] sm:text-[24px]">menu</span>
@@ -576,7 +577,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute left-2.5 text-outline hover:text-on-surface text-xs cursor-pointer"
+                className="absolute left-0 top-0 bottom-0 min-w-[44px] min-h-[44px] flex items-center justify-center text-outline hover:text-on-surface text-sm cursor-pointer"
+                aria-label="مسح البحث"
               >
                 ✕
               </button>
@@ -616,7 +618,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   setNotifDropdownOpen(!notifDropdownOpen);
                   setProfileDropdownOpen(false);
                 }}
-                className="relative p-space-sm rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-on-surface transition-colors shadow-sm flex items-center justify-center cursor-pointer"
+                className="relative min-w-[44px] min-h-[44px] p-2 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-on-surface transition-colors shadow-sm flex items-center justify-center cursor-pointer"
                 type="button"
                 aria-label="التنبيهات"
               >
@@ -632,7 +634,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
               {/* Notification Dropdown */}
               {notifDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-[calc(100vw-24px)] max-w-xs sm:w-80 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high p-3 z-50 animate-in fade-in zoom-in-95">
+                <div className="fixed top-16 sm:top-20 inset-x-3 sm:inset-x-auto sm:left-4 sm:w-80 max-w-sm sm:max-w-none bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high p-3 z-50 animate-in fade-in zoom-in-95">
                   <div className="flex items-center justify-between pb-2 border-b border-surface-container-high mb-2">
                     <span className="font-bold text-sm text-on-surface">إشعارات المتابعات</span>
                     <span className="text-xs text-primary font-bold">
@@ -682,7 +684,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 setProfileDropdownOpen(!profileDropdownOpen);
                 setNotifDropdownOpen(false);
               }}
-              className="flex items-center gap-space-sm pl-space-xs cursor-pointer p-1 rounded-xl hover:bg-surface-container-low transition-colors"
+              className="flex items-center gap-space-sm pl-space-xs cursor-pointer min-w-[44px] min-h-[44px] p-1 rounded-xl hover:bg-surface-container-low transition-colors"
+              aria-label="الملف الشخصي"
               type="button"
             >
               <div className="relative">
@@ -707,17 +710,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
             {/* Profile Dropdown */}
             {profileDropdownOpen && (
-              <div className="absolute left-0 mt-2 w-[calc(100vw-24px)] max-w-xs sm:w-72 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high p-3 z-50 animate-in fade-in zoom-in-95">
+              <div className="fixed top-16 sm:top-20 inset-x-3 sm:inset-x-auto sm:left-4 sm:w-72 max-w-sm sm:max-w-none bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high p-3 z-50 animate-in fade-in zoom-in-95">
                 <div className="pb-3 border-b border-surface-container-high mb-2">
                   <p className="text-sm font-bold text-on-surface">{currentUser.fullName}</p>
                   <p className="text-xs text-on-surface-variant">@{currentUser.username}</p>
                   {currentUser.phone ? (
-                    <div className="flex items-center gap-1.5 mt-1.5 text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg">
+                    <div className="flex items-center gap-1.5 mt-1.5 text-xs font-bold text-primary bg-surface-container px-2.5 py-1 rounded-lg">
                       <span className="material-symbols-outlined text-[16px]">call</span>
                       <span dir="ltr">{currentUser.phone}</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-bold text-warning bg-warning-container px-2 py-1 rounded-lg">
+                    <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-bold text-on-warning-container bg-warning-container px-2 py-1 rounded-lg">
                       <span className="material-symbols-outlined text-[15px]">add_call</span>
                       <span>لم يُسجل رقم هاتف بعد</span>
                     </div>
@@ -730,7 +733,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       setProfileDropdownOpen(false);
                       setIsProfileModalOpen(true);
                     }}
-                    className="w-full flex items-center gap-2 p-2 rounded-xl text-right text-xs font-bold text-primary hover:bg-primary-fixed/20 transition-colors cursor-pointer"
+                    className="w-full min-h-[44px] flex items-center gap-2 px-3 py-2.5 rounded-xl text-right text-xs font-bold text-primary hover:bg-surface-container-low transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[18px]">manage_accounts</span>
                     تعديل الملف الشخصي ورقم الهاتف
@@ -741,7 +744,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       setProfileDropdownOpen(false);
                       resetAllData();
                     }}
-                    className="w-full flex items-center gap-2 p-2 rounded-xl text-right text-xs font-bold text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer"
+                    className="w-full min-h-[44px] flex items-center gap-2 px-3 py-2.5 rounded-xl text-right text-xs font-bold text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[18px] text-tertiary">restart_alt</span>
                     إعادة ضبط البيانات الافتراضية
@@ -753,7 +756,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       logout();
                       router.replace('/login');
                     }}
-                    className="w-full flex items-center gap-2 p-2 rounded-xl text-right text-xs font-bold text-error hover:bg-error/10 transition-colors cursor-pointer"
+                    className="w-full min-h-[44px] flex items-center gap-2 px-3 py-2.5 rounded-xl text-right text-xs font-bold text-error hover:bg-error-container/40 transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[18px]">logout</span>
                     تسجيل الخروج
@@ -767,13 +770,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* MAIN CONTENT AREA */}
       <div className="pr-0 lg:pr-72 pt-16 lg:pt-20 flex-1 flex flex-col">
-        <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 overflow-x-hidden">{children}</main>
+        <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-[calc(env(safe-area-inset-bottom)+5.5rem)] lg:pb-8 overflow-x-hidden">{children}</main>
       </div>
 
       {/* MOBILE BOTTOM NAVIGATION BAR */}
       <nav
         aria-label="التنقل السريع للهاتف"
-        className="lg:hidden fixed bottom-0 right-0 left-0 z-40 bg-surface/95 backdrop-blur-md border-t border-outline-variant shadow-[0_-2px_12px_rgba(0,0,0,0.06)] px-1 py-1 flex items-center justify-around"
+        className="lg:hidden fixed bottom-0 right-0 left-0 z-40 bg-surface/95 backdrop-blur-md border-t border-outline-variant shadow-[0_-2px_12px_rgba(0,0,0,0.06)] px-1 pt-1 pb-[max(0.375rem,env(safe-area-inset-bottom))] flex items-center justify-around"
       >
         {mobileBottomNavLinks.map((item) => (
           <Link
@@ -806,7 +809,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 {item.icon}
               </span>
               {item.badge && (
-                <span className="absolute -top-1 -right-2 px-1.5 py-0.2 rounded-full bg-primary text-on-primary text-[9px] font-bold leading-tight shadow-xs">
+                <span className="absolute -top-1 -right-2 px-1.5 py-0.5 rounded-full bg-primary text-on-primary text-[9px] font-bold leading-tight shadow-xs">
                   {item.badge}
                 </span>
               )}

@@ -276,7 +276,7 @@ export default function AdminZonesPage() {
       {/* Toast Notification */}
       {toast && (
         <div
-          className={`fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 border animate-in fade-in slide-in-from-bottom-2 ${
+          className={`fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)] lg:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 border animate-in fade-in slide-in-from-bottom-2 ${
             toast.type === 'success'
               ? 'bg-success-container text-on-success-container border-success'
               : 'bg-error-container text-on-error-container border-error'

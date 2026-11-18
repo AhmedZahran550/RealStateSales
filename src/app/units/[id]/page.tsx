@@ -36,6 +36,7 @@ import {
   Info,
   ArrowRight,
   CheckCircle2,
+  User,
 } from 'lucide-react';
 import { downloadMediaFile } from '@/lib/cloudinary';
 import { formatUnitFullDetails, createUnitWhatsAppUrl } from '@/lib/shareUtils';
@@ -220,6 +221,15 @@ export default function UnitDetailPage({
                       ? `خاص بـ: ${unit.belongTo}`
                       : unit.companyName || 'محفظة الشركة'}
                   </span>
+                </span>
+              )}
+              {unit.createdByName && (
+                <span
+                  className="text-xs px-2.5 py-0.5 rounded-full font-semibold border inline-flex items-center gap-1 bg-surface-container text-on-surface-variant border-outline-variant"
+                  title="المستخدم الذي قام بإضافة الوحدة"
+                >
+                  <User className="w-3 h-3 text-primary shrink-0" />
+                  <span>أضاف بواسطة: {unit.createdByName}</span>
                 </span>
               )}
             </div>
@@ -591,7 +601,7 @@ export default function UnitDetailPage({
                 <p className="text-base font-black text-on-surface font-mono mt-0.5">{unit.plotNo}</p>
               </div>
 
-              <div className="p-3 rounded-xl bg-surface-container sm:col-span-3">
+              <div className="p-3 rounded-xl bg-surface-container sm:col-span-2">
                 <span className="text-[11px] text-on-surface-variant">الجهة التابعة / خاص بـ</span>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <Briefcase className="w-4 h-4 text-primary shrink-0" />
@@ -603,6 +613,16 @@ export default function UnitDetailPage({
                       مطور / جهة خارجية
                     </span>
                   )}
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-surface-container sm:col-span-1">
+                <span className="text-[11px] text-on-surface-variant">أضاف بواسطة</span>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <User className="w-4 h-4 text-primary shrink-0" />
+                  <p className="text-sm font-black text-on-surface truncate">
+                    {unit.createdByName || 'غير محدد'}
+                  </p>
                 </div>
               </div>
             </div>

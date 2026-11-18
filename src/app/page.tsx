@@ -103,7 +103,7 @@ export default function DashboardPage() {
       <div className="flex flex-col w-full space-y-space-lg animate-in fade-in duration-300">
       {/* Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-inverse-surface text-inverse-on-surface shadow-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
+        <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)] lg:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-inverse-surface text-inverse-on-surface shadow-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
           <span className="material-symbols-outlined text-[18px] text-primary-fixed">check_circle</span>
           <span>{toastMessage}</span>
         </div>
@@ -116,7 +116,7 @@ export default function DashboardPage() {
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-md">
             <div className="flex flex-col gap-space-xs">
               <div className="flex items-center gap-space-sm">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-warning-container text-warning font-bold text-xs">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-warning-container text-on-warning-container font-bold text-xs">
                   <span className="w-2 h-2 rounded-full bg-warning animate-pulse" />
                   لوحة إدارة شركة {currentCompany?.name || currentUser.companyName || 'العقارية'}
                 </span>
@@ -532,7 +532,7 @@ export default function DashboardPage() {
     <div className="flex flex-col w-full space-y-space-md animate-in fade-in duration-300 pb-12">
       {/* Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-inverse-surface text-inverse-on-surface shadow-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
+        <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)] lg:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-inverse-surface text-inverse-on-surface shadow-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
           <CheckCircle2 className="w-4 h-4 text-primary-fixed" />
           <span>{toastMessage}</span>
         </div>
@@ -543,7 +543,7 @@ export default function DashboardPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-xs">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-bold text-xs">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 لوحة عمليات الوسيط
               </span>

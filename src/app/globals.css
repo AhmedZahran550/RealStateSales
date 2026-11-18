@@ -163,6 +163,18 @@ body {
   overflow-x: clip;
 }
 
+/* Safe-area insets & mobile viewport helpers */
+:root {
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
+
 /* Universal input visibility & autofill handling */
 input, select, textarea {
   color-scheme: light; /* light-only system: keep browser-drawn controls (date pickers) light */
