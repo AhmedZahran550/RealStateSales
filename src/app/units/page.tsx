@@ -27,6 +27,9 @@ import {
   Copy,
   MessageCircle,
   User,
+  SlidersHorizontal,
+  X,
+  Filter,
 } from 'lucide-react';
 import QuickUnitModal from '@/components/units/QuickUnitModal';
 import { exportUnitsToExcel } from '@/lib/excel';
@@ -84,6 +87,18 @@ export default function UnitsPage() {
   const [belongToFilter, setBelongToFilter] = useState<string>('all');
   const [groupBy, setGroupBy] = useState<GroupByOption>('none');
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [mobileTableStyle, setMobileTableStyle] = useState<'cards' | 'scroll'>('cards');
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (zoneFilter !== 'all') count++;
+    if (typeFilter !== 'all') count++;
+    if (belongToFilter !== 'all') count++;
+    if (groupBy !== 'none') count++;
+    if (searchTerm.trim()) count++;
+    return count;
+  }, [zoneFilter, typeFilter, belongToFilter, groupBy, searchTerm]);
 
   const toggleGroupCollapse = (groupKey: string) => {
     setCollapsedGroups((prev) => ({
@@ -572,8 +587,167 @@ return (
         </div>
       </div>
 
-      {/* Filter Inputs Grid */}
-        <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ${inventoryView === 'units' ? 'xl:grid-cols-6' : 'xl:grid-cols-5'} gap-space-sm`}>
+      {/* Filter Toolbar for Mobile (< md) */}
+      <div className="flex md:hidden flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-outline absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="كود الوحدة، المطور، رقم القطعة..."
+              className="w-full border border-outline-variant bg-surface-container-lowest rounded-xl py-2.5 pr-9 pl-8 text-on-surface placeholder:text-outline font-semibold focus:outline-none focus:ring-2 focus:ring-primary text-xs shadow-xs min-h-[42px]"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface p-1 cursor-pointer"
+                title="مسح البحث"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setMobileFiltersOpen((prev) => !prev)}
+            className={`px-3 py-2.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all min-h-[42px] cursor-pointer shrink-0 ${
+              mobileFiltersOpen || activeFiltersCount > 0
+                ? 'bg-primary text-on-primary border-primary shadow-xs'
+                : 'bg-surface-container-low border-outline-variant text-on-surface'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span>تصفية</span>
+            {activeFiltersCount > 0 && (
+              <span className="w-5 h-5 rounded-full bg-surface-container-lowest text-primary text-[10px] font-black flex items-center justify-center">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Collapsible Mobile Filter Panel */}
+        {mobileFiltersOpen && (
+          <div className="p-3.5 rounded-2xl bg-surface-container-low border border-outline-variant space-y-3 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between pb-2 border-b border-surface-container-high">
+              <span className="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                <Filter className="w-3.5 h-3.5 text-primary" />
+                <span>خيارات التصفية والتجميع</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen(false)}
+                className="text-xs text-primary font-bold hover:underline cursor-pointer"
+              >
+                إغلاق
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <label className="block text-[11px] font-bold text-on-surface-variant mb-1">المنطقة العقارية</label>
+                <select
+                  value={zoneFilter}
+                  onChange={(e) => setZoneFilter(e.target.value)}
+                  className="input-base w-full text-xs font-semibold py-2"
+                >
+                  <option value="all">كافة المناطق</option>
+                  {mainZones.map((mz) => {
+                    const subs = subZonesOf(mz.id);
+                    if (subs.length === 0) {
+                      return (
+                        <option key={mz.id} value={mz.id.toString()}>{mz.name}</option>
+                      );
+                    }
+                    return (
+                      <optgroup key={mz.id} label={mz.name}>
+                        <option value={mz.id.toString()}>كل {mz.name}</option>
+                        {subs.map((sz) => (
+                          <option key={sz.id} value={sz.id.toString()}>{sz.name}</option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-on-surface-variant mb-1">نوع الوحدة</label>
+                <select
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value)}
+                  className="input-base w-full text-xs font-semibold py-2"
+                >
+                  <option value="all">نوع الوحدة (الكل)</option>
+                  <option value="duplex">دوبلكس</option>
+                  <option value="ground_garden">أرضي بحديقة</option>
+                  <option value="floor_1">دور أول متكرر</option>
+                  <option value="floor_2">دور ثاني</option>
+                  <option value="floor_3">دور ثالث</option>
+                  <option value="roof">رووف</option>
+                  <option value="other">أخرى</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-on-surface-variant mb-1">الجهة / المطور</label>
+                <select
+                  value={belongToFilter}
+                  onChange={(e) => setBelongToFilter(e.target.value)}
+                  className="input-base w-full text-xs font-semibold py-2"
+                >
+                  <option value="all">الجهة / المطور (الكل)</option>
+                  {uniqueBelongToEntities.map((entity) => (
+                    <option key={entity} value={entity}>{entity}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-on-surface-variant mb-1">ترتيب النتائج</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="input-base w-full text-xs font-semibold py-2"
+                >
+                  <option value="zone_asc">أرقام المناطق (منطقة 1، 2...) — الافتراضي</option>
+                  <option value="plot_asc">رقم القطعة (تصاعدي)</option>
+                  <option value="price_asc">السعر (من الأقل للأعلى)</option>
+                  <option value="price_desc">السعر (من الأعلى للأقل)</option>
+                  <option value="area_desc">المساحة (من الأكبر للأصغر)</option>
+                  <option value="area_asc">المساحة (من الأصغر للأكبر)</option>
+                  <option value="newest">الأحدث تسجيلاً</option>
+                </select>
+              </div>
+
+              {inventoryView === 'units' && (
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-bold text-on-surface-variant mb-1">التجميع (Group By)</label>
+                  <select
+                    value={groupBy}
+                    onChange={(e) => {
+                      setGroupBy(e.target.value as GroupByOption);
+                      setCollapsedGroups({});
+                    }}
+                    className="input-base w-full text-xs font-semibold py-2"
+                  >
+                    <option value="none">بدون تجميع (افتراضي)</option>
+                    <option value="zone">تجميع: المنطقة</option>
+                    <option value="creator">تجميع: أضاف بواسطة</option>
+                    <option value="belongTo">تجميع: الجهة / المطور</option>
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Filter Inputs Grid (Desktop >= md) */}
+        <div className={`hidden md:grid md:grid-cols-3 ${inventoryView === 'units' ? 'xl:grid-cols-6' : 'xl:grid-cols-5'} gap-space-sm`}>
           {/* Search */}
           <div className="relative">
             <Search className="w-4 h-4 text-outline absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -905,28 +1079,273 @@ return (
         /* Table View */
         <div className="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden border border-surface-container-high/40">
           {filteredUnits.length === 0 ? (
-            <div className="p-12 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high space-y-2">
+            <div className="p-12 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high space-y-3">
               <Building2 className="w-12 h-12 text-outline/40 mx-auto mb-1" />
               <p className="text-on-surface font-bold text-base">لا توجد وحدات تطابق هذه المحددات.</p>
-              <p className="text-xs text-on-surface-variant">جرّب تغيير فلاتر البحث أو اختيار منطقة أخرى.</p>
+              <p className="text-xs text-on-surface-variant">جرّب تغيير فلاتر البحث أو إعادة ضبط المعايير.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setZoneFilter('all');
+                  setTypeFilter('all');
+                  setBelongToFilter('all');
+                  setSearchTerm('');
+                  setGroupBy('none');
+                  setStatusFilter('all');
+                  setCollapsedGroups({});
+                }}
+                className="btn-tonal text-xs font-bold py-2 px-4 cursor-pointer inline-flex items-center gap-1.5 mx-auto"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>إعادة ضبط كافة الفلاتر</span>
+              </button>
             </div>
           ) : (
             <>
-              <div className="md:hidden px-3.5 py-2 bg-surface-container text-on-surface-variant text-[11px] flex items-center justify-between border-b border-surface-container-high">
-                <span>💡 اسحب الجدول أفقياً للاطلاع على كافة الأعمدة</span>
-                <button
-                  type="button"
-                  onClick={() => handleToggleViewMode('grid')}
-                  className="text-primary font-bold hover:underline cursor-pointer"
-                >
-                  عرض شبكة بطاقات
-                </button>
+              {/* Mobile Table Mode Bar (md:hidden) */}
+              <div className="md:hidden px-3.5 py-2.5 bg-surface-container-low text-on-surface-variant text-xs flex items-center justify-between border-b border-surface-container-high">
+                <span className="font-bold text-on-surface text-[11px]">
+                  {mobileTableStyle === 'cards' ? '📱 عرض القائمة المدمجة' : '📊 عرض الجدول مع التثبيت'}
+                </span>
+                <div className="flex items-center gap-1 bg-surface-container p-0.5 rounded-lg border border-surface-container-high">
+                  <button
+                    type="button"
+                    onClick={() => setMobileTableStyle('cards')}
+                    className={`px-2.5 py-1 rounded text-[11px] font-bold cursor-pointer transition ${
+                      mobileTableStyle === 'cards'
+                        ? 'bg-surface-container-lowest text-primary shadow-xs'
+                        : 'text-on-surface-variant hover:text-on-surface'
+                    }`}
+                  >
+                    بطاقات مدمجة
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMobileTableStyle('scroll')}
+                    className={`px-2.5 py-1 rounded text-[11px] font-bold cursor-pointer transition ${
+                      mobileTableStyle === 'scroll'
+                        ? 'bg-surface-container-lowest text-primary shadow-xs'
+                        : 'text-on-surface-variant hover:text-on-surface'
+                    }`}
+                  >
+                    جدول كامل
+                  </button>
+                </div>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[880px] text-right text-xs">
-                  <thead className="bg-surface-container-low text-on-surface-variant font-bold border-b border-surface-container-high">
+
+              {/* 1. Mobile High-Density Card List (< md when mobileTableStyle === 'cards') */}
+              {mobileTableStyle === 'cards' && (
+                <div className="md:hidden divide-y divide-surface-container-low p-3 space-y-3">
+                  {groupedUnits.map((group) => {
+                    const isCollapsed = !!collapsedGroups[group.key];
+                    return (
+                      <div key={`mobile-${group.key}`} className="space-y-2.5">
+                        {groupBy !== 'none' && (
+                          <button
+                            type="button"
+                            onClick={() => toggleGroupCollapse(group.key)}
+                            className="w-full flex items-center justify-between p-2.5 rounded-xl bg-surface-container border border-surface-container-high text-right cursor-pointer group"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className={`w-6 h-6 rounded-lg bg-surface-container-lowest text-primary flex items-center justify-center shadow-xs transition-transform duration-200 ${isCollapsed ? 'rotate-90 rtl:-rotate-90' : 'rotate-0'}`}>
+                                <ChevronDown className="w-3.5 h-3.5" />
+                              </span>
+                              <span className="font-bold text-on-surface text-xs sm:text-sm">{group.title}</span>
+                              <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-[10px]">
+                                {group.count} {group.count === 1 ? 'وحدة' : group.count === 2 ? 'وحدتان' : group.count <= 10 ? 'وحدات' : 'وحدة'}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-on-surface-variant font-medium">
+                              {isCollapsed ? 'توسيع' : 'طي'}
+                            </span>
+                          </button>
+                        )}
+                        {!isCollapsed && (
+                          <div className="space-y-2.5">
+                            {group.units.map((u) => {
+                              const firstMedia = u.media && u.media[0];
+                              return (
+                                <div
+                                  key={`mobile-card-${u.id}`}
+                                  className="rounded-2xl border border-surface-container-high/80 bg-surface-container-lowest p-3.5 space-y-3 shadow-xs hover:border-primary/40 transition-colors"
+                                >
+                                  {/* Top Row: Photo + Code + Delivery note + Status */}
+                                  <div className="flex items-start justify-between gap-2.5">
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                      {firstMedia ? (
+                                        <img
+                                          src={firstMedia.externalUrl || firstMedia.storagePath}
+                                          alt=""
+                                          className="w-12 h-12 rounded-xl object-cover border border-outline-variant shrink-0"
+                                        />
+                                      ) : (
+                                        <div className="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary shrink-0 border border-outline-variant">
+                                          <Home className="w-5 h-5" />
+                                        </div>
+                                      )}
+                                      <div className="min-w-0">
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                          <Link
+                                            href={`/units/${u.id}`}
+                                            className="font-bold text-primary hover:underline font-mono text-xs sm:text-sm"
+                                          >
+                                            #BD-{u.zoneId}-{u.plotNo}
+                                          </Link>
+                                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-medium">
+                                            {u.deliveryNote || 'استلام فوري'}
+                                          </span>
+                                        </div>
+                                        <div className="text-xs font-bold text-on-surface truncate mt-0.5">
+                                          {zoneDisplayName(u.zoneId, zones)} • قطعة {u.plotNo}
+                                        </div>
+                                        <div className="text-[11px] text-on-surface-variant">
+                                          {UNIT_KIND_LABELS[u.unitKind] || 'شقة'} • {u.floor === 0 ? 'الأرضي' : u.floor ? `الدور ${u.floor}` : 'متكرر'} {u.side ? `(${u.side})` : ''}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Price and Area */}
+                                    <div className="text-left font-mono shrink-0">
+                                      <div className="font-black text-on-surface text-sm sm:text-base tabular-nums">
+                                        {u.price.toLocaleString('ar-EG')}{' '}
+                                        <span className="text-[10px] text-on-surface-variant font-bold">ج</span>
+                                      </div>
+                                      <div className="text-[11px] text-on-surface-variant font-bold tabular-nums">
+                                        {u.area} م²
+                                        {u.gardenArea ? ` (+${u.gardenArea} م² حديقة)` : ''}
+                                      </div>
+                                      {u.area > 0 && (
+                                        <div className="text-[9px] text-on-surface-variant tabular-nums">
+                                          {Math.round(u.price / u.area).toLocaleString('ar-EG')} ج/م²
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Meta Row: Developer & Creator */}
+                                  <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-surface-container text-xs flex-wrap">
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      <Briefcase className="w-3.5 h-3.5 text-on-surface-variant shrink-0" />
+                                      <span className="font-semibold text-on-surface text-[11px] truncate max-w-[140px]" title={u.belongTo || u.companyName || 'محفظة الشركة'}>
+                                        {u.belongTo || u.companyName || 'محفظة الشركة'}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-1 text-[11px] text-on-surface-variant">
+                                      <User className="w-3 h-3 shrink-0" />
+                                      <span className="font-semibold truncate max-w-[110px]" title={u.createdByName || 'غير محدد'}>
+                                        {u.createdByName || 'غير محدد'}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Status & Action Bar */}
+                                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-surface-container-high/60 flex-wrap">
+                                    {/* Quick Status Select */}
+                                    <select
+                                      value={u.status}
+                                      onChange={(e) => {
+                                        const newSt = e.target.value as UnitStatus;
+                                        updateUnitStatus(u.id, newSt);
+                                        showToast(`تم تغيير حالة الوحدة #BD-${u.zoneId}-${u.plotNo}`);
+                                      }}
+                                      className={`px-2 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer min-h-[42px] ${
+                                        u.status === 'available'
+                                          ? 'bg-success-container text-success border-success'
+                                          : u.status === 'reserved'
+                                            ? 'bg-warning-container text-warning border-warning'
+                                            : 'bg-error-container text-on-error-container border-error'
+                                      }`}
+                                    >
+                                      <option value="available">متاحة للبيع</option>
+                                      <option value="reserved">حجز مؤقت</option>
+                                      <option value="sold">تم البيع</option>
+                                    </select>
+
+                                    {/* Large Accessible Touch Buttons (>= 42px height) */}
+                                    <div className="flex items-center gap-1.5">
+                                      <Link
+                                        href={`/units/${u.id}`}
+                                        className="min-h-[42px] px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary flex items-center justify-center gap-1 text-xs font-bold transition cursor-pointer"
+                                        title="عرض التفاصيل الكاملة"
+                                      >
+                                        <Eye className="w-4 h-4" />
+                                        <span>تفاصيل</span>
+                                      </Link>
+
+                                      <a
+                                        href={createUnitWhatsAppUrl(u, currentUser, undefined, zones)}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="min-h-[42px] px-3 rounded-xl bg-primary hover:bg-primary-strong text-on-primary flex items-center justify-center gap-1 text-xs font-bold transition cursor-pointer shadow-xs"
+                                        title="مشاركة عبر واتساب"
+                                      >
+                                        <MessageCircle className="w-4 h-4" />
+                                        <span>واتساب</span>
+                                      </a>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => copyUnitDetails(u)}
+                                        className="min-h-[42px] min-w-[42px] p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center cursor-pointer transition"
+                                        title="نسخ التفاصيل"
+                                      >
+                                        <Copy className="w-4 h-4" />
+                                      </button>
+
+                                      {canManageUnits && (
+                                        <>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setEditingUnit(u);
+                                              setQuickModalOpen(true);
+                                            }}
+                                            className="min-h-[42px] min-w-[42px] p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary flex items-center justify-center cursor-pointer transition"
+                                            title="تعديل سريع للوحدة"
+                                          >
+                                            <Edit className="w-4 h-4" />
+                                          </button>
+
+                                          <button
+                                            type="button"
+                                            onClick={async () => {
+                                              if (window.confirm(`هل أنت متأكد من حذف الوحدة قطعة ${u.plotNo}؟`)) {
+                                                const res = await deleteUnit(u.id);
+                                                if (res.success) {
+                                                  showToast('تم حذف الوحدة بنجاح');
+                                                } else {
+                                                  showToast(res.message || 'فشل حذف الوحدة');
+                                                }
+                                              }
+                                            }}
+                                            className="min-h-[42px] min-w-[42px] p-2 rounded-xl bg-error-container hover:bg-error-container/80 text-error flex items-center justify-center cursor-pointer transition"
+                                            title="حذف الوحدة"
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </button>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* 2. Full Desktop/Tablet Table (or when mobileTableStyle === 'scroll') */}
+              <div className={`${mobileTableStyle === 'cards' ? 'hidden md:block' : 'block'} overflow-x-auto relative max-h-[75vh] overflow-y-auto`}>
+                <table className="w-full min-w-[920px] text-right text-xs border-collapse">
+                  <thead className="sticky top-0 z-20 bg-surface-container-low text-on-surface-variant font-bold border-b border-surface-container-high shadow-xs backdrop-blur-xs">
                     <tr>
-                      <th className="p-3.5">الوحدة</th>
+                      <th className="p-3.5 sticky right-0 top-0 z-30 bg-surface-container-low border-l border-surface-container-high/80 shadow-[2px_0_5px_rgba(0,0,0,0.03)] min-w-[200px]">
+                        الوحدة والكود
+                      </th>
                       <th
                         onClick={() => setSortBy(sortBy === 'zone_asc' ? 'plot_asc' : 'zone_asc')}
                         className="p-3.5 cursor-pointer hover:text-primary transition select-none"
@@ -979,7 +1398,7 @@ return (
                       <th className="p-3.5">خاص بـ / الجهة</th>
                       <th className="p-3.5">أضاف بواسطة</th>
                       <th className="p-3.5">الحالة</th>
-                      <th className="p-3.5 text-center">الإجراءات</th>
+                      <th className="p-3.5 text-center min-w-[130px]">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-surface-container-low">
@@ -988,12 +1407,12 @@ return (
                       return (
                         <React.Fragment key={group.key}>
                           {groupBy !== 'none' && (
-                            <tr className="bg-surface-container/80 hover:bg-surface-container transition-colors border-y border-surface-container-high select-none">
-                              <td colSpan={9} className="p-2.5 sm:p-3">
+                            <tr className="bg-surface-container/90 hover:bg-surface-container transition-colors border-y border-surface-container-high select-none">
+                              <td colSpan={9} className="p-0">
                                 <button
                                   type="button"
                                   onClick={() => toggleGroupCollapse(group.key)}
-                                  className="flex items-center justify-between w-full text-right cursor-pointer group"
+                                  className="sticky right-0 flex items-center justify-between w-full max-w-full p-2.5 sm:p-3 text-right cursor-pointer group bg-surface-container/90 hover:bg-surface-container"
                                 >
                                   <div className="flex items-center gap-2">
                                     <span className={`w-6 h-6 rounded-lg bg-surface-container-lowest text-primary flex items-center justify-center shadow-xs transition-transform duration-200 ${isCollapsed ? 'rotate-90 rtl:-rotate-90' : 'rotate-0'}`}>
@@ -1017,8 +1436,8 @@ return (
                             group.units.map((u) => {
                               const firstMedia = u.media && u.media[0];
                               return (
-                                <tr key={u.id} className="hover:bg-surface-container-low/50 transition-colors">
-                                  <td className="p-3.5">
+                                <tr key={u.id} className="hover:bg-surface-container-low/50 transition-colors group">
+                                  <td className="p-3.5 sticky right-0 z-10 bg-surface-container-lowest group-hover:bg-surface-container-low/60 transition-colors border-l border-surface-container-high/80 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
                                     <div className="flex items-center gap-2.5">
                                       {firstMedia ? (
                                         <img
@@ -1064,15 +1483,15 @@ return (
                                     </span>
                                   </td>
                                   <td className="p-3.5">
-                                    <span className="font-bold text-on-surface block font-mono">{u.area} م²</span>
+                                    <span className="font-bold text-on-surface block font-mono tabular-nums">{u.area} م²</span>
                                     {u.gardenArea ? (
                                       <span className="text-[10px] text-success font-semibold block">+ {u.gardenArea} م² حديقة</span>
                                     ) : null}
                                   </td>
                                   <td className="p-3.5">
-                                    <span className="font-black text-on-surface block font-mono">{u.price.toLocaleString('ar-EG')} ج</span>
+                                    <span className="font-black text-on-surface block font-mono tabular-nums">{u.price.toLocaleString('ar-EG')} ج</span>
                                     {u.area > 0 && (
-                                      <span className="text-[10px] text-on-surface-variant font-semibold block">
+                                      <span className="text-[10px] text-on-surface-variant font-semibold block font-mono tabular-nums">
                                         {Math.round(u.price / u.area).toLocaleString('ar-EG')} ج/م²
                                       </span>
                                     )}
